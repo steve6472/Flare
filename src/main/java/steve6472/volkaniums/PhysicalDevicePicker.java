@@ -1,0 +1,107 @@
+package steve6472.volkaniums;
+
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.vulkan.*;
+import steve6472.volkaniums.util.Log;
+
+import java.nio.IntBuffer;
+import java.util.Set;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+/**
+ * Created by steve6472
+ * Date: 7/30/2024
+ * Project: Volkaniums <br>
+ */
+public class PhysicalDevicePicker
+{
+    private static final Logger LOGGER = Log.getLogger(PhysicalDevicePicker.class);
+
+    public static final Set<String> DEVICE_EXTENSIONS = Stream.of(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+        .collect(Collectors.toSet());
+
+    public static VkPhysicalDevice pickPhysicalDevice(VkInstance instance, long surface)
+    {
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            IntBuffer deviceCount = stack.ints(0);
+
+            VK13.vkEnumeratePhysicalDevices(instance, deviceCount, null);
+
+            if (deviceCount.get(0) == 0)
+            {
+                throw new RuntimeException(ErrorCode.NO_VULKAN_GPU.format());
+            }
+
+            PointerBuffer ppPhysicalDevices = stack.mallocPointer(deviceCount.get(0));
+
+            VK13.vkEnumeratePhysicalDevices(instance, deviceCount, ppPhysicalDevices);
+
+            // Find first suitable GPU
+            // TODO: Make this selectable by user
+            for (int i = 0; i < ppPhysicalDevices.capacity(); i++)
+            {
+                VkPhysicalDevice device = new VkPhysicalDevice(ppPhysicalDevices.get(i), instance);
+
+                if (isDeviceSuitable(device, surface))
+                {
+                    VkPhysicalDeviceProperties deviceProperties = VkPhysicalDeviceProperties.calloc(stack);
+                    VK13.vkGetPhysicalDeviceProperties(device, deviceProperties);
+                    LOGGER.finer("Selected GPU: " + deviceProperties.deviceNameString());
+                    return device;
+                }
+            }
+
+            throw new RuntimeException(ErrorCode.NO_SUITABLE_GPU.format());
+        }
+    }
+
+    private static boolean isDeviceSuitable(VkPhysicalDevice device, long surface)
+    {
+        // This does nothing, just for me to check stuff lol
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            VkPhysicalDeviceFeatures deviceFeatures = VkPhysicalDeviceFeatures.calloc(stack);
+            VK13.vkGetPhysicalDeviceFeatures(device, deviceFeatures);
+        }
+
+        QueueFamilyIndices indices = QueueFamilyIndices.findQueueFamilies(device, surface);
+
+        boolean extensionsSupported = checkDeviceExtensionSupport(device);
+        boolean swapChainAdequate = false;
+
+        if (extensionsSupported)
+        {
+            try (MemoryStack stack = MemoryStack.stackPush())
+            {
+                SwapChainSupportDetails swapChainSupport = SwapChain.querySwapChainSupport(device, stack, surface);
+                swapChainAdequate = swapChainSupport.formats.hasRemaining() && swapChainSupport.presentModes.hasRemaining();
+            }
+        }
+
+        return indices.isComplete() && extensionsSupported && swapChainAdequate;
+    }
+
+    private static boolean checkDeviceExtensionSupport(VkPhysicalDevice device)
+    {
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            IntBuffer extensionCount = stack.ints(0);
+
+            VK13.vkEnumerateDeviceExtensionProperties(device, (String) null, extensionCount, null);
+
+            VkExtensionProperties.Buffer availableExtensions = VkExtensionProperties.malloc(extensionCount.get(0), stack);
+
+            VK13.vkEnumerateDeviceExtensionProperties(device, (String) null, extensionCount, availableExtensions);
+
+            return availableExtensions
+                .stream()
+                .map(VkExtensionProperties::extensionNameString)
+                .collect(Collectors.toSet())
+                .containsAll(DEVICE_EXTENSIONS);
+        }
+    }
+}
