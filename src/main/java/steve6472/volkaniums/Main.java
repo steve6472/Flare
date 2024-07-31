@@ -8,14 +8,9 @@ import steve6472.volkaniums.util.Log;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK13.*;
 
 public class Main
@@ -24,8 +19,6 @@ public class Main
 
     public static final String BASE_NAMESPACE = "base";
     private static final String APP_NAME = "Volkaniums";
-
-    public static final int MAX_FRAMES_IN_FLIGHT = 2;
 
     // ======= FIELDS ======= //
 
@@ -38,16 +31,6 @@ public class Main
     private VkDevice device;
     private VkQueue graphicsQueue;
     private VkQueue presentQueue;
-
-    private SwapChain swapChain;
-    private GraphicsPipeline graphicsPipeline;
-    private Commands commands;
-
-    private List<Frame> inFlightFrames;
-    private Map<Integer, Frame> imagesInFlight;
-    private int currentFrame;
-
-    Model model;
 
     // ======= METHODS ======= //
 
@@ -67,47 +50,7 @@ public class Main
         createSurface();
         physicalDevice = PhysicalDevicePicker.pickPhysicalDevice(instance, surface);
         createLogicalDevice();
-        renderer = new Renderer(window, device);
-
-        swapChain = new SwapChain();
-        graphicsPipeline = new GraphicsPipeline();
-        commands = new Commands();
-        commands.createCommandPool(device, surface);
-
-        // Create models here
-        model = new Model();
-        model.createVertexBuffer(device, commands, graphicsQueue);
-        createSwapChainObjects();
-        createSyncObjects();
-    }
-
-    private void createSwapChainObjects()
-    {
-        swapChain.createSwapChain(surface, device, window.window());
-        swapChain.createImageViews(device);
-        graphicsPipeline.createRenderPass(device, swapChain);
-        graphicsPipeline.createGraphicsPipeline(device, swapChain);
-        swapChain.createFrameBuffers(device, graphicsPipeline.renderPass);
-        commands.createCommandBuffers(device, swapChain, graphicsPipeline, model);
-    }
-
-    private void recreateSwapChain()
-    {
-        try (MemoryStack stack = MemoryStack.stackPush())
-        {
-            IntBuffer width = stack.ints(0);
-            IntBuffer height = stack.ints(0);
-
-            while (width.get(0) == 0 && height.get(0) == 0)
-            {
-                glfwGetFramebufferSize(window.window(), width, height);
-                glfwWaitEvents();
-            }
-        }
-        vkDeviceWaitIdle(device);
-
-        cleanupSwapChain();
-        createSwapChainObjects();
+        renderer = new Renderer(window, device, graphicsQueue, presentQueue, surface);
     }
 
     private void initContent()
@@ -120,139 +63,29 @@ public class Main
         while (!window.shouldWindowClose())
         {
             glfwPollEvents();
-            drawFrame();
+            VkCommandBuffer commandBuffer;
+            try (MemoryStack stack = MemoryStack.stackPush())
+            {
+                IntBuffer pImageIndex = stack.mallocInt(1);
+                if ((commandBuffer = renderer.beginFrame(stack, pImageIndex)) != null)
+                {
+                    renderer.beginSwapChainRenderPass(commandBuffer, stack);
+                    renderer.recordCommandBuffer(commandBuffer, stack);
+                    renderer.endSwapChainRenderPass(commandBuffer);
+                    renderer.endFrame(stack, pImageIndex);
+                }
+            }
         }
 
         // Wait for the device to complete all operations before release resources
         vkDeviceWaitIdle(device);
     }
 
-    private void drawFrame()
-    {
-        try (MemoryStack stack = MemoryStack.stackPush())
-        {
-            Frame thisFrame = inFlightFrames.get(currentFrame);
-
-            vkWaitForFences(device, thisFrame.pFence(), true, VulkanUtil.UINT64_MAX);
-
-            IntBuffer pImageIndex = stack.mallocInt(1);
-
-            int vkResult = vkAcquireNextImageKHR(device, swapChain.swapChain, VulkanUtil.UINT64_MAX, thisFrame.imageAvailableSemaphore(), VK_NULL_HANDLE, pImageIndex);
-
-            if(vkResult == VK_ERROR_OUT_OF_DATE_KHR)
-            {
-                recreateSwapChain();
-                return;
-            } else if (vkResult != VK_SUCCESS)
-            {
-                throw new RuntimeException("Cannot get image");
-            }
-
-            final int imageIndex = pImageIndex.get(0);
-
-            if (imagesInFlight.containsKey(imageIndex))
-            {
-                vkWaitForFences(device, imagesInFlight.get(imageIndex).fence(), true, VulkanUtil.UINT64_MAX);
-            }
-
-            imagesInFlight.put(imageIndex, thisFrame);
-
-            VkSubmitInfo submitInfo = VkSubmitInfo.calloc(stack);
-            submitInfo.sType(VK_STRUCTURE_TYPE_SUBMIT_INFO);
-
-            submitInfo.waitSemaphoreCount(1);
-            submitInfo.pWaitSemaphores(thisFrame.pImageAvailableSemaphore());
-            submitInfo.pWaitDstStageMask(stack.ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT));
-
-            submitInfo.pSignalSemaphores(thisFrame.pRenderFinishedSemaphore());
-
-            commands.recordCommandBuffer(imageIndex, stack, graphicsPipeline, swapChain, model);
-
-            submitInfo.pCommandBuffers(stack.pointers(commands.commandBuffers.get(imageIndex)));
-
-            vkResetFences(device, thisFrame.pFence());
-
-            if (vkQueueSubmit(graphicsQueue, submitInfo, thisFrame.fence()) != VK_SUCCESS)
-            {
-                vkResetFences(device, thisFrame.pFence());
-                throw new RuntimeException("Failed to submit draw command buffer: " + vkResult);
-            }
-
-            VkPresentInfoKHR presentInfo = VkPresentInfoKHR.calloc(stack);
-            presentInfo.sType(VK_STRUCTURE_TYPE_PRESENT_INFO_KHR);
-
-            presentInfo.pWaitSemaphores(thisFrame.pRenderFinishedSemaphore());
-
-            presentInfo.swapchainCount(1);
-            presentInfo.pSwapchains(stack.longs(swapChain.swapChain));
-
-            presentInfo.pImageIndices(pImageIndex);
-
-            vkResult = vkQueuePresentKHR(presentQueue, presentInfo);
-
-            if (vkResult == VK_ERROR_OUT_OF_DATE_KHR || vkResult == VK_SUBOPTIMAL_KHR || window.isFramebufferResize())
-            {
-                window.resetFramebufferResizeFlag();
-                recreateSwapChain();
-            } else if (vkResult != VK_SUCCESS)
-            {
-                throw new RuntimeException("Failed to present swap chain image");
-            }
-
-            currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-        }
-    }
-
-    private void createSyncObjects()
-    {
-        inFlightFrames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
-        imagesInFlight = new HashMap<>(swapChain.swapChainImages.size());
-
-        try (MemoryStack stack = MemoryStack.stackPush())
-        {
-            VkSemaphoreCreateInfo semaphoreInfo = VkSemaphoreCreateInfo.calloc(stack);
-            semaphoreInfo.sType(VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO);
-
-            VkFenceCreateInfo fenceInfo = VkFenceCreateInfo.calloc(stack);
-            fenceInfo.sType(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO);
-            fenceInfo.flags(VK_FENCE_CREATE_SIGNALED_BIT);
-
-            LongBuffer pImageAvailableSemaphore = stack.mallocLong(1);
-            LongBuffer pRenderFinishedSemaphore = stack.mallocLong(1);
-            LongBuffer pFence = stack.mallocLong(1);
-
-            for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-            {
-                if (vkCreateSemaphore(device, semaphoreInfo, null, pImageAvailableSemaphore) != VK_SUCCESS ||
-                    vkCreateSemaphore(device, semaphoreInfo, null, pRenderFinishedSemaphore) != VK_SUCCESS ||
-                    vkCreateFence(device, fenceInfo, null, pFence) != VK_SUCCESS)
-                {
-                    throw new RuntimeException("Failed to create synchronization objects for the frame " + i);
-                }
-
-                inFlightFrames.add(new Frame(pImageAvailableSemaphore.get(0), pRenderFinishedSemaphore.get(0), pFence.get(0)));
-            }
-
-        }
-    }
-
     private void cleanup()
     {
         LOGGER.fine("Cleanup");
 
-        cleanupSwapChain();
-
-        model.destroy(device);
-
-        inFlightFrames.forEach(frame ->
-        {
-            vkDestroySemaphore(device, frame.renderFinishedSemaphore(), null);
-            vkDestroySemaphore(device, frame.imageAvailableSemaphore(), null);
-            vkDestroyFence(device, frame.fence(), null);
-        });
-        imagesInFlight.clear();
-
-        vkDestroyCommandPool(device, commands.commandPool, null);
+        renderer.cleanup();
 
         vkDestroyDevice(device, null);
 
@@ -264,19 +97,6 @@ public class Main
         window.destroyWindow();
 
         glfwTerminate();
-    }
-
-    private void cleanupSwapChain()
-    {
-        swapChain.swapChainFramebuffers.forEach(framebuffer -> vkDestroyFramebuffer(device, framebuffer, null));
-
-        commands.freeCommandBuffers(device);
-
-        vkDestroyPipeline(device, graphicsPipeline.graphicsPipeline, null);
-        vkDestroyPipelineLayout(device, graphicsPipeline.pipelineLayout, null);
-        vkDestroyRenderPass(device, graphicsPipeline.renderPass, null);
-        swapChain.swapChainImageViews.forEach(imageView -> vkDestroyImageView(device, imageView, null));
-        vkDestroySwapchainKHR(device, swapChain.swapChain, null);
     }
 
     private void createInstance()

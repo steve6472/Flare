@@ -116,7 +116,6 @@ public class GraphicsPipeline
 
             // ===> PUSH CONSTANTS <===
 
-//            VkPushConstantRange pushConstantRange = VkPushConstantRange.calloc(stack);
             VkPushConstantRange.Buffer pushConstantRange = VkPushConstantRange.calloc(1, stack);
             pushConstantRange.stageFlags(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
             pushConstantRange.offset(0);
@@ -208,6 +207,11 @@ public class GraphicsPipeline
 
             renderPass = pRenderPass.get(0);
         }
+    }
+
+    public void bind(VkCommandBuffer commandBuffer)
+    {
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
     }
 
     private long createShaderModule(ByteBuffer spirvCode, VkDevice device)

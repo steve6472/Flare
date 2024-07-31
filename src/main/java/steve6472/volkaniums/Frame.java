@@ -51,4 +51,10 @@ public class Frame
     {
         return stackGet().longs(fence);
     }
+
+    @Override
+    public String toString()
+    {
+        return "Frame{" + "imageAvailableSemaphore=" + imageAvailableSemaphore + ", renderFinishedSemaphore=" + renderFinishedSemaphore + ", fence=" + fence + '}';
+    }
 }

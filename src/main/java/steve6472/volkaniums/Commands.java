@@ -70,15 +70,10 @@ public class Commands
             {
                 commandBuffers.add(new VkCommandBuffer(pCommandBuffers.get(i), device));
             }
-
-            for (int i = 0; i < commandBuffersCount; i++)
-            {
-                recordCommandBuffer(i, stack, graphicsPipeline, swapChain, model);
-            }
         }
     }
 
-    private VkRenderPassBeginInfo createRenderPass(MemoryStack stack, GraphicsPipeline graphicsPipeline, SwapChain swapChain)
+    public static VkRenderPassBeginInfo createRenderPass(MemoryStack stack, GraphicsPipeline graphicsPipeline, SwapChain swapChain)
     {
         VkRenderPassBeginInfo renderPassInfo = VkRenderPassBeginInfo.calloc(stack);
         renderPassInfo.sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO);
@@ -94,54 +89,12 @@ public class Commands
         return renderPassInfo;
     }
 
-    public void recordCommandBuffer(int index, MemoryStack stack, GraphicsPipeline graphicsPipeline, SwapChain swapChain, Model model)
-    {
-        VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.calloc(stack);
-        beginInfo.sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO);
-
-        VkRenderPassBeginInfo renderPassInfo = createRenderPass(stack, graphicsPipeline, swapChain);
-
-        VkCommandBuffer commandBuffer = commandBuffers.get(index);
-
-        if (vkBeginCommandBuffer(commandBuffer, beginInfo) != VK_SUCCESS)
-        {
-            throw new RuntimeException(ErrorCode.BEGIN_COMMAND_RECORDING.format());
-        }
-
-        renderPassInfo.framebuffer(swapChain.swapChainFramebuffers.get(index));
-
-        vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        {
-            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.graphicsPipeline);
-
-            model.bind(commandBuffer);
-
-            for (int j = 0; j < 4; j++)
-            {
-                ByteBuffer buff = stack.calloc(28);
-                Vector2f offset = new Vector2f(0.0f + (float) Math.sin(Math.toRadians((System.currentTimeMillis() % 3600) / 10d)), -0.4f * j * 0.25f);
-                Vector3f color = new Vector3f(0.0f, 0.0f, 0.2f + 0.2f * j);
-
-                offset.get(0, buff);
-                color.get(4 * Float.BYTES, buff);
-
-                vkCmdPushConstants(commandBuffer, graphicsPipeline.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, buff);
-                model.draw(commandBuffer);
-            }
-        }
-        vkCmdEndRenderPass(commandBuffer);
-
-        if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
-        {
-            throw new RuntimeException(ErrorCode.END_COMMAND_RECORDING.format());
-        }
-    }
-
     public void freeCommandBuffers(VkDevice device)
     {
         try (MemoryStack stack = MemoryStack.stackPush())
         {
             vkFreeCommandBuffers(device, commandPool, VulkanUtil.asPointerBuffer(stack, commandBuffers));
         }
+        commandBuffers.clear();
     }
 }

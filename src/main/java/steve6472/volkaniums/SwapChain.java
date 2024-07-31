@@ -7,9 +7,12 @@ import steve6472.volkaniums.settings.Settings;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
+import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK13.*;
 
 /**
@@ -26,6 +29,12 @@ public class SwapChain
     public List<Long> swapChainFramebuffers;
     public int swapChainImageFormat;
     public VkExtent2D swapChainExtent;
+
+    public int currentFrame;
+    public Map<Integer, Frame> imagesInFlight;
+    public List<Frame> inFlightFrames;
+
+    public static final int MAX_FRAMES_IN_FLIGHT = 2;
 
     public void createSwapChain(long surface, VkDevice device, long window)
     {
@@ -246,5 +255,93 @@ public class SwapChain
         }
 
         return details;
+    }
+
+    public void createSyncObjects(VkDevice device)
+    {
+        inFlightFrames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
+        imagesInFlight = new HashMap<>(swapChainImages.size());
+
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            VkSemaphoreCreateInfo semaphoreInfo = VkSemaphoreCreateInfo.calloc(stack);
+            semaphoreInfo.sType(VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO);
+
+            VkFenceCreateInfo fenceInfo = VkFenceCreateInfo.calloc(stack);
+            fenceInfo.sType(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO);
+            fenceInfo.flags(VK_FENCE_CREATE_SIGNALED_BIT);
+
+            LongBuffer pImageAvailableSemaphore = stack.mallocLong(1);
+            LongBuffer pRenderFinishedSemaphore = stack.mallocLong(1);
+            LongBuffer pFence = stack.mallocLong(1);
+
+            for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+            {
+                if (vkCreateSemaphore(device, semaphoreInfo, null, pImageAvailableSemaphore) != VK_SUCCESS ||
+                    vkCreateSemaphore(device, semaphoreInfo, null, pRenderFinishedSemaphore) != VK_SUCCESS ||
+                    vkCreateFence(device, fenceInfo, null, pFence) != VK_SUCCESS)
+                {
+                    throw new RuntimeException("Failed to create synchronization objects for the frame " + i);
+                }
+
+                inFlightFrames.add(new Frame(pImageAvailableSemaphore.get(0), pRenderFinishedSemaphore.get(0), pFence.get(0)));
+            }
+        }
+    }
+
+    public int acquireNextImage(VkDevice device, IntBuffer pImageIndex, Frame thisFrame)
+    {
+        vkWaitForFences(device, thisFrame.pFence(), true, VulkanUtil.UINT64_MAX);
+
+        return vkAcquireNextImageKHR(device, swapChain, VulkanUtil.UINT64_MAX, thisFrame.imageAvailableSemaphore(), VK_NULL_HANDLE, pImageIndex);
+    }
+
+    public int submitCommandBuffers(VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, VkCommandBuffer commandBuffer, IntBuffer pImageIndex, MemoryStack stack, Frame thisFrame)
+    {
+        VkSubmitInfo submitInfo = VkSubmitInfo.calloc(stack);
+        submitInfo.sType(VK_STRUCTURE_TYPE_SUBMIT_INFO);
+
+        submitInfo.waitSemaphoreCount(1);
+        submitInfo.pWaitSemaphores(thisFrame.pImageAvailableSemaphore());
+        submitInfo.pWaitDstStageMask(stack.ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT));
+
+        submitInfo.pSignalSemaphores(thisFrame.pRenderFinishedSemaphore());
+
+        submitInfo.pCommandBuffers(stack.pointers(commandBuffer));
+
+        vkResetFences(device, thisFrame.pFence());
+
+        if (vkQueueSubmit(graphicsQueue, submitInfo, thisFrame.fence()) != VK_SUCCESS)
+        {
+            vkResetFences(device, thisFrame.pFence());
+            throw new RuntimeException("Failed to submit draw command buffer: "/* + vkResult*/);
+        }
+
+        VkPresentInfoKHR presentInfo = VkPresentInfoKHR.calloc(stack);
+        presentInfo.sType(VK_STRUCTURE_TYPE_PRESENT_INFO_KHR);
+
+        presentInfo.pWaitSemaphores(thisFrame.pRenderFinishedSemaphore());
+
+        presentInfo.swapchainCount(1);
+        presentInfo.pSwapchains(stack.longs(swapChain));
+
+        presentInfo.pImageIndices(pImageIndex);
+
+        int vkResult = vkQueuePresentKHR(presentQueue, presentInfo);
+
+        currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
+        return vkResult;
+    }
+
+    public void cleanup(VkDevice device)
+    {
+        inFlightFrames.forEach(frame ->
+        {
+            vkDestroySemaphore(device, frame.renderFinishedSemaphore(), null);
+            vkDestroySemaphore(device, frame.imageAvailableSemaphore(), null);
+            vkDestroyFence(device, frame.fence(), null);
+        });
+        imagesInFlight.clear();
     }
 }
