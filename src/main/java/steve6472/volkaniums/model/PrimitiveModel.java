@@ -2,8 +2,7 @@ package steve6472.volkaniums.model;
 
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import steve6472.volkaniums.Vertex;
-import steve6472.volkaniums.VkVertex3d;
+import steve6472.volkaniums.vertex.Vertex;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -27,27 +26,7 @@ public class PrimitiveModel
     }
 
     @Deprecated(forRemoval = true)
-    public List<VkVertex3d> toVkVertices()
-    {
-        if (positions.size() != texCoords.size())
-            throw new RuntimeException("Different count of vertices and texture coordinates");
-
-        List<VkVertex3d> vertices = new ArrayList<>(positions.size());
-
-        for (int i = 0; i < positions.size(); i++)
-        {
-            Vector2f uv = texCoords.get(i);
-            Vector3f pos = positions.get(i);
-            //            Color color = generateRandomSaturatedColor(uv.x, uv.y);
-            Color color = generateRandomSaturatedColor(pos.x, pos.y, pos.z);
-            VkVertex3d vertex = new VkVertex3d(pos, new Vector3f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f));
-            vertices.add(vertex);
-        }
-        return vertices;
-    }
-
-    @Deprecated(forRemoval = true)
-    public List<Vertex> toVkVertices_()
+    public List<Vertex> toVkVertices()
     {
         if (positions.size() != texCoords.size())
             throw new RuntimeException("Different count of vertices and texture coordinates");
@@ -58,10 +37,8 @@ public class PrimitiveModel
         {
             Vector2f uv = texCoords.get(i);
             Vector3f pos = positions.get(i);
-            //            Color color = generateRandomSaturatedColor(uv.x, uv.y);
             Color color = generateRandomSaturatedColor(pos.x, pos.y, pos.z);
-            Vertex vertex = Vertex.POS_COL.create(pos, new Vector3f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f));
-//            VkVertex3d vertex = new VkVertex3d(pos, new Vector3f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f));
+            Vertex vertex = Vertex.POS3F_COL3F_UV.create(pos, new Vector3f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f), uv);
             vertices.add(vertex);
         }
         return vertices;

@@ -2,9 +2,9 @@ package steve6472.volkaniums;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
+import steve6472.volkaniums.vertex.Vertex;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
 import static org.lwjgl.vulkan.VK13.*;
@@ -52,10 +52,7 @@ public class GraphicsPipeline
 
             // ===> VERTEX STAGE <===
 
-            VkPipelineVertexInputStateCreateInfo vertexInputInfo = VkPipelineVertexInputStateCreateInfo.calloc(stack);
-            vertexInputInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO);
-            vertexInputInfo.pVertexBindingDescriptions(Vertex.POS_COL.getBindingDescription(stack));
-            vertexInputInfo.pVertexAttributeDescriptions(Vertex.POS_COL.getAttributeDescriptions(stack));
+            VkPipelineVertexInputStateCreateInfo vertexInputInfo = Vertex.POS3F_COL3F_UV.createVertexInputInfo(stack);
 
             // ===> ASSEMBLY STAGE <===
 

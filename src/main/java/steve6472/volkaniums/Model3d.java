@@ -5,6 +5,8 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkCommandBuffer;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
+import steve6472.volkaniums.vertex.Vertex;
+import steve6472.volkaniums.vertex.VertexType;
 
 import java.nio.LongBuffer;
 import java.util.List;
@@ -43,13 +45,13 @@ public class Model3d
         vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
     }
 
-    public void createVertexBuffer(VkDevice device, Commands commands, VkQueue graphicsQueue, List<VkVertex3d> vertices)
+    public void createVertexBuffer(VkDevice device, Commands commands, VkQueue graphicsQueue, List<Vertex> vertices, VertexType vertexData)
     {
         vertexCount = vertices.size();
 
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            long bufferSize = VkVertex3d.SIZEOF * vertexCount;
+            long bufferSize = (long) vertexData.sizeof() * vertexCount;
 
             LongBuffer pBuffer = stack.mallocLong(1);
             LongBuffer pBufferMemory = stack.mallocLong(1);
@@ -62,7 +64,7 @@ public class Model3d
 
             vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, data);
             {
-                VulkanUtil.memcpy(data.getByteBuffer(0, (int) bufferSize), vertices.toArray(new VkVertex3d[0]));
+                vertexData.memcpy(data.getByteBuffer(0, (int) bufferSize), vertices);
             }
             vkUnmapMemory(device, stagingBufferMemory);
 

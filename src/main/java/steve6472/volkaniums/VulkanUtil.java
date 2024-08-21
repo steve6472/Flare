@@ -87,20 +87,6 @@ public final class VulkanUtil
         }
     }
 
-    public static void memcpy(ByteBuffer buffer, VkVertex3d[] vertices)
-    {
-        for (VkVertex3d vertex : vertices)
-        {
-            buffer.putFloat(vertex.pos.x());
-            buffer.putFloat(vertex.pos.y());
-            buffer.putFloat(vertex.pos.z());
-
-            buffer.putFloat(vertex.color.x());
-            buffer.putFloat(vertex.color.y());
-            buffer.putFloat(vertex.color.z());
-        }
-    }
-
     private static int findMemoryType(MemoryStack stack, VkPhysicalDevice physicalDevice, int typeFilter, int properties)
     {
         VkPhysicalDeviceMemoryProperties memProperties = VkPhysicalDeviceMemoryProperties.malloc(stack);
