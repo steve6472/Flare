@@ -1,5 +1,7 @@
 package steve6472.volkaniums;
 
+import steve6472.volkaniums.model.ElementType;
+import steve6472.volkaniums.model.anim.KeyframeType;
 import steve6472.volkaniums.registry.*;
 import steve6472.volkaniums.settings.Settings;
 import steve6472.volkaniums.util.Log;
@@ -20,6 +22,12 @@ public class Registries
     private static final Map<Key, Supplier<?>> LOADERS = new LinkedHashMap<>();
 
     public static final ObjectRegistry<Settings.Setting<?>> SETTINGS = createObjectRegistry("setting", () -> Settings.USERNAME);
+
+    public static final Registry<ElementType<?>> MODEL_ELEMENT = createRegistry("model_element", () -> ElementType.CUBE);
+    public static final Registry<KeyframeType<?>> KEYFRAME_TYPE = createRegistry("keyframe_type", () -> KeyframeType.ROTATION);
+
+    // Models have to load after the model types registries
+//    public static final ObjectRegistry<Settings.Setting<?>> MODEL = createObjectRegistry("model", () -> Settings.USERNAME);
 
     private static <T extends Keyable & Serializable<?>> Registry<T> createRegistry(String id, Supplier<T> bootstrap)
     {

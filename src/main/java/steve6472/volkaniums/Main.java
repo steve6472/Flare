@@ -4,6 +4,7 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
+import steve6472.volkaniums.settings.Settings;
 import steve6472.volkaniums.util.Log;
 
 import java.nio.IntBuffer;
@@ -23,6 +24,7 @@ public class Main
     // ======= FIELDS ======= //
 
     private Window window;
+    private UserInput userInput;
     private Renderer renderer;
     private VkInstance instance;
     private VkPhysicalDevice physicalDevice;
@@ -31,12 +33,16 @@ public class Main
     private VkDevice device;
     private VkQueue graphicsQueue;
     private VkQueue presentQueue;
+    private Camera camera;
 
     // ======= METHODS ======= //
 
     private void run()
     {
+        camera = new Camera();
+
         window = new Window();
+        userInput = new UserInput(window);
         initContent();
         initVulkan();
         mainLoop();
@@ -56,13 +62,24 @@ public class Main
     private void initContent()
     {
         Registries.createContents();
+
     }
 
     private void mainLoop()
     {
+        long currentTime = System.nanoTime();
+
         while (!window.shouldWindowClose())
         {
             glfwPollEvents();
+
+            long newTime = System.nanoTime();
+            float frameTime = (newTime - currentTime) * 1e-9f;
+            currentTime = newTime;
+
+            float aspect = renderer.getAspectRation();
+            camera.setPerspectiveProjection(Settings.FOV.get(), aspect, 0.1f, 1024f);
+
             VkCommandBuffer commandBuffer;
             try (MemoryStack stack = MemoryStack.stackPush())
             {
@@ -70,7 +87,7 @@ public class Main
                 if ((commandBuffer = renderer.beginFrame(stack, pImageIndex)) != null)
                 {
                     renderer.beginSwapChainRenderPass(commandBuffer, stack);
-                    renderer.recordCommandBuffer(commandBuffer, stack);
+                    renderer.recordCommandBuffer(commandBuffer, stack, camera);
                     renderer.endSwapChainRenderPass(commandBuffer);
                     renderer.endFrame(stack, pImageIndex);
                 }
@@ -209,6 +226,11 @@ public class Main
 
             surface = pSurface.get(0);
         }
+    }
+
+    public UserInput getUserInput()
+    {
+        return userInput;
     }
 
     public static void main(String[] args)

@@ -1,12 +1,9 @@
 package steve6472.volkaniums;
 
-import org.joml.Vector2f;
-import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
-import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,11 +42,10 @@ public class Commands
         }
     }
 
-    public void createCommandBuffers(VkDevice device, SwapChain swapChain, GraphicsPipeline graphicsPipeline, Model model)
+    public void createCommandBuffers(VkDevice device)
     {
-        final int commandBuffersCount = swapChain.swapChainFramebuffers.size();
-
-        commandBuffers = new ArrayList<>(commandBuffersCount);
+        commandBuffers = new ArrayList<>(SwapChain.MAX_FRAMES_IN_FLIGHT);
+        final int commandBuffersCount = SwapChain.MAX_FRAMES_IN_FLIGHT;
 
         try (MemoryStack stack = MemoryStack.stackPush())
         {
@@ -82,8 +78,9 @@ public class Commands
         renderArea.offset(VkOffset2D.calloc(stack).set(0, 0));
         renderArea.extent(swapChain.swapChainExtent);
         renderPassInfo.renderArea(renderArea);
-        VkClearValue.Buffer clearValues = VkClearValue.calloc(1, stack);
-        clearValues.color().float32(stack.floats(0.0f, 0.0f, 0.0f, 1.0f));
+        VkClearValue.Buffer clearValues = VkClearValue.calloc(2, stack);
+        clearValues.get(0).color().float32(stack.floats(0.0f, 0.0f, 0.0f, 1.0f));
+        clearValues.get(1).depthStencil().set(1.0f, 0);
         renderPassInfo.pClearValues(clearValues);
 
         return renderPassInfo;
@@ -96,5 +93,46 @@ public class Commands
             vkFreeCommandBuffers(device, commandPool, VulkanUtil.asPointerBuffer(stack, commandBuffers));
         }
         commandBuffers.clear();
+    }
+
+    public static VkCommandBuffer beginSingleTimeCommands(VkDevice device, long commandPool)
+    {
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            VkCommandBufferAllocateInfo allocInfo = VkCommandBufferAllocateInfo.callocStack(stack);
+            allocInfo.sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO);
+            allocInfo.level(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+            allocInfo.commandPool(commandPool);
+            allocInfo.commandBufferCount(1);
+
+            PointerBuffer pCommandBuffer = stack.mallocPointer(1);
+            vkAllocateCommandBuffers(device, allocInfo, pCommandBuffer);
+            VkCommandBuffer commandBuffer = new VkCommandBuffer(pCommandBuffer.get(0), device);
+
+            VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.callocStack(stack);
+            beginInfo.sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO);
+            beginInfo.flags(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+            vkBeginCommandBuffer(commandBuffer, beginInfo);
+
+            return commandBuffer;
+        }
+    }
+
+    public static void endSingleTimeCommands(VkCommandBuffer commandBuffer, VkQueue graphicsQueue, VkDevice device, long commandPool)
+    {
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            vkEndCommandBuffer(commandBuffer);
+
+            VkSubmitInfo.Buffer submitInfo = VkSubmitInfo.callocStack(1, stack);
+            submitInfo.sType(VK_STRUCTURE_TYPE_SUBMIT_INFO);
+            submitInfo.pCommandBuffers(stack.pointers(commandBuffer));
+
+            vkQueueSubmit(graphicsQueue, submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(graphicsQueue);
+
+            vkFreeCommandBuffers(device, commandPool, commandBuffer);
+        }
     }
 }

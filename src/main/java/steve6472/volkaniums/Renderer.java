@@ -1,17 +1,22 @@
 package steve6472.volkaniums;
 
-import org.joml.Vector2f;
-import org.joml.Vector3f;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
+import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
+import steve6472.volkaniums.model.LoadedModel;
+import steve6472.volkaniums.util.MathUtil;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.nio.LongBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.glfw.GLFW.glfwWaitEvents;
@@ -25,19 +30,20 @@ import static org.lwjgl.vulkan.VK10.*;
  */
 public class Renderer
 {
-
     private final Window window;
     private final VkDevice device;
     private final VkQueue graphicsQueue;
     private final VkQueue presentQueue;
     private final long surface;
 
-    private SwapChain swapChain;
-    private GraphicsPipeline graphicsPipeline;
-    private Commands commands;
+    private final SwapChain swapChain;
+    private final GraphicsPipeline graphicsPipeline;
+    private final Commands commands;
 
-    Model model;
+//    Model model;
+    Model3d model3d;
 
+    private int currentFrameIndex;
     private Frame thisFrame;
     private int currentImageIndex;
 
@@ -57,8 +63,25 @@ public class Renderer
         commands.createCommandPool(device, surface);
 
         // Create models here
-        model = new Model();
-        model.createVertexBuffer(device, commands, graphicsQueue);
+//        model = new Model();
+//        model.createVertexBuffer(device, commands, graphicsQueue);
+
+        final String PATH = "C:\\Users\\Steve\\Desktop\\model.bbmodel";
+        final File file = new File(PATH);
+
+        BufferedReader reader = null;
+        try
+        {
+            reader = new BufferedReader(new FileReader(file));
+        } catch (FileNotFoundException e)
+        {
+            throw new RuntimeException(e);
+        }
+        JsonElement jsonElement = JsonParser.parseReader(reader);
+        DataResult<Pair<LoadedModel, JsonElement>> decode = LoadedModel.CODEC.decode(JsonOps.INSTANCE, jsonElement);
+
+        model3d = new Model3d();
+        model3d.createVertexBuffer(device, commands, graphicsQueue, decode.getOrThrow().getFirst().toPrimitiveModel().toVkVertices());
 
         createSwapChainObjects();
     }
@@ -69,8 +92,9 @@ public class Renderer
         swapChain.createImageViews(device);
         graphicsPipeline.createRenderPass(device, swapChain);
         graphicsPipeline.createGraphicsPipeline(device, swapChain);
+        swapChain.createDepthResources(device, commands.commandPool, graphicsQueue);
         swapChain.createFrameBuffers(device, graphicsPipeline.renderPass);
-        commands.createCommandBuffers(device, swapChain, graphicsPipeline, model);
+        commands.createCommandBuffers(device);
         swapChain.createSyncObjects(device);
     }
 
@@ -103,6 +127,9 @@ public class Renderer
         vkDestroyPipelineLayout(device, graphicsPipeline.pipelineLayout, null);
         vkDestroyRenderPass(device, graphicsPipeline.renderPass, null);
         swapChain.swapChainImageViews.forEach(imageView -> vkDestroyImageView(device, imageView, null));
+        vkDestroyImageView(device, swapChain.depthImageView, null);
+        vkFreeMemory(device, swapChain.depthImageMemory, null);
+        vkDestroyImage(device, swapChain.depthImage, null);
         vkDestroySwapchainKHR(device, swapChain.swapChain, null);
         swapChain.cleanup(device);
     }
@@ -111,7 +138,8 @@ public class Renderer
     {
         cleanupSwapChain();
 
-        model.destroy(device);
+//        model.destroy(device);
+        model3d.destroy(device);
 
         vkDestroyCommandPool(device, commands.commandPool, null);
     }
@@ -179,6 +207,7 @@ public class Renderer
         }
 
         isFrameStarted = false;
+        currentFrameIndex = (currentFrameIndex + 1) % SwapChain.MAX_FRAMES_IN_FLIGHT;
     }
 
     void beginSwapChainRenderPass(VkCommandBuffer commandBuffer, MemoryStack stack)
@@ -196,22 +225,22 @@ public class Renderer
         vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     }
 
-    public void recordCommandBuffer(VkCommandBuffer commandBuffer, MemoryStack stack)
+    public void recordCommandBuffer(VkCommandBuffer commandBuffer, MemoryStack stack, Camera camera)
     {
         graphicsPipeline.bind(commandBuffer);
 
         for (int j = 0; j < 4; j++)
         {
-            ByteBuffer buff = stack.calloc(28);
-            Vector2f offset = new Vector2f(0.0f + (float) Math.sin(Math.toRadians((System.currentTimeMillis() % 3600) / 10d)), -0.4f * j * 0.25f);
-            Vector3f color = new Vector3f(0.0f, 0.0f, 0.2f + 0.2f * j);
+            PushConstant constant = new PushConstant();
+            constant.projection.set(camera.getProjectionMatrix());
 
-            offset.get(0, buff);
-            color.get(4 * Float.BYTES, buff);
+            vkCmdPushConstants(commandBuffer, graphicsPipeline.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, constant.createBuffer(stack));
 
-            vkCmdPushConstants(commandBuffer, graphicsPipeline.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, buff);
-            model.bind(commandBuffer);
-            model.draw(commandBuffer);
+            model3d.bind(commandBuffer);
+            model3d.draw(commandBuffer);
+
+//            model.bind(commandBuffer);
+//            model.draw(commandBuffer);
         }
     }
 
@@ -231,7 +260,15 @@ public class Renderer
         if (!isFrameStarted)
             throw new RuntimeException("Cannot get command buffer when frame not in progress");
 
-        return commands.commandBuffers.get(currentImageIndex);
+        return commands.commandBuffers.get(currentFrameIndex);
+    }
+
+    public int getCurrentFrameIndex()
+    {
+        if (!isFrameStarted)
+            throw new RuntimeException("Cannot get frame index when frame not in progress");
+
+        return currentFrameIndex;
     }
 
     public long getSwapChainRenderPass()
@@ -242,5 +279,10 @@ public class Renderer
     boolean isFrameInProgress()
     {
         return isFrameStarted;
+    }
+
+    public float getAspectRation()
+    {
+        return swapChain.swapChainExtent.width() / (float) swapChain.swapChainExtent.height();
     }
 }

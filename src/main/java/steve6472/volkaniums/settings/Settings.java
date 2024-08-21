@@ -7,6 +7,8 @@ import steve6472.volkaniums.registry.Keyable;
 import steve6472.volkaniums.registry.Serializable;
 import steve6472.volkaniums.registry.StringValue;
 
+import static org.lwjgl.glfw.GLFW.*;
+
 /**
  * Created by steve6472
  * Date: 7/30/2024
@@ -16,8 +18,22 @@ public class Settings
 {
     // Dummy value mainly for bootstrap
     public static StringSetting USERNAME = registerString("username", "Steve");
-    public static EnumSetting<ValidationLevel> VALIDATION_LEVEL = registerInt("validation_level", ValidationLevel.VERBOSE);
-    public static EnumSetting<PresentMode> PRESENT_MODE = registerInt("present_mode", PresentMode.MAILBOX);
+    public static EnumSetting<ValidationLevel> VALIDATION_LEVEL = registerEnum("validation_level", ValidationLevel.VERBOSE);
+
+    /*
+     * Graphics
+     */
+    public static EnumSetting<PresentMode> PRESENT_MODE = registerEnum("present_mode", PresentMode.MAILBOX);
+    public static IntSetting FOV = registerInt("fov", 90);
+
+    /*
+     * Keyboard
+     */
+
+    public static IntSetting KEY_MOVE_LEFT = registerInt("key_move_left", GLFW_KEY_A);
+    public static IntSetting KEY_MOVE_RIGHT = registerInt("key_move_right", GLFW_KEY_D);
+    public static IntSetting KEY_MOVE_FORWARD = registerInt("key_move_forward", GLFW_KEY_W);
+    public static IntSetting KEY_MOVE_BACKWARD = registerInt("key_move_backward", GLFW_KEY_S);
 
     private static StringSetting registerString(String id, String defaultValue)
     {
@@ -35,7 +51,7 @@ public class Settings
         return obj;
     }
 
-    private static <E extends Enum<E> & StringValue> EnumSetting<E> registerInt(String id, E defaultValue)
+    private static <E extends Enum<E> & StringValue> EnumSetting<E> registerEnum(String id, E defaultValue)
     {
         var obj = new EnumSetting<>(defaultValue);
         obj.key = Key.defaultNamespace(id);

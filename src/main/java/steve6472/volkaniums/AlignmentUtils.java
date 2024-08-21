@@ -34,6 +34,10 @@ public final class AlignmentUtils {
         return obj == null ? 0 : SIZEOF_CACHE.getOrDefault(obj.getClass(), 0);
     }
 
+    public static int sizeof(Class<?> clazz) {
+        return clazz == null ? 0 : SIZEOF_CACHE.getOrDefault(clazz, 0);
+    }
+
     public static int alignof(Object obj) {
         return obj == null ? 0 : SIZEOF_CACHE.getOrDefault(obj.getClass(), Integer.BYTES);
     }
@@ -56,6 +60,6 @@ public final class AlignmentUtils {
         SIZEOF_CACHE.put(Vector3f.class, 3 * Float.BYTES);
         SIZEOF_CACHE.put(Vector4f.class, 4 * Float.BYTES);
 
-        SIZEOF_CACHE.put(Matrix4f.class, SIZEOF_CACHE.get(Vector4f.class));
+        SIZEOF_CACHE.put(Matrix4f.class, SIZEOF_CACHE.get(Vector4f.class) * 4);
     }
 }

@@ -30,6 +30,10 @@ public class SwapChain
     public int swapChainImageFormat;
     public VkExtent2D swapChainExtent;
 
+    public long depthImageView;
+    public long depthImage;
+    public long depthImageMemory;
+
     public int currentFrame;
     public Map<Integer, Frame> imagesInFlight;
     public List<Frame> inFlightFrames;
@@ -115,38 +119,9 @@ public class SwapChain
     {
         swapChainImageViews = new ArrayList<>(swapChainImages.size());
 
-        try (MemoryStack stack = MemoryStack.stackPush())
+        for (long swapChainImage : swapChainImages)
         {
-            LongBuffer pImageView = stack.mallocLong(1);
-
-            for (long swapChainImage : swapChainImages)
-            {
-                VkImageViewCreateInfo createInfo = VkImageViewCreateInfo.calloc(stack);
-
-                createInfo.sType(VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO);
-                createInfo.image(swapChainImage);
-                createInfo.viewType(VK_IMAGE_VIEW_TYPE_2D);
-                createInfo.format(swapChainImageFormat);
-
-                createInfo.components().r(VK_COMPONENT_SWIZZLE_IDENTITY);
-                createInfo.components().g(VK_COMPONENT_SWIZZLE_IDENTITY);
-                createInfo.components().b(VK_COMPONENT_SWIZZLE_IDENTITY);
-                createInfo.components().a(VK_COMPONENT_SWIZZLE_IDENTITY);
-
-                createInfo.subresourceRange().aspectMask(VK_IMAGE_ASPECT_COLOR_BIT);
-                createInfo.subresourceRange().baseMipLevel(0);
-                createInfo.subresourceRange().levelCount(1);
-                createInfo.subresourceRange().baseArrayLayer(0);
-                createInfo.subresourceRange().layerCount(1);
-
-                if (vkCreateImageView(device, createInfo, null, pImageView) != VK_SUCCESS)
-                {
-                    throw new RuntimeException(ErrorCode.IMAGE_VIEWS_CREATION.format());
-                }
-
-                swapChainImageViews.add(pImageView.get(0));
-            }
-
+            swapChainImageViews.add(VulkanUtil.createImageView(device, swapChainImage, swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT));
         }
     }
 
@@ -156,7 +131,8 @@ public class SwapChain
 
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            LongBuffer attachments = stack.mallocLong(1);
+//            LongBuffer attachments = stack.mallocLong(1);
+            LongBuffer attachments = stack.longs(VK_NULL_HANDLE, depthImageView);
             LongBuffer pFramebuffer = stack.mallocLong(1);
 
             // Lets allocate the create info struct once and just update the pAttachments field each iteration
@@ -181,6 +157,68 @@ public class SwapChain
                 swapChainFramebuffers.add(pFramebuffer.get(0));
             }
         }
+    }
+
+    public void createDepthResources(VkDevice device, long commandPool, VkQueue graphicsQueue)
+    {
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            int depthFormat = findDepthFormat(device, stack);
+
+            LongBuffer pDepthImage = stack.mallocLong(1);
+            LongBuffer pDepthImageMemory = stack.mallocLong(1);
+
+            VulkanUtil.createImage(
+                device,
+                swapChainExtent.width(),
+                swapChainExtent.height(),
+                depthFormat,
+                VK_IMAGE_TILING_OPTIMAL,
+                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                pDepthImage,
+                pDepthImageMemory);
+
+            depthImage = pDepthImage.get(0);
+            depthImageMemory = pDepthImageMemory.get(0);
+
+            depthImageView = VulkanUtil.createImageView(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+            // Explicitly transitioning the depth image
+            VulkanUtil.transitionImageLayout(device, depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, commandPool, graphicsQueue);
+        }
+    }
+
+    private int findSupportedFormat(VkDevice device, IntBuffer formatCandidates, int tiling, int features)
+    {
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            VkFormatProperties props = VkFormatProperties.calloc(stack);
+
+            for (int i = 0; i < formatCandidates.capacity(); ++i)
+            {
+
+                int format = formatCandidates.get(i);
+
+                vkGetPhysicalDeviceFormatProperties(device.getPhysicalDevice(), format, props);
+
+                if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures() & features) == features)
+                {
+                    return format;
+                } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures() & features) == features)
+                {
+                    return format;
+                }
+
+            }
+        }
+
+        throw new RuntimeException("Failed to find supported format");
+    }
+
+    public int findDepthFormat(VkDevice device, MemoryStack stack)
+    {
+        return findSupportedFormat(device, stack.ints(VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT), VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
     }
 
     private VkSurfaceFormatKHR chooseSwapSurfaceFormat(VkSurfaceFormatKHR.Buffer availableFormats)
@@ -213,8 +251,8 @@ public class SwapChain
             return capabilities.currentExtent();
         }
 
-        IntBuffer width = MemoryStack.stackGet().ints(0);
-        IntBuffer height = MemoryStack.stackGet().ints(0);
+        IntBuffer width = stack.ints(0);
+        IntBuffer height = stack.ints(0);
 
         glfwGetFramebufferSize(window, width, height);
 

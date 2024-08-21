@@ -69,6 +69,18 @@ public class Preconditions
 			throw new RuntimeException("Number is below zero");
 	}
 
+	public static void checkEqual(int left, int right)
+	{
+		if (left != right)
+			throw new RuntimeException("Numbers are not equal");
+	}
+
+	public static void checkEqual(int left, int right, String message)
+	{
+		if (left != right)
+			throw new RuntimeException(message);
+	}
+
 	public static void checkTrue(boolean flag)
 	{
 		if (!flag)
