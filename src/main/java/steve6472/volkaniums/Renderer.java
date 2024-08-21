@@ -137,7 +137,7 @@ public class Renderer
         cleanupSwapChain();
 
 //        model.destroy(device);
-        model3d.destroy(device);
+        model3d.destroy();
 
         vkDestroyCommandPool(device, commands.commandPool, null);
     }

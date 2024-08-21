@@ -5,6 +5,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDescriptorBufferInfo;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkMappedMemoryRange;
+import org.lwjgl.vulkan.VkQueue;
 
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
@@ -30,6 +31,11 @@ public class VkBuffer
     private final int alignmentSize;
     private final int usageFlags;
     private final int memoryPropertyFlags;
+
+    public VkBuffer(VkDevice device, int instanceSize, int instanceCount, int usageFlags, int memoryPropertyFlags)
+    {
+        this(device, instanceSize, instanceCount, usageFlags, memoryPropertyFlags, 1);
+    }
 
     public VkBuffer(VkDevice device, int instanceSize, int instanceCount, int usageFlags, int memoryPropertyFlags, int minOffsetAlignment)
     {
@@ -185,32 +191,37 @@ public class VkBuffer
         return instanceSize;
     }
 
+    public static void copyBuffer(Commands commands, VkDevice device, VkQueue graphicsQueue, VkBuffer source, VkBuffer destination, long bufferSize)
+    {
+        VulkanUtil.copyBuffer(commands, device, graphicsQueue, source.getBuffer(), destination.getBuffer(), bufferSize);
+    }
+
     /*
      * Methods with defaults
      */
 
     public int map(MemoryStack stack)
     {
-        return map(stack, VK_WHOLE_SIZE, 0);
+        return map(stack, bufferSize, 0);
     }
 
     public <T> void writeToBuffer(BiConsumer<ByteBuffer, T[]> memcpy, T[] data)
     {
-        writeToBuffer(memcpy, data, VK_WHOLE_SIZE, 0);
+        writeToBuffer(memcpy, data, bufferSize, 0);
     }
 
     public int flush()
     {
-        return flush(VK_WHOLE_SIZE, 0);
+        return flush(bufferSize, 0);
     }
 
     public VkDescriptorBufferInfo descriptorInfo(MemoryStack stack)
     {
-        return descriptorInfo(stack, VK_WHOLE_SIZE, 0);
+        return descriptorInfo(stack, bufferSize, 0);
     }
 
     public int invalidate()
     {
-        return invalidate(VK_WHOLE_SIZE, 0);
+        return invalidate(bufferSize, 0);
     }
 }

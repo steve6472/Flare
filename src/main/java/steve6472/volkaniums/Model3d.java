@@ -1,6 +1,5 @@
 package steve6472.volkaniums;
 
-import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkCommandBuffer;
 import org.lwjgl.vulkan.VkDevice;
@@ -20,21 +19,19 @@ import static org.lwjgl.vulkan.VK10.*;
  */
 public class Model3d
 {
-    public long vertexBuffer;
-    public long vertexBufferMemory;
+    public VkBuffer vertexBuffer;
     public int vertexCount = -1;
 
-    public void destroy(VkDevice device)
+    public void destroy()
     {
-        vkDestroyBuffer(device, vertexBuffer, null);
-        vkFreeMemory(device, vertexBufferMemory, null);
+        vertexBuffer.cleanup();
     }
 
     public void bind(VkCommandBuffer commandBuffer)
     {
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            LongBuffer vertexBuffers = stack.longs(vertexBuffer);
+            LongBuffer vertexBuffers = stack.longs(vertexBuffer.getBuffer());
             LongBuffer offsets = stack.longs(0);
             vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers, offsets);
         }
@@ -53,30 +50,25 @@ public class Model3d
         {
             long bufferSize = (long) vertexData.sizeof() * vertexCount;
 
-            LongBuffer pBuffer = stack.mallocLong(1);
-            LongBuffer pBufferMemory = stack.mallocLong(1);
-            VulkanUtil.createBuffer(device, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, pBuffer, pBufferMemory);
+            VkBuffer stagingBuffer = new VkBuffer(
+                device,
+                vertexData.sizeof(),
+                vertexCount,
+                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-            long stagingBuffer = pBuffer.get(0);
-            long stagingBufferMemory = pBufferMemory.get(0);
+            stagingBuffer.map(stack);
+            stagingBuffer.writeToBuffer(vertexData::memcpy, vertices.toArray(new Vertex[0]));
 
-            PointerBuffer data = stack.mallocPointer(1);
+            vertexBuffer = new VkBuffer(
+                device,
+                vertexData.sizeof(),
+                vertexCount,
+                VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                VK_MEMORY_HEAP_DEVICE_LOCAL_BIT);
 
-            vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, data);
-            {
-                vertexData.memcpy(data.getByteBuffer(0, (int) bufferSize), vertices);
-            }
-            vkUnmapMemory(device, stagingBufferMemory);
-
-            VulkanUtil.createBuffer(device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_HEAP_DEVICE_LOCAL_BIT, pBuffer, pBufferMemory);
-
-            vertexBuffer = pBuffer.get(0);
-            vertexBufferMemory = pBufferMemory.get(0);
-
-            VulkanUtil.copyBuffer(commands, device, graphicsQueue, stagingBuffer, vertexBuffer, bufferSize);
-
-            vkDestroyBuffer(device, stagingBuffer, null);
-            vkFreeMemory(device, stagingBufferMemory, null);
+            VkBuffer.copyBuffer(commands, device, graphicsQueue, stagingBuffer, vertexBuffer, bufferSize);
+            stagingBuffer.cleanup();
         }
     }
 }
