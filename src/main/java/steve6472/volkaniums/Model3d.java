@@ -58,7 +58,7 @@ public class Model3d
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
             stagingBuffer.map(stack);
-            stagingBuffer.writeToBuffer(vertexData::memcpy, vertices.toArray(new Vertex[0]));
+            stagingBuffer.writeToBuffer(vertexData::memcpy, vertices);
 
             vertexBuffer = new VkBuffer(
                 device,

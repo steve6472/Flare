@@ -9,6 +9,7 @@ import org.lwjgl.vulkan.VkQueue;
 
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
+import java.util.Collection;
 import java.util.function.BiConsumer;
 
 import static org.lwjgl.vulkan.VK13.*;
@@ -91,6 +92,15 @@ public class VkBuffer
     }
 
     public <T> void writeToBuffer(BiConsumer<ByteBuffer, T[]> memcpy, T[] data, long size, int offset)
+    {
+        if (size >= Integer.MAX_VALUE)
+            throw new RuntimeException("Buffer can not be this big... hjelp");
+
+        ByteBuffer buff = mapped.getByteBuffer(offset, (int) size);
+        memcpy.accept(buff, data);
+    }
+
+    public <T> void writeToBuffer(BiConsumer<ByteBuffer, Collection<T>> memcpy, Collection<T> data, long size, int offset)
     {
         if (size >= Integer.MAX_VALUE)
             throw new RuntimeException("Buffer can not be this big... hjelp");
@@ -206,6 +216,11 @@ public class VkBuffer
     }
 
     public <T> void writeToBuffer(BiConsumer<ByteBuffer, T[]> memcpy, T[] data)
+    {
+        writeToBuffer(memcpy, data, bufferSize, 0);
+    }
+
+    public <T> void writeToBuffer(BiConsumer<ByteBuffer, Collection<T>> memcpy, Collection<T> data)
     {
         writeToBuffer(memcpy, data, bufferSize, 0);
     }
