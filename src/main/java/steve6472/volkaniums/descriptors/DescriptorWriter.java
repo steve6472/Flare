@@ -1,13 +1,16 @@
 package steve6472.volkaniums.descriptors;
 
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.*;
+import steve6472.volkaniums.VkBuffer;
 
 import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+import static org.lwjgl.vulkan.VK10.vkUpdateDescriptorSets;
 
 /**
  * Created by steve6472
@@ -16,9 +19,9 @@ import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
  */
 public class DescriptorWriter
 {
-    private List<VkWriteDescriptorSet> writes = new ArrayList<>();
-    private DescriptorSetLayout setLayout;
-    private DescriptorPool pool;
+    private final List<Write> writes = new ArrayList<>();
+    private final DescriptorSetLayout setLayout;
+    private final DescriptorPool pool;
 
     public DescriptorWriter(DescriptorSetLayout setLayout, DescriptorPool pool)
     {
@@ -28,64 +31,93 @@ public class DescriptorWriter
 
     public DescriptorWriter writeBuffer(int binding, VkDescriptorBufferInfo.Buffer bufferInfo)
     {
-        VkDescriptorSetLayoutBinding bindingDescription = setLayout.bindings.get(binding);
-
-        VkWriteDescriptorSet write = VkWriteDescriptorSet.malloc();
-        write.sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
-        write.descriptorType(bindingDescription.descriptorType());
-        write.dstBinding(binding);
-        write.pBufferInfo(bufferInfo);
-        write.descriptorCount(1);
-        writes.add(write);
-
+        writes.add(new Write(getDescriptorType(binding), binding, bufferInfo, null));
         return this;
     }
 
-    public VkWriteDescriptorSet createWriteSet(int binding, VkDescriptorBufferInfo.Buffer bufferInfo)
+    public DescriptorWriter writeBuffer(int binding, VkBuffer buffer, MemoryStack stack)
     {
-        VkDescriptorSetLayoutBinding bindingDescription = setLayout.bindings.get(binding);
+        VkDescriptorBufferInfo.Buffer bufferInfo = VkDescriptorBufferInfo.calloc(1, stack);
+        bufferInfo.offset(0);
+        bufferInfo.range(buffer.getInstanceSize());
+        bufferInfo.buffer(buffer.getBuffer());
 
-        VkWriteDescriptorSet write = VkWriteDescriptorSet.malloc();
-        write.sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
-        write.descriptorType(bindingDescription.descriptorType());
-        write.dstBinding(binding);
-        write.pBufferInfo(bufferInfo);
-        write.descriptorCount(1);
-        writes.add(write);
-
-        return write;
+        return writeBuffer(binding, bufferInfo);
     }
 
     public DescriptorWriter writeImage(int binding, VkDescriptorImageInfo.Buffer bufferInfo)
     {
+        writes.add(new Write(getDescriptorType(binding), binding, null, bufferInfo));
         return this;
     }
 
-    public boolean build(LongBuffer layouts, LongBuffer set)
+    private int getDescriptorType(int binding)
     {
-        boolean success = pool.allocateDescriptor(layouts, set);
+        return setLayout.bindings.get(binding).descriptorType();
+    }
+
+    private VkWriteDescriptorSet.Buffer createWriteBuffers(MemoryStack stack)
+    {
+        VkWriteDescriptorSet.Buffer writeBuffer = VkWriteDescriptorSet.calloc(writes.size(), stack);
+        for (int i = 0; i < writes.size(); i++)
+        {
+            writes.get(i).createSet(writeBuffer.get(i));
+        }
+
+        return writeBuffer;
+    }
+
+    public boolean build(LongBuffer set)
+    {
+        LongBuffer descriptorSetLayout = MemoryUtil.memAllocLong(1);
+        descriptorSetLayout.put(0, setLayout.descriptorSetLayout);
+        boolean success = pool.allocateDescriptor(descriptorSetLayout, set);
+        MemoryUtil.memFree(descriptorSetLayout);
+
         if (!success)
-            return false;
-        override(set.get(0));
+            throw new RuntimeException("Failed to allocate descriptor sets");
+        override(set);
         return true;
     }
 
-    void override(long descriptorSet)
+    void override(LongBuffer descriptorSet)
     {
-        for (VkWriteDescriptorSet write : writes)
-        {
-            write.dstSet(descriptorSet);
-        }
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            VkWriteDescriptorSet.Buffer writesBuffer = VkWriteDescriptorSet.calloc(writes.size(), stack);
+            VkWriteDescriptorSet.Buffer writeBuffer = createWriteBuffers(stack);
+            long pDescriptorSet = descriptorSet.get();
 
             for (int i = 0; i < writes.size(); i++)
             {
-                writesBuffer.put(i, writes.get(i));
+                VkWriteDescriptorSet write = writeBuffer.get(i);
+                write.dstSet(pDescriptorSet);
             }
 
-            VK13.vkUpdateDescriptorSets(pool.device, writesBuffer, null);
+            vkUpdateDescriptorSets(pool.device, writeBuffer, null);
+        }
+    }
+
+    private record Write(int type, int binding, VkDescriptorBufferInfo.Buffer bufferInfo, VkDescriptorImageInfo.Buffer imageInfo)
+    {
+        public Write
+        {
+            if (bufferInfo != null && imageInfo != null)
+            {
+                throw new RuntimeException("Write can have only one type!");
+            }
+        }
+
+        void createSet(VkWriteDescriptorSet write)
+        {
+            write.sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
+            write.dstBinding(binding);
+            write.dstArrayElement(0);
+            write.descriptorType(type);
+            if (bufferInfo != null)
+                write.pBufferInfo(bufferInfo);
+            else
+                write.pImageInfo(imageInfo);
+            write.descriptorCount(1);
         }
     }
 }

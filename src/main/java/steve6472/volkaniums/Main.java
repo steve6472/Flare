@@ -3,7 +3,6 @@ package steve6472.volkaniums;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.*;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
@@ -99,52 +98,15 @@ public class Main
         }
 
         List<Long> descriptorSets = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
-
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            LongBuffer pDescriptorSets = stack.mallocLong(MAX_FRAMES_IN_FLIGHT);
-            LongBuffer layouts = stack.mallocLong(MAX_FRAMES_IN_FLIGHT);
-            for (int i = 0; i < layouts.capacity(); i++) {
-                layouts.put(i, globalSetLayout.descriptorSetLayout);
-            }
-
-            if (!globalPool.allocateDescriptor(layouts, pDescriptorSets))
+            for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
-                throw new RuntimeException("Failed to allocate descriptor sets");
-            }
+                LongBuffer pDescriptorSet = stack.mallocLong(1);
 
-            VkDescriptorBufferInfo.Buffer bufferInfo = VkDescriptorBufferInfo.calloc(1, stack);
-            bufferInfo.offset(0);
-            bufferInfo.range(GlobalUBO.SIZEOF);
-
-            DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
-
-//            VkWriteDescriptorSet writeSet = descriptorWriter.createWriteSet(0, bufferInfo);
-
-            VkWriteDescriptorSet.Buffer writeBuffer = VkWriteDescriptorSet.calloc(1, stack);
-            VkWriteDescriptorSet uboWrite = writeBuffer.get(0);
-//            VkWriteDescriptorSet uboWrite = VkWriteDescriptorSet.calloc(stack);
-            uboWrite.sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
-            uboWrite.dstBinding(0);
-            uboWrite.dstArrayElement(0);
-            uboWrite.descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-            uboWrite.descriptorCount(1);
-            uboWrite.pBufferInfo(bufferInfo);
-
-            for (int j = 0; j < pDescriptorSets.capacity(); j++)
-            {
-                long descriptorSet = pDescriptorSets.get(j);
-
-                bufferInfo.buffer(uboBuffers.get(j).getBuffer());
-
-                uboWrite.dstSet(descriptorSet);
-
-                vkUpdateDescriptorSets(device, writeBuffer, null);
-                descriptorSets.add(descriptorSet);
-
-//                DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
-//                descriptorWriter.writeBuffer(0, bufferInfo).build(layouts, pDescriptorSets);
-//                descriptorSets.add(pDescriptorSets.get(j));
+                DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
+                descriptorWriter.writeBuffer(0, uboBuffers.get(i), stack).build(pDescriptorSet);
+                descriptorSets.add(pDescriptorSet.get(0));
             }
         }
 
