@@ -2,7 +2,8 @@ package steve6472.volkaniums.model;
 
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import steve6472.volkaniums.vertex.Vertex;
+import steve6472.volkaniums.struct.Struct;
+import steve6472.volkaniums.struct.def.Vertex;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -26,19 +27,19 @@ public class PrimitiveModel
     }
 
     @Deprecated(forRemoval = true)
-    public List<Vertex> toVkVertices()
+    public List<Struct> toVkVertices()
     {
         if (positions.size() != texCoords.size())
             throw new RuntimeException("Different count of vertices and texture coordinates");
 
-        List<Vertex> vertices = new ArrayList<>(positions.size());
+        List<Struct> vertices = new ArrayList<>(positions.size());
 
         for (int i = 0; i < positions.size(); i++)
         {
             Vector2f uv = texCoords.get(i);
             Vector3f pos = positions.get(i);
             Color color = generateRandomSaturatedColor(pos.x, pos.y, pos.z);
-            Vertex vertex = Vertex.POS3F_COL3F_UV.create(pos, new Vector3f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f), uv);
+            Struct vertex = Vertex.POS3F_COL3F_UV.create(pos, new Vector3f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f), uv);
             vertices.add(vertex);
         }
         return vertices;

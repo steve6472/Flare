@@ -1,5 +1,6 @@
 package steve6472.volkaniums;
 
+import org.joml.Matrix4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
@@ -8,6 +9,7 @@ import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.settings.Settings;
+import steve6472.volkaniums.struct.def.UBO;
 import steve6472.volkaniums.util.Log;
 
 import java.nio.IntBuffer;
@@ -87,7 +89,7 @@ public class Main
         {
             VkBuffer buffer = new VkBuffer(
                 device,
-                GlobalUBO.SIZEOF,
+                UBO.GLOBAL_UBO.sizeof(),
                 1,
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
@@ -133,11 +135,9 @@ public class Main
                     frameInfo.globalDescriptorSet = descriptorSets.get(frameInfo.frameIndex);
                     // Update
 
-                    GlobalUBO globalUBO = new GlobalUBO();
-                    globalUBO.projection.set(camera.getProjectionMatrix());
-                    globalUBO.view.identity().translate(0, 0, -2);
+                    var globalUBO = UBO.GLOBAL_UBO.create(camera.getProjectionMatrix(), new Matrix4f().translate(0, 0, -2));
 
-                    uboBuffers.get(frameInfo.frameIndex).writeToBuffer(GlobalUBO.MEMCPY, globalUBO);
+                    uboBuffers.get(frameInfo.frameIndex).writeToBuffer(UBO.GLOBAL_UBO::memcpy, globalUBO);
                     uboBuffers.get(frameInfo.frameIndex).flush();
 
                     // Render

@@ -15,6 +15,7 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
 
 layout(push_constant) uniform Push {
     mat4 transformation;
+    vec3 color;
 } push;
 
 void main() {

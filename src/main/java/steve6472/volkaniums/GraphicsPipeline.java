@@ -2,7 +2,8 @@ package steve6472.volkaniums;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
-import steve6472.volkaniums.vertex.Vertex;
+import steve6472.volkaniums.struct.def.Push;
+import steve6472.volkaniums.struct.def.Vertex;
 
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
@@ -135,7 +136,7 @@ public class GraphicsPipeline
             VkPushConstantRange.Buffer pushConstantRange = VkPushConstantRange.calloc(1, stack);
             pushConstantRange.stageFlags(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
             pushConstantRange.offset(0);
-            pushConstantRange.size(4 * Float.BYTES * 4 * 3);
+            pushConstantRange.size(Push.PUSH.sizeof());
 
             // ===> PIPELINE LAYOUT CREATION <===
 

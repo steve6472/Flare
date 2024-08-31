@@ -4,8 +4,9 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkCommandBuffer;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
-import steve6472.volkaniums.vertex.Vertex;
-import steve6472.volkaniums.vertex.VertexType;
+import steve6472.volkaniums.struct.Struct;
+import steve6472.volkaniums.struct.StructDef;
+import steve6472.volkaniums.struct.type.StructVertex;
 
 import java.nio.LongBuffer;
 import java.util.List;
@@ -42,7 +43,7 @@ public class Model3d
         vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
     }
 
-    public void createVertexBuffer(VkDevice device, Commands commands, VkQueue graphicsQueue, List<Vertex> vertices, VertexType vertexData)
+    public void createVertexBuffer(VkDevice device, Commands commands, VkQueue graphicsQueue, List<Struct> vertices, StructVertex vertexData)
     {
         vertexCount = vertices.size();
 

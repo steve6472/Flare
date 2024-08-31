@@ -6,10 +6,14 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 import steve6472.volkaniums.model.LoadedModel;
-import steve6472.volkaniums.vertex.Vertex;
+import steve6472.volkaniums.struct.def.Push;
+import steve6472.volkaniums.struct.Struct;
+import steve6472.volkaniums.struct.def.Vertex;
+import steve6472.volkaniums.util.MathUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -238,11 +242,17 @@ public class Renderer
             stack.longs(frameInfo.globalDescriptorSet),
             null);
 
-//        for (int j = 0; j < 4; j++)
+        for (int j = 0; j < 4; j++)
         {
-            PushConstant constant = new PushConstant();
+            Struct push = Push.PUSH.create(new Matrix4f()
+                .translate(j - 1.5f, 0.75f, 0)
+//                .rotateY((float) Math.sin(MathUtil.animateRadians(8d)) / 2f)
+                .rotateY((float) MathUtil.animateRadians(4d))
+                .rotateZ((float) Math.toRadians(180))
+                .scale(0.05f),
+                new Vector3f(0.1f, 1, 0.1f));
 
-            vkCmdPushConstants(frameInfo.commandBuffer, graphicsPipeline.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, constant.createBuffer(stack));
+            Push.PUSH.push(push, frameInfo.commandBuffer, graphicsPipeline.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0);
 
             model3d.bind(frameInfo.commandBuffer);
             model3d.draw(frameInfo.commandBuffer);
