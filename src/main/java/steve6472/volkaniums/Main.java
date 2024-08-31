@@ -33,7 +33,7 @@ public class Main
 
     private Window window;
     private UserInput userInput;
-    private Renderer renderer;
+    private MasterRenderer renderer;
     private DescriptorPool globalPool;
     private VkInstance instance;
     private VkPhysicalDevice physicalDevice;
@@ -70,7 +70,7 @@ public class Main
             .builder(device)
             .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
             .build();
-        renderer = new Renderer(window, device, graphicsQueue, presentQueue, surface, globalSetLayout.descriptorSetLayout);
+        renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, surface, globalSetLayout.descriptorSetLayout);
         globalPool = DescriptorPool.builder(device)
             .setMaxSets(MAX_FRAMES_IN_FLIGHT)
             .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT)
@@ -84,28 +84,33 @@ public class Main
 
     private void mainLoop()
     {
-        List<VkBuffer> uboBuffers = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
+        final class FlightFrame
+        {
+            VkBuffer uboBuffer;
+            long descriptorSet;
+        }
+
+        List<FlightFrame> frame = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
+
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
-            VkBuffer buffer = new VkBuffer(
+            frame.add(new FlightFrame());
+
+            VkBuffer global = new VkBuffer(
                 device,
                 UBO.GLOBAL_UBO.sizeof(),
                 1,
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-            buffer.map();
+            global.map();
+            frame.get(i).uboBuffer = global;
 
-            uboBuffers.add(buffer);
-        }
-
-        List<Long> descriptorSets = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
-        try (MemoryStack stack = MemoryStack.stackPush())
-        {
-            for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+            try (MemoryStack stack = MemoryStack.stackPush())
             {
                 DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
-                long set = descriptorWriter.writeBuffer(0, uboBuffers.get(i), stack).build();
-                descriptorSets.add(set);
+                frame.get(i).descriptorSet = descriptorWriter
+                    .writeBuffer(0, frame.get(i).uboBuffer, stack)
+                    .build();
             }
         }
 
@@ -132,17 +137,19 @@ public class Main
                     frameInfo.camera = camera;
                     frameInfo.frameIndex = renderer.getCurrentFrameIndex();
                     frameInfo.commandBuffer = commandBuffer;
-                    frameInfo.globalDescriptorSet = descriptorSets.get(frameInfo.frameIndex);
+
+                    FlightFrame flightFrame = frame.get(frameInfo.frameIndex);
+                    frameInfo.globalDescriptorSet = flightFrame.descriptorSet;
                     // Update
 
                     var globalUBO = UBO.GLOBAL_UBO.create(camera.getProjectionMatrix(), new Matrix4f().translate(0, 0, -2));
 
-                    uboBuffers.get(frameInfo.frameIndex).writeToBuffer(UBO.GLOBAL_UBO::memcpy, globalUBO);
-                    uboBuffers.get(frameInfo.frameIndex).flush();
+                    flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_UBO::memcpy, globalUBO);
+                    flightFrame.uboBuffer.flush();
 
                     // Render
                     renderer.beginSwapChainRenderPass(commandBuffer, stack);
-                    renderer.recordCommandBuffer(frameInfo, stack);
+                    renderer.render(frameInfo, stack);
                     renderer.endSwapChainRenderPass(commandBuffer);
                     renderer.endFrame(stack, pImageIndex);
                 }
@@ -153,8 +160,8 @@ public class Main
         vkDeviceWaitIdle(device);
 
         globalSetLayout.cleanup();
-        for (VkBuffer uboBuffer : uboBuffers)
-            uboBuffer.cleanup();
+        for (FlightFrame flightFrame : frame)
+            flightFrame.uboBuffer.cleanup();
     }
 
     private void cleanup()

@@ -43,6 +43,11 @@ public class Model3d
         vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
     }
 
+    public void draw(VkCommandBuffer commandBuffer, int instaceCount)
+    {
+        vkCmdDraw(commandBuffer, vertexCount, instaceCount, 0, 0);
+    }
+
     public void createVertexBuffer(VkDevice device, Commands commands, VkQueue graphicsQueue, List<Struct> vertices, StructVertex vertexData)
     {
         vertexCount = vertices.size();

@@ -35,28 +35,22 @@ public class GraphicsPipeline
 
             ByteBuffer entryPoint = stack.UTF8("main");
 
-//            VkPipelineShaderStageCreateInfo.Buffer shaderStages = VkPipelineShaderStageCreateInfo.calloc(2, stack);
+            VkPipelineShaderStageCreateInfo.Buffer shaderStages = VkPipelineShaderStageCreateInfo.calloc(2, stack);
 
-//            VkPipelineShaderStageCreateInfo vertShaderStageInfo = shaderStages.get(0);
-            VkPipelineShaderStageCreateInfo vertShaderStageInfo = VkPipelineShaderStageCreateInfo.calloc(stack);
+            VkPipelineShaderStageCreateInfo vertShaderStageInfo = shaderStages.get(0);
 
             vertShaderStageInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO);
             vertShaderStageInfo.stage(VK_SHADER_STAGE_VERTEX_BIT);
             vertShaderStageInfo.module(vertShaderModule);
             vertShaderStageInfo.pName(entryPoint);
 
-//            VkPipelineShaderStageCreateInfo fragShaderStageInfo = shaderStages.get(1);
-            VkPipelineShaderStageCreateInfo fragShaderStageInfo = VkPipelineShaderStageCreateInfo.calloc(stack);
+            VkPipelineShaderStageCreateInfo fragShaderStageInfo = shaderStages.get(1);
 
             fragShaderStageInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO);
             fragShaderStageInfo.stage(VK_SHADER_STAGE_FRAGMENT_BIT);
             fragShaderStageInfo.module(fragShaderModule);
             fragShaderStageInfo.pName(entryPoint);
 
-            // Alternative way hmm...
-            VkPipelineShaderStageCreateInfo.Buffer shaderStages = VkPipelineShaderStageCreateInfo.calloc(2, stack);
-            shaderStages.put(0, vertShaderStageInfo);
-            shaderStages.put(1, fragShaderStageInfo);
 
             // ===> VERTEX STAGE <===
 
@@ -170,7 +164,7 @@ public class GraphicsPipeline
             pipelineInfo.basePipelineHandle(VK_NULL_HANDLE);
             pipelineInfo.basePipelineIndex(-1);
 
-            LongBuffer pGraphicsPipeline = stack.mallocLong(1);
+            LongBuffer pGraphicsPipeline = stack.callocLong(1);
 
             if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, pipelineInfo, null, pGraphicsPipeline) != VK_SUCCESS)
             {

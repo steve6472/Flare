@@ -35,8 +35,8 @@ public class SwapChain
     public long depthImageMemory;
 
     public int currentFrame;
-    public Map<Integer, Frame> imagesInFlight;
-    public List<Frame> inFlightFrames;
+    public Map<Integer, SyncFrame> imagesInFlight;
+    public List<SyncFrame> inFlightFrames;
 
     public static final int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -322,19 +322,19 @@ public class SwapChain
                     throw new RuntimeException("Failed to create synchronization objects for the frame " + i);
                 }
 
-                inFlightFrames.add(new Frame(pImageAvailableSemaphore.get(0), pRenderFinishedSemaphore.get(0), pFence.get(0)));
+                inFlightFrames.add(new SyncFrame(pImageAvailableSemaphore.get(0), pRenderFinishedSemaphore.get(0), pFence.get(0)));
             }
         }
     }
 
-    public int acquireNextImage(VkDevice device, IntBuffer pImageIndex, Frame thisFrame)
+    public int acquireNextImage(VkDevice device, IntBuffer pImageIndex, SyncFrame thisFrame)
     {
         vkWaitForFences(device, thisFrame.pFence(), true, VulkanUtil.UINT64_MAX);
 
         return vkAcquireNextImageKHR(device, swapChain, VulkanUtil.UINT64_MAX, thisFrame.imageAvailableSemaphore(), VK_NULL_HANDLE, pImageIndex);
     }
 
-    public int submitCommandBuffers(VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, VkCommandBuffer commandBuffer, IntBuffer pImageIndex, MemoryStack stack, Frame thisFrame)
+    public int submitCommandBuffers(VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, VkCommandBuffer commandBuffer, IntBuffer pImageIndex, MemoryStack stack, SyncFrame thisFrame)
     {
         VkSubmitInfo submitInfo = VkSubmitInfo.calloc(stack);
         submitInfo.sType(VK_STRUCTURE_TYPE_SUBMIT_INFO);
