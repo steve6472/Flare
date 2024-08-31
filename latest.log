@@ -1,18 +1,18 @@
-08.24 12:31:11 [Registries] FINEST: Bootstrapped base:setting
-08.24 12:31:11 [Registries] FINEST: Bootstrapped base:model_element
-08.24 12:31:11 [Registries] FINEST: Bootstrapped base:keyframe_type
-08.24 12:31:11 [Validation] FINE: (General) windows_get_device_registry_files: GUID for 2 is not SoftwareComponent skipping
-08.24 12:31:11 [Validation] FINE: (General) windows_get_device_registry_files: GUID for 3 is not SoftwareComponent skipping
-08.24 12:31:11 [Validation] FINE: (General) Searching for ICD drivers named .\nvoglv64.dll
-08.24 12:31:11 [Validation] FINE: (General) Loading layer library C:\VulkanSDK\1.3.290.0\Bin\.\VkLayer_khronos_validation.dll
-08.24 12:31:11 [Validation] FINE: (General) Loading layer library C:\ProgramData\obs-studio-hook\.\graphics-hook64.dll
-08.24 12:31:11 [Validation] FINE: (General) Loading layer library C:\Program Files (x86)\Overwolf\0.258.0.6\.\ow-graphics-vulkan.dll
-08.24 12:31:11 [Validation] FINE: (General) Loading layer library C:\Program Files (x86)\Overwolf\0.258.0.6\.\owclient.dll
-08.24 12:31:11 [Validation] FINE: (General) Loading layer library C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_362f239e9bd019fc\.\nvoglv64.dll
-08.24 12:31:11 [PhysicalDevicePicker] FINER: Selected GPU: NVIDIA GeForce RTX 4070 Ti SUPER
-08.24 12:31:12 [Main] FINE: Cleanup
-08.24 12:31:12 [Validation] FINE: (General) Unloading layer library C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_362f239e9bd019fc\.\nvoglv64.dll
-08.24 12:31:12 [Validation] FINE: (General) Unloading layer library C:\Program Files (x86)\Overwolf\0.258.0.6\.\owclient.dll
-08.24 12:31:12 [Validation] FINE: (General) Unloading layer library C:\Program Files (x86)\Overwolf\0.258.0.6\.\ow-graphics-vulkan.dll
-08.24 12:31:12 [Validation] FINE: (General) Unloading layer library C:\ProgramData\obs-studio-hook\.\graphics-hook64.dll
-08.24 12:31:12 [Validation] FINE: (General) Unloading layer library C:\VulkanSDK\1.3.290.0\Bin\.\VkLayer_khronos_validation.dll
+08.31 13:13:29 [Registries] FINEST: Bootstrapped base:setting
+08.31 13:13:29 [Registries] FINEST: Bootstrapped base:model_element
+08.31 13:13:29 [Registries] FINEST: Bootstrapped base:keyframe_type
+08.31 13:13:29 [Validation] FINE: (General) windows_get_device_registry_files: GUID for 2 is not SoftwareComponent skipping
+08.31 13:13:29 [Validation] FINE: (General) windows_get_device_registry_files: GUID for 3 is not SoftwareComponent skipping
+08.31 13:13:29 [Validation] FINE: (General) Searching for ICD drivers named .\nvoglv64.dll
+08.31 13:13:29 [Validation] FINE: (General) Loading layer library C:\VulkanSDK\1.3.290.0\Bin\.\VkLayer_khronos_validation.dll
+08.31 13:13:29 [Validation] FINE: (General) Loading layer library C:\ProgramData\obs-studio-hook\.\graphics-hook64.dll
+08.31 13:13:29 [Validation] FINE: (General) Loading layer library C:\Program Files (x86)\Overwolf\0.258.0.6\.\ow-graphics-vulkan.dll
+08.31 13:13:29 [Validation] FINE: (General) Loading layer library C:\Program Files (x86)\Overwolf\0.258.0.6\.\owclient.dll
+08.31 13:13:29 [Validation] FINE: (General) Loading layer library C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_362f239e9bd019fc\.\nvoglv64.dll
+08.31 13:13:29 [PhysicalDevicePicker] FINER: Selected GPU: NVIDIA GeForce RTX 4070 Ti SUPER
+08.31 13:13:30 [Main] FINE: Cleanup
+08.31 13:13:30 [Validation] FINE: (General) Unloading layer library C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_362f239e9bd019fc\.\nvoglv64.dll
+08.31 13:13:30 [Validation] FINE: (General) Unloading layer library C:\Program Files (x86)\Overwolf\0.258.0.6\.\owclient.dll
+08.31 13:13:30 [Validation] FINE: (General) Unloading layer library C:\Program Files (x86)\Overwolf\0.258.0.6\.\ow-graphics-vulkan.dll
+08.31 13:13:30 [Validation] FINE: (General) Unloading layer library C:\ProgramData\obs-studio-hook\.\graphics-hook64.dll
+08.31 13:13:30 [Validation] FINE: (General) Unloading layer library C:\VulkanSDK\1.3.290.0\Bin\.\VkLayer_khronos_validation.dll

@@ -20,7 +20,7 @@ import static org.lwjgl.vulkan.VK10.*;
 public class DescriptorPool
 {
     VkDevice device;
-    long descriptorPool;
+    public final long descriptorPool;
 
     private DescriptorPool(VkDevice device, int maxSets, int poolFlags, List<DescriptorPoolSize> poolSizesList)
     {
@@ -38,15 +38,15 @@ public class DescriptorPool
                 poolSize.descriptorCount(descriptorPoolSize.count());
             }
 
-            VkDescriptorPoolCreateInfo descriptorPoolInfo = VkDescriptorPoolCreateInfo.calloc(stack);
-            descriptorPoolInfo.sType(VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO);
-            descriptorPoolInfo.pPoolSizes(poolSizes);
-            descriptorPoolInfo.maxSets(maxSets);
-            descriptorPoolInfo.flags(poolFlags);
+            VkDescriptorPoolCreateInfo poolInfo = VkDescriptorPoolCreateInfo.calloc(stack);
+            poolInfo.sType(VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO);
+            poolInfo.pPoolSizes(poolSizes);
+            poolInfo.maxSets(maxSets);
+            poolInfo.flags(poolFlags);
 
             LongBuffer pDescriptorPool = stack.mallocLong(1);
 
-            if (vkCreateDescriptorPool(device, descriptorPoolInfo, null, pDescriptorPool) != VK_SUCCESS)
+            if (vkCreateDescriptorPool(device, poolInfo, null, pDescriptorPool) != VK_SUCCESS)
             {
                 throw new RuntimeException("Failed to create descriptor pool!");
             }
@@ -60,7 +60,7 @@ public class DescriptorPool
         vkDestroyDescriptorPool(device, descriptorPool, null);
     }
 
-    /*public boolean allocateDescriptor(LongBuffer descriptorSetLayout, LongBuffer descriptor)
+    public boolean allocateDescriptor(LongBuffer descriptorSetLayout, LongBuffer descriptor)
     {
         try (MemoryStack stack = MemoryStack.stackPush())
         {
@@ -68,19 +68,6 @@ public class DescriptorPool
             allocInfo.sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO);
             allocInfo.descriptorPool(descriptorPool);
             allocInfo.pSetLayouts(descriptorSetLayout);
-
-            return vkAllocateDescriptorSets(device, allocInfo, descriptor) == VK_SUCCESS;
-        }
-    }*/
-
-    public boolean allocateDescriptor(long descriptorSetLayout, LongBuffer descriptor)
-    {
-        try (MemoryStack stack = MemoryStack.stackPush())
-        {
-            VkDescriptorSetAllocateInfo allocInfo = VkDescriptorSetAllocateInfo.calloc(stack);
-            allocInfo.sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO);
-            allocInfo.descriptorPool(descriptorPool);
-            allocInfo.pSetLayouts(stack.longs(descriptorSetLayout));
 
             return vkAllocateDescriptorSets(device, allocInfo, descriptor) == VK_SUCCESS;
         }

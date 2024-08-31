@@ -7,8 +7,6 @@ layout (location = 1) in vec2 uv;
 layout (location = 0) out vec4 outColor;
 
 layout(push_constant) uniform Push {
-    mat4 projection;
-    mat4 view;
     mat4 transformation;
 } push;
 

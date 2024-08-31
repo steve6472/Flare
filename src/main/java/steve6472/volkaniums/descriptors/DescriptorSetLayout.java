@@ -21,20 +21,19 @@ import static org.lwjgl.vulkan.VK10.*;
 public class DescriptorSetLayout
 {
     VkDevice device;
-    long descriptorSetLayout;
-    Map<Integer, VkDescriptorSetLayoutBinding> bindings = new HashMap<>();
+    public final long descriptorSetLayout;
+    public Map<Integer, VkDescriptorSetLayoutBinding> bindings = new HashMap<>();
 
     private DescriptorSetLayout(VkDevice device, Map<Integer, LayoutBinding> bindings)
     {
+        this.device = device;
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            VkDescriptorSetLayoutBinding.Buffer layoutBindings = VkDescriptorSetLayoutBinding.malloc(bindings.size());
-
             for (int i = 0; i < bindings.size(); i++)
             {
                 LayoutBinding layoutBinding = bindings.get(i);
 
-                VkDescriptorSetLayoutBinding binding = layoutBindings.get();
+                VkDescriptorSetLayoutBinding binding = VkDescriptorSetLayoutBinding.malloc();
                 binding.binding(layoutBinding.binding());
                 binding.descriptorType(layoutBinding.type());
                 binding.descriptorCount(layoutBinding.count());
@@ -42,6 +41,10 @@ public class DescriptorSetLayout
 
                 this.bindings.put(i, binding);
             }
+
+            VkDescriptorSetLayoutBinding.Buffer layoutBindings = VkDescriptorSetLayoutBinding.calloc(bindings.size(), stack);
+
+            this.bindings.forEach(layoutBindings::put);
 
             VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = VkDescriptorSetLayoutCreateInfo.calloc(stack);
             descriptorSetLayoutInfo.sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO);
@@ -61,6 +64,11 @@ public class DescriptorSetLayout
     public void cleanup()
     {
         vkDestroyDescriptorSetLayout(device, descriptorSetLayout, null);
+        bindings.forEach((k, v) ->
+        {
+
+            v.free();
+        });
     }
 
     public static Builder builder(VkDevice device)

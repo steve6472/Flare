@@ -2,6 +2,7 @@ package steve6472.volkaniums;
 
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.VkDescriptorBufferInfo;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkMappedMemoryRange;
@@ -72,13 +73,13 @@ public class VkBuffer
         }
     }
 
-    public int map(MemoryStack stack, long size, long offset)
+    public int map(long size, long offset)
     {
         if (buffer == VK_NULL_HANDLE || memory == VK_NULL_HANDLE) {
             throw new IllegalStateException("Called map on buffer before create");
         }
 
-        mapped = stack.mallocPointer(1);
+        mapped = MemoryUtil.memAllocPointer(1);
         return vkMapMemory(device, memory, offset, size, 0, mapped);
     }
 
@@ -87,6 +88,7 @@ public class VkBuffer
         if (mapped != null)
         {
             vkUnmapMemory(device, memory);
+            mapped.free();
             mapped = null;
         }
     }
@@ -210,12 +212,12 @@ public class VkBuffer
      * Methods with defaults
      */
 
-    public int map(MemoryStack stack)
+    public int map()
     {
-        return map(stack, bufferSize, 0);
+        return map(bufferSize, 0);
     }
 
-    public <T> void writeToBuffer(BiConsumer<ByteBuffer, T[]> memcpy, T[] data)
+    public <T> void writeToBuffer(BiConsumer<ByteBuffer, T[]> memcpy, T... data)
     {
         writeToBuffer(memcpy, data, bufferSize, 0);
     }

@@ -13,14 +13,12 @@ import java.nio.ByteBuffer;
  */
 public class PushConstant
 {
-    public final Matrix4f projection = new Matrix4f();
-    public final Matrix4f view = new Matrix4f();
+    public static final int SIZEOF = 4 * Float.BYTES * 4;
     public final Matrix4f transformation = new Matrix4f();
 
     public ByteBuffer createBuffer(MemoryStack stack)
     {
-        // vec4 * bytes * 4 rows * 3 mats
-        ByteBuffer buff = stack.calloc(4 * Float.BYTES * 4 * 3);
+        ByteBuffer buff = stack.calloc(SIZEOF);
         //            camera.getProjectionMatrix().get(buff);
         transformation
             .identity()
@@ -30,13 +28,7 @@ public class PushConstant
             .rotateZ((float) Math.toRadians(180))
             .scale(0.05f);
 
-        view
-            .identity()
-            .translate(0, 0, -2);
-
-        projection.get(buff);
-        view.get(4 * Float.BYTES * 4, buff);
-        transformation.get(4 * Float.BYTES * 4 * 2, buff);
+        transformation.get(0, buff);
 
         return buff;
     }

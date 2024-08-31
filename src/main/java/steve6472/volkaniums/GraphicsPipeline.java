@@ -20,7 +20,7 @@ public class GraphicsPipeline
     public long pipelineLayout;
     public long renderPass;
 
-    public void createGraphicsPipeline(VkDevice device, SwapChain swapChain)
+    public void createGraphicsPipeline(VkDevice device, SwapChain swapChain, long globalSetLayout)
     {
         try (MemoryStack stack = MemoryStack.stackPush())
         {
@@ -142,6 +142,7 @@ public class GraphicsPipeline
             VkPipelineLayoutCreateInfo pipelineLayoutInfo = VkPipelineLayoutCreateInfo.calloc(stack);
             pipelineLayoutInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);
             pipelineLayoutInfo.pPushConstantRanges(pushConstantRange);
+            pipelineLayoutInfo.pSetLayouts(stack.longs(globalSetLayout));
 
             LongBuffer pPipelineLayout = stack.longs(VK_NULL_HANDLE);
 

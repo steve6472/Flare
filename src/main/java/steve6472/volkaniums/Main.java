@@ -3,16 +3,23 @@ package steve6472.volkaniums;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.*;
+import steve6472.volkaniums.descriptors.DescriptorPool;
+import steve6472.volkaniums.descriptors.DescriptorSetLayout;
+import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.settings.Settings;
 import steve6472.volkaniums.util.Log;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.vulkan.VK13.*;
+import static steve6472.volkaniums.SwapChain.MAX_FRAMES_IN_FLIGHT;
 
 public class Main
 {
@@ -26,8 +33,10 @@ public class Main
     private Window window;
     private UserInput userInput;
     private Renderer renderer;
+    private DescriptorPool globalPool;
     private VkInstance instance;
     private VkPhysicalDevice physicalDevice;
+    private DescriptorSetLayout globalSetLayout;
     private long debugMessenger;
     private long surface;
     private VkDevice device;
@@ -56,7 +65,15 @@ public class Main
         createSurface();
         physicalDevice = PhysicalDevicePicker.pickPhysicalDevice(instance, surface);
         createLogicalDevice();
-        renderer = new Renderer(window, device, graphicsQueue, presentQueue, surface);
+        globalSetLayout = DescriptorSetLayout
+            .builder(device)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+            .build();
+        renderer = new Renderer(window, device, graphicsQueue, presentQueue, surface, globalSetLayout.descriptorSetLayout);
+        globalPool = DescriptorPool.builder(device)
+            .setMaxSets(MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT)
+            .build();
     }
 
     private void initContent()
@@ -67,8 +84,71 @@ public class Main
 
     private void mainLoop()
     {
-        long currentTime = System.nanoTime();
+        List<VkBuffer> uboBuffers = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
+        for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            VkBuffer buffer = new VkBuffer(
+                device,
+                GlobalUBO.SIZEOF,
+                1,
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+            buffer.map();
 
+            uboBuffers.add(buffer);
+        }
+
+        List<Long> descriptorSets = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
+
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            LongBuffer pDescriptorSets = stack.mallocLong(MAX_FRAMES_IN_FLIGHT);
+            LongBuffer layouts = stack.mallocLong(MAX_FRAMES_IN_FLIGHT);
+            for (int i = 0; i < layouts.capacity(); i++) {
+                layouts.put(i, globalSetLayout.descriptorSetLayout);
+            }
+
+            if (!globalPool.allocateDescriptor(layouts, pDescriptorSets))
+            {
+                throw new RuntimeException("Failed to allocate descriptor sets");
+            }
+
+            VkDescriptorBufferInfo.Buffer bufferInfo = VkDescriptorBufferInfo.calloc(1, stack);
+            bufferInfo.offset(0);
+            bufferInfo.range(GlobalUBO.SIZEOF);
+
+            DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
+
+//            VkWriteDescriptorSet writeSet = descriptorWriter.createWriteSet(0, bufferInfo);
+
+            VkWriteDescriptorSet.Buffer writeBuffer = VkWriteDescriptorSet.calloc(1, stack);
+            VkWriteDescriptorSet uboWrite = writeBuffer.get(0);
+//            VkWriteDescriptorSet uboWrite = VkWriteDescriptorSet.calloc(stack);
+            uboWrite.sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
+            uboWrite.dstBinding(0);
+            uboWrite.dstArrayElement(0);
+            uboWrite.descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+            uboWrite.descriptorCount(1);
+            uboWrite.pBufferInfo(bufferInfo);
+
+            for (int j = 0; j < pDescriptorSets.capacity(); j++)
+            {
+                long descriptorSet = pDescriptorSets.get(j);
+
+                bufferInfo.buffer(uboBuffers.get(j).getBuffer());
+
+                uboWrite.dstSet(descriptorSet);
+
+                vkUpdateDescriptorSets(device, writeBuffer, null);
+                descriptorSets.add(descriptorSet);
+
+//                DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
+//                descriptorWriter.writeBuffer(0, bufferInfo).build(layouts, pDescriptorSets);
+//                descriptorSets.add(pDescriptorSets.get(j));
+            }
+        }
+
+        long currentTime = System.nanoTime();
         while (!window.shouldWindowClose())
         {
             glfwPollEvents();
@@ -86,8 +166,24 @@ public class Main
                 IntBuffer pImageIndex = stack.mallocInt(1);
                 if ((commandBuffer = renderer.beginFrame(stack, pImageIndex)) != null)
                 {
+                    FrameInfo frameInfo = new FrameInfo();
+                    frameInfo.frameTime = frameTime;
+                    frameInfo.camera = camera;
+                    frameInfo.frameIndex = renderer.getCurrentFrameIndex();
+                    frameInfo.commandBuffer = commandBuffer;
+                    frameInfo.globalDescriptorSet = descriptorSets.get(frameInfo.frameIndex);
+                    // Update
+
+                    GlobalUBO globalUBO = new GlobalUBO();
+                    globalUBO.projection.set(camera.getProjectionMatrix());
+                    globalUBO.view.identity().translate(0, 0, -2);
+
+                    uboBuffers.get(frameInfo.frameIndex).writeToBuffer(GlobalUBO.MEMCPY, globalUBO);
+                    uboBuffers.get(frameInfo.frameIndex).flush();
+
+                    // Render
                     renderer.beginSwapChainRenderPass(commandBuffer, stack);
-                    renderer.recordCommandBuffer(commandBuffer, stack, camera);
+                    renderer.recordCommandBuffer(frameInfo, stack);
                     renderer.endSwapChainRenderPass(commandBuffer);
                     renderer.endFrame(stack, pImageIndex);
                 }
@@ -96,6 +192,10 @@ public class Main
 
         // Wait for the device to complete all operations before release resources
         vkDeviceWaitIdle(device);
+
+        globalSetLayout.cleanup();
+        for (VkBuffer uboBuffer : uboBuffers)
+            uboBuffer.cleanup();
     }
 
     private void cleanup()
@@ -103,6 +203,7 @@ public class Main
         LOGGER.fine("Cleanup");
 
         renderer.cleanup();
+        globalPool.cleanup();
 
         vkDestroyDevice(device, null);
 

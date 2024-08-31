@@ -46,29 +46,26 @@ public class Model3d
     {
         vertexCount = vertices.size();
 
-        try (MemoryStack stack = MemoryStack.stackPush())
-        {
-            long bufferSize = (long) vertexData.sizeof() * vertexCount;
+        long bufferSize = (long) vertexData.sizeof() * vertexCount;
 
-            VkBuffer stagingBuffer = new VkBuffer(
-                device,
-                vertexData.sizeof(),
-                vertexCount,
-                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        VkBuffer stagingBuffer = new VkBuffer(
+            device,
+            vertexData.sizeof(),
+            vertexCount,
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-            stagingBuffer.map(stack);
-            stagingBuffer.writeToBuffer(vertexData::memcpy, vertices);
+        stagingBuffer.map();
+        stagingBuffer.writeToBuffer(vertexData::memcpy, vertices);
 
-            vertexBuffer = new VkBuffer(
-                device,
-                vertexData.sizeof(),
-                vertexCount,
-                VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                VK_MEMORY_HEAP_DEVICE_LOCAL_BIT);
+        vertexBuffer = new VkBuffer(
+            device,
+            vertexData.sizeof(),
+            vertexCount,
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+            VK_MEMORY_HEAP_DEVICE_LOCAL_BIT);
 
-            VkBuffer.copyBuffer(commands, device, graphicsQueue, stagingBuffer, vertexBuffer, bufferSize);
-            stagingBuffer.cleanup();
-        }
+        VkBuffer.copyBuffer(commands, device, graphicsQueue, stagingBuffer, vertexBuffer, bufferSize);
+        stagingBuffer.cleanup();
     }
 }

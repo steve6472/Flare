@@ -5,6 +5,7 @@ import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
+import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 import steve6472.volkaniums.model.LoadedModel;
@@ -37,6 +38,7 @@ public class Renderer
     private final SwapChain swapChain;
     private final GraphicsPipeline graphicsPipeline;
     private final Commands commands;
+    private final long globalSetLayout;
 
 //    Model model;
     Model3d model3d;
@@ -47,7 +49,7 @@ public class Renderer
 
     private boolean isFrameStarted;
 
-    public Renderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, long surface)
+    public Renderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, long surface, long globalSetLayout)
     {
         this.window = window;
         this.device = device;
@@ -58,6 +60,7 @@ public class Renderer
         swapChain = new SwapChain();
         graphicsPipeline = new GraphicsPipeline();
         commands = new Commands();
+        this.globalSetLayout = globalSetLayout;
         commands.createCommandPool(device, surface);
 
         // Create models here
@@ -89,7 +92,7 @@ public class Renderer
         swapChain.createSwapChain(surface, device, window.window());
         swapChain.createImageViews(device);
         graphicsPipeline.createRenderPass(device, swapChain);
-        graphicsPipeline.createGraphicsPipeline(device, swapChain);
+        graphicsPipeline.createGraphicsPipeline(device, swapChain, globalSetLayout);
         swapChain.createDepthResources(device, commands.commandPool, graphicsQueue);
         swapChain.createFrameBuffers(device, graphicsPipeline.renderPass);
         commands.createCommandBuffers(device);
@@ -223,19 +226,26 @@ public class Renderer
         vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     }
 
-    public void recordCommandBuffer(VkCommandBuffer commandBuffer, MemoryStack stack, Camera camera)
+    public void recordCommandBuffer(FrameInfo frameInfo, MemoryStack stack)
     {
-        graphicsPipeline.bind(commandBuffer);
+        graphicsPipeline.bind(frameInfo.commandBuffer);
 
-        for (int j = 0; j < 4; j++)
+        vkCmdBindDescriptorSets(
+            frameInfo.commandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            graphicsPipeline.pipelineLayout,
+            0,
+            stack.longs(frameInfo.globalDescriptorSet),
+            null);
+
+//        for (int j = 0; j < 4; j++)
         {
             PushConstant constant = new PushConstant();
-            constant.projection.set(camera.getProjectionMatrix());
 
-            vkCmdPushConstants(commandBuffer, graphicsPipeline.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, constant.createBuffer(stack));
+            vkCmdPushConstants(frameInfo.commandBuffer, graphicsPipeline.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, constant.createBuffer(stack));
 
-            model3d.bind(commandBuffer);
-            model3d.draw(commandBuffer);
+            model3d.bind(frameInfo.commandBuffer);
+            model3d.draw(frameInfo.commandBuffer);
 
 //            model.bind(commandBuffer);
 //            model.draw(commandBuffer);

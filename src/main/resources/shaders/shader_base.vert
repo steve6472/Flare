@@ -8,15 +8,18 @@ layout (location = 2) in vec2 inUv;
 layout (location = 0) out vec3 fragColor;
 layout (location = 1) out vec2 uv;
 
-layout(push_constant) uniform Push {
+layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection;
     mat4 view;
+} ubo;
+
+layout(push_constant) uniform Push {
     mat4 transformation;
 } push;
 
 void main() {
 //    gl_Position = vec4(inPosition, 1.0) * push.projection;
-        gl_Position = push.projection * push.view * push.transformation * vec4(inPosition, 1.0);
+        gl_Position = ubo.projection * ubo.view * push.transformation * vec4(inPosition, 1.0);
 //    gl_Position = vec4(inPosition, 1.0);
     fragColor = inColor;
     uv = inUv;

@@ -1,16 +1,13 @@
 package steve6472.volkaniums.descriptors;
 
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VkDescriptorBufferInfo;
-import org.lwjgl.vulkan.VkDescriptorImageInfo;
-import org.lwjgl.vulkan.VkDescriptorSetLayoutBinding;
-import org.lwjgl.vulkan.VkWriteDescriptorSet;
+import org.lwjgl.vulkan.*;
 
 import java.nio.LongBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-import static org.lwjgl.vulkan.VK10.vkUpdateDescriptorSets;
 
 /**
  * Created by steve6472
@@ -19,7 +16,7 @@ import static org.lwjgl.vulkan.VK10.vkUpdateDescriptorSets;
  */
 public class DescriptorWriter
 {
-    private List<VkWriteDescriptorSet> writes;
+    private List<VkWriteDescriptorSet> writes = new ArrayList<>();
     private DescriptorSetLayout setLayout;
     private DescriptorPool pool;
 
@@ -44,14 +41,29 @@ public class DescriptorWriter
         return this;
     }
 
+    public VkWriteDescriptorSet createWriteSet(int binding, VkDescriptorBufferInfo.Buffer bufferInfo)
+    {
+        VkDescriptorSetLayoutBinding bindingDescription = setLayout.bindings.get(binding);
+
+        VkWriteDescriptorSet write = VkWriteDescriptorSet.malloc();
+        write.sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET);
+        write.descriptorType(bindingDescription.descriptorType());
+        write.dstBinding(binding);
+        write.pBufferInfo(bufferInfo);
+        write.descriptorCount(1);
+        writes.add(write);
+
+        return write;
+    }
+
     public DescriptorWriter writeImage(int binding, VkDescriptorImageInfo.Buffer bufferInfo)
     {
         return this;
     }
 
-    public boolean build(LongBuffer set)
+    public boolean build(LongBuffer layouts, LongBuffer set)
     {
-        boolean success = pool.allocateDescriptor(setLayout.descriptorSetLayout, set);
+        boolean success = pool.allocateDescriptor(layouts, set);
         if (!success)
             return false;
         override(set.get(0));
@@ -73,7 +85,7 @@ public class DescriptorWriter
                 writesBuffer.put(i, writes.get(i));
             }
 
-            vkUpdateDescriptorSets(pool.device, writesBuffer, null);
+            VK13.vkUpdateDescriptorSets(pool.device, writesBuffer, null);
         }
     }
 }
