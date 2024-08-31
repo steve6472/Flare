@@ -10,7 +10,6 @@ import static steve6472.volkaniums.vertex.MemberType.*;
  */
 public class Vertex
 {
-
     /*
      * Vertex types
      */

@@ -62,11 +62,7 @@ public class DescriptorSetLayout
     public void cleanup()
     {
         vkDestroyDescriptorSetLayout(device, descriptorSetLayout, null);
-        bindings.forEach((k, v) ->
-        {
-
-            v.free();
-        });
+        bindings.forEach((k, v) -> v.free());
     }
 
     public static Builder builder(VkDevice device)

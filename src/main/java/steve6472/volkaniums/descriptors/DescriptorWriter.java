@@ -67,34 +67,35 @@ public class DescriptorWriter
         return writeBuffer;
     }
 
-    public boolean build(LongBuffer set)
-    {
-        LongBuffer descriptorSetLayout = MemoryUtil.memAllocLong(1);
-        descriptorSetLayout.put(0, setLayout.descriptorSetLayout);
-        boolean success = pool.allocateDescriptor(descriptorSetLayout, set);
-        MemoryUtil.memFree(descriptorSetLayout);
-
-        if (!success)
-            throw new RuntimeException("Failed to allocate descriptor sets");
-        override(set);
-        return true;
-    }
-
-    void override(LongBuffer descriptorSet)
+    public long build()
     {
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            VkWriteDescriptorSet.Buffer writeBuffer = createWriteBuffers(stack);
-            long pDescriptorSet = descriptorSet.get();
+            LongBuffer descriptorSetLayout = stack.longs(setLayout.descriptorSetLayout);
+            LongBuffer pDescriptorSet = stack.callocLong(1);
+            boolean success = pool.allocateDescriptor(descriptorSetLayout, pDescriptorSet);
 
-            for (int i = 0; i < writes.size(); i++)
-            {
-                VkWriteDescriptorSet write = writeBuffer.get(i);
-                write.dstSet(pDescriptorSet);
-            }
+            if (!success)
+                throw new RuntimeException("Failed to allocate descriptor sets");
 
-            vkUpdateDescriptorSets(pool.device, writeBuffer, null);
+            long descriptorSet = pDescriptorSet.get(0);
+
+            override(descriptorSet, stack);
+            return descriptorSet;
         }
+    }
+
+    private void override(long descriptorSet, MemoryStack stack)
+    {
+        VkWriteDescriptorSet.Buffer writeBuffer = createWriteBuffers(stack);
+
+        for (int i = 0; i < writes.size(); i++)
+        {
+            VkWriteDescriptorSet write = writeBuffer.get(i);
+            write.dstSet(descriptorSet);
+        }
+
+        vkUpdateDescriptorSets(pool.device, writeBuffer, null);
     }
 
     private record Write(int type, int binding, VkDescriptorBufferInfo.Buffer bufferInfo, VkDescriptorImageInfo.Buffer imageInfo)

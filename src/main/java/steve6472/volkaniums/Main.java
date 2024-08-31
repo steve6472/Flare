@@ -78,7 +78,6 @@ public class Main
     private void initContent()
     {
         Registries.createContents();
-
     }
 
     private void mainLoop()
@@ -102,11 +101,9 @@ public class Main
         {
             for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
-                LongBuffer pDescriptorSet = stack.mallocLong(1);
-
                 DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
-                descriptorWriter.writeBuffer(0, uboBuffers.get(i), stack).build(pDescriptorSet);
-                descriptorSets.add(pDescriptorSet.get(0));
+                long set = descriptorWriter.writeBuffer(0, uboBuffers.get(i), stack).build();
+                descriptorSets.add(set);
             }
         }
 

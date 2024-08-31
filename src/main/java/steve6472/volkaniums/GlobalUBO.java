@@ -1,8 +1,6 @@
 package steve6472.volkaniums;
 
 import org.joml.Matrix4f;
-import org.lwjgl.system.MemoryStack;
-import steve6472.volkaniums.util.MathUtil;
 
 import java.nio.ByteBuffer;
 import java.util.function.BiConsumer;

@@ -3,8 +3,9 @@ package steve6472.volkaniums.vertex;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
-import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32_SFLOAT;
+import java.nio.ByteBuffer;
+
+import static org.lwjgl.vulkan.VK10.*;
 
 /**
  * Created by steve6472
@@ -30,6 +31,13 @@ public interface MemberType
         (buff, obj) -> buff
             .putFloat(obj.x)
             .putFloat(obj.y)
+    );
+
+    MemberData<Float> FLOAT = new MemberData<>(
+        Float.class,
+        () -> 0f,
+        VK_FORMAT_R32_SFLOAT,
+        ByteBuffer::putFloat
     );
 
     /*
