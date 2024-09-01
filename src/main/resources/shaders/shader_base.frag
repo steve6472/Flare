@@ -6,7 +6,7 @@ layout (location = 1) in vec2 uv;
 
 layout (location = 0) out vec4 outColor;
 
-layout(push_constant) uniform Push {
+layout (push_constant) uniform Push {
     mat4 transformation;
     vec3 color;
 } push;

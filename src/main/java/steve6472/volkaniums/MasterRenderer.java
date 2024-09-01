@@ -1,26 +1,12 @@
 package steve6472.volkaniums;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JsonOps;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
-import steve6472.volkaniums.model.LoadedModel;
+import steve6472.volkaniums.pipeline.Pipeline;
+import steve6472.volkaniums.pipeline.Pipelines;
 import steve6472.volkaniums.render.ModelRenderSystem;
 import steve6472.volkaniums.render.RenderSystem;
-import steve6472.volkaniums.struct.def.Push;
-import steve6472.volkaniums.struct.Struct;
-import steve6472.volkaniums.struct.def.Vertex;
-import steve6472.volkaniums.util.MathUtil;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +30,7 @@ public class MasterRenderer
     private final long surface;
 
     private final SwapChain swapChain;
-    private final GraphicsPipeline graphicsPipeline;
+    private final Pipeline graphicsPipeline;
     private final Commands commands;
     private final long globalSetLayout;
 
@@ -65,7 +51,7 @@ public class MasterRenderer
         this.surface = surface;
 
         swapChain = new SwapChain();
-        graphicsPipeline = new GraphicsPipeline();
+        graphicsPipeline = new Pipeline(Pipelines.BASIC);
         commands = new Commands();
         this.globalSetLayout = globalSetLayout;
         commands.createCommandPool(device, surface);
@@ -79,10 +65,10 @@ public class MasterRenderer
     {
         swapChain.createSwapChain(surface, device, window.window());
         swapChain.createImageViews(device);
-        graphicsPipeline.createRenderPass(device, swapChain);
-        graphicsPipeline.createGraphicsPipeline(device, swapChain, globalSetLayout);
+        swapChain.createRenderPass(device, swapChain);
+        graphicsPipeline.rebuild(device, swapChain, globalSetLayout);
         swapChain.createDepthResources(device, commands.commandPool, graphicsQueue);
-        swapChain.createFrameBuffers(device, graphicsPipeline.renderPass);
+        swapChain.createFrameBuffers(device);
         commands.createCommandBuffers(device);
         swapChain.createSyncObjects(device);
     }
@@ -112,9 +98,9 @@ public class MasterRenderer
 
         commands.freeCommandBuffers(device);
 
-        vkDestroyPipeline(device, graphicsPipeline.graphicsPipeline, null);
-        vkDestroyPipelineLayout(device, graphicsPipeline.pipelineLayout, null);
-        vkDestroyRenderPass(device, graphicsPipeline.renderPass, null);
+        vkDestroyPipeline(device, graphicsPipeline.graphicsPipeline(), null);
+        vkDestroyPipelineLayout(device, graphicsPipeline.pipelineLayout(), null);
+        vkDestroyRenderPass(device, swapChain.renderPass, null);
         swapChain.swapChainImageViews.forEach(imageView -> vkDestroyImageView(device, imageView, null));
         vkDestroyImageView(device, swapChain.depthImageView, null);
         vkFreeMemory(device, swapChain.depthImageMemory, null);
@@ -206,7 +192,7 @@ public class MasterRenderer
         if (commandBuffer != getCurrentCommandBuffer())
             throw new RuntimeException("Can't begin render pass on command buffer from a different frame");
 
-        VkRenderPassBeginInfo renderPassInfo = Commands.createRenderPass(stack, graphicsPipeline, swapChain);
+        VkRenderPassBeginInfo renderPassInfo = Commands.createRenderPass(stack, swapChain);
 
         renderPassInfo.framebuffer(swapChain.swapChainFramebuffers.get(currentImageIndex));
 
@@ -250,7 +236,7 @@ public class MasterRenderer
 
     public long getSwapChainRenderPass()
     {
-        return graphicsPipeline.renderPass;
+        return swapChain.renderPass;
     }
 
     boolean isFrameInProgress()

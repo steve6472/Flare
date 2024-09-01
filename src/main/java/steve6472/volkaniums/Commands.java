@@ -69,11 +69,11 @@ public class Commands
         }
     }
 
-    public static VkRenderPassBeginInfo createRenderPass(MemoryStack stack, GraphicsPipeline graphicsPipeline, SwapChain swapChain)
+    public static VkRenderPassBeginInfo createRenderPass(MemoryStack stack, SwapChain swapChain)
     {
         VkRenderPassBeginInfo renderPassInfo = VkRenderPassBeginInfo.calloc(stack);
         renderPassInfo.sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO);
-        renderPassInfo.renderPass(graphicsPipeline.renderPass);
+        renderPassInfo.renderPass(swapChain.renderPass);
         VkRect2D renderArea = VkRect2D.calloc(stack);
         renderArea.offset(VkOffset2D.calloc(stack).set(0, 0));
         renderArea.extent(swapChain.swapChainExtent);
