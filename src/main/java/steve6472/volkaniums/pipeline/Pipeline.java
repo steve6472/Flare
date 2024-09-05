@@ -3,6 +3,7 @@ package steve6472.volkaniums.pipeline;
 import org.lwjgl.vulkan.VkCommandBuffer;
 import org.lwjgl.vulkan.VkDevice;
 import steve6472.volkaniums.SwapChain;
+import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
 import steve6472.volkaniums.util.Preconditions;
 
 import static org.lwjgl.vulkan.VK10.*;
@@ -14,7 +15,7 @@ import static org.lwjgl.vulkan.VK10.*;
  */
 public class Pipeline
 {
-    private long graphicsPipeline;
+    private long pipeline;
     private long pipelineLayout;
     private final PipelineConstructor constructor;
 
@@ -23,21 +24,21 @@ public class Pipeline
         this.constructor = constructor;
     }
 
-    Pipeline(long graphicsPipeline, long pipelineLayout)
+    public Pipeline(long pipeline, long pipelineLayout)
     {
-        this.graphicsPipeline = graphicsPipeline;
+        this.pipeline = pipeline;
         this.pipelineLayout = pipelineLayout;
         this.constructor = null;
     }
 
     public void bind(VkCommandBuffer commandBuffer)
     {
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     }
 
-    public long graphicsPipeline()
+    public long pipeline()
     {
-        return graphicsPipeline;
+        return pipeline;
     }
 
     public long pipelineLayout()
@@ -50,7 +51,7 @@ public class Pipeline
         Preconditions.checkNotNull(constructor, "Tried to rebuild a Pipeline from a temporary object!");
 
         Pipeline build = constructor.build(device, swapChain, globalSetLayouts);
-        graphicsPipeline = build.graphicsPipeline;
+        pipeline = build.pipeline;
         pipelineLayout = build.pipelineLayout;
     }
 }

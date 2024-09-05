@@ -1,6 +1,8 @@
 package steve6472.volkaniums.pipeline;
 
 import steve6472.volkaniums.ShaderSPIRVUtils;
+import steve6472.volkaniums.pipeline.builder.PipelineBuilder;
+import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
 import steve6472.volkaniums.struct.def.Push;
 import steve6472.volkaniums.struct.def.Vertex;
 
@@ -13,7 +15,8 @@ import static org.lwjgl.vulkan.VK10.*;
  */
 public interface Pipelines
 {
-    PipelineConstructor BASIC = (device, swapChain, globalSetLayouts) -> PipelineBuilder.create(device)
+    PipelineConstructor BASIC = (device, swapChain, globalSetLayouts) -> PipelineBuilder
+        .create(device)
         .shaders()
             .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "shaders/shader_base.vert", VK_SHADER_STAGE_VERTEX_BIT)
             .addShader(ShaderSPIRVUtils.ShaderKind.FRAGMENT_SHADER, "shaders/shader_base.frag", VK_SHADER_STAGE_FRAGMENT_BIT)

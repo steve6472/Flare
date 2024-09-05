@@ -1,4 +1,4 @@
-package steve6472.volkaniums.pipeline;
+package steve6472.volkaniums.pipeline.builder;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkPipelineColorBlendAttachmentState;
@@ -35,7 +35,7 @@ class ColorBlendInfo
         return colorBlendAttachment;
     }
 
-    public VkPipelineColorBlendStateCreateInfo createInfo(MemoryStack stack)
+    VkPipelineColorBlendStateCreateInfo createInfo(MemoryStack stack)
     {
         VkPipelineColorBlendAttachmentState.Buffer buffer = createBuffer(stack);
 

@@ -35,14 +35,11 @@ import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
  */
 public class ModelRenderSystem extends RenderSystem
 {
-    Pipeline graphicsPipeline;
-
     Model3d model3d;
 
-    public ModelRenderSystem(VkDevice device, Pipeline graphicsPipeline, Commands commands, VkQueue graphicsQueue)
+    public ModelRenderSystem(VkDevice device, Pipeline pipeline, Commands commands, VkQueue graphicsQueue)
     {
-        super(device);
-        this.graphicsPipeline = graphicsPipeline;
+        super(device, pipeline);
 
         createModel(commands, graphicsQueue);
     }
@@ -70,12 +67,12 @@ public class ModelRenderSystem extends RenderSystem
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
-        graphicsPipeline.bind(frameInfo.commandBuffer);
+        pipeline.bind(frameInfo.commandBuffer);
 
         vkCmdBindDescriptorSets(
             frameInfo.commandBuffer,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
-            graphicsPipeline.pipelineLayout(),
+            pipeline.pipelineLayout(),
             0,
             stack.longs(frameInfo.globalDescriptorSet),
             null);
@@ -89,7 +86,7 @@ public class ModelRenderSystem extends RenderSystem
                     .scale(0.05f),
                 new Vector3f(0.3f, 0.3f, 0.3f));
 
-            Push.PUSH.push(push, frameInfo.commandBuffer, graphicsPipeline.pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0);
+            Push.PUSH.push(push, frameInfo.commandBuffer, pipeline.pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0);
 
             model3d.bind(frameInfo.commandBuffer);
             model3d.draw(frameInfo.commandBuffer);

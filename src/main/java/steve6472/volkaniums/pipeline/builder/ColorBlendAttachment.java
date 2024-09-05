@@ -1,4 +1,4 @@
-package steve6472.volkaniums.pipeline;
+package steve6472.volkaniums.pipeline.builder;
 
 import org.lwjgl.vulkan.VkPipelineColorBlendAttachmentState;
 

@@ -46,7 +46,7 @@ public class StructDef
         for (int i = 0; i < vertex.members.length; i++)
         {
             vertex.members[i] = members[i];
-            if (!members[i].getClass().isAssignableFrom(this.members.get(i).memberData().clazz()))
+            if (!members[i].getClass().equals(this.members.get(i).memberData().clazz()))
             {
                 throw new RuntimeException("Class type mismatch!");
             }

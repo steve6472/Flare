@@ -3,6 +3,7 @@ package steve6472.volkaniums.render;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
 import steve6472.volkaniums.FrameInfo;
+import steve6472.volkaniums.pipeline.Pipeline;
 
 /**
  * Created by steve6472
@@ -11,11 +12,13 @@ import steve6472.volkaniums.FrameInfo;
  */
 public abstract class RenderSystem
 {
-    VkDevice device;
+    public final Pipeline pipeline;
+    public final VkDevice device;
 
-    public RenderSystem(VkDevice device)
+    public RenderSystem(VkDevice device, Pipeline pipeline)
     {
         this.device = device;
+        this.pipeline = pipeline;
     }
 
     public abstract void render(FrameInfo frameInfo, MemoryStack stack);

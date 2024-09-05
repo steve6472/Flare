@@ -1,4 +1,4 @@
-package steve6472.volkaniums.pipeline;
+package steve6472.volkaniums.pipeline.builder;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -10,7 +10,7 @@ import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CR
  * Date: 9/1/2024
  * Project: Volkaniums <br>
  */
-public class ViewportInfo
+class ViewportInfo
 {
     float x;
     float y;
@@ -24,7 +24,7 @@ public class ViewportInfo
 
     VkExtent2D extent;
 
-    public VkPipelineViewportStateCreateInfo createInfo(MemoryStack stack)
+    VkPipelineViewportStateCreateInfo createInfo(MemoryStack stack)
     {
         VkViewport.Buffer viewport = VkViewport.calloc(1, stack);
         viewport.x(x);

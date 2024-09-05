@@ -30,7 +30,7 @@ public class MasterRenderer
     private final long surface;
 
     private final SwapChain swapChain;
-    private final Pipeline graphicsPipeline;
+    private final Pipeline pipeline;
     private final Commands commands;
     private final long globalSetLayout;
 
@@ -40,7 +40,7 @@ public class MasterRenderer
 
     private boolean isFrameStarted;
 
-    private List<RenderSystem> renderSystems = new ArrayList<>();
+    private final List<RenderSystem> renderSystems = new ArrayList<>();
 
     public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, long surface, long globalSetLayout)
     {
@@ -51,12 +51,12 @@ public class MasterRenderer
         this.surface = surface;
 
         swapChain = new SwapChain();
-        graphicsPipeline = new Pipeline(Pipelines.BASIC);
+        pipeline = new Pipeline(Pipelines.BASIC);
         commands = new Commands();
         this.globalSetLayout = globalSetLayout;
         commands.createCommandPool(device, surface);
 
-        renderSystems.add(new ModelRenderSystem(device, graphicsPipeline, commands, graphicsQueue));
+        renderSystems.add(new ModelRenderSystem(device, pipeline, commands, graphicsQueue));
 
         createSwapChainObjects();
     }
@@ -66,7 +66,8 @@ public class MasterRenderer
         swapChain.createSwapChain(surface, device, window.window());
         swapChain.createImageViews(device);
         swapChain.createRenderPass(device, swapChain);
-        graphicsPipeline.rebuild(device, swapChain, globalSetLayout);
+
+        pipeline.rebuild(device, swapChain, globalSetLayout);
         swapChain.createDepthResources(device, commands.commandPool, graphicsQueue);
         swapChain.createFrameBuffers(device);
         commands.createCommandBuffers(device);
@@ -98,8 +99,8 @@ public class MasterRenderer
 
         commands.freeCommandBuffers(device);
 
-        vkDestroyPipeline(device, graphicsPipeline.graphicsPipeline(), null);
-        vkDestroyPipelineLayout(device, graphicsPipeline.pipelineLayout(), null);
+        vkDestroyPipeline(device, pipeline.pipeline(), null);
+        vkDestroyPipelineLayout(device, pipeline.pipelineLayout(), null);
         vkDestroyRenderPass(device, swapChain.renderPass, null);
         swapChain.swapChainImageViews.forEach(imageView -> vkDestroyImageView(device, imageView, null));
         vkDestroyImageView(device, swapChain.depthImageView, null);

@@ -1,7 +1,8 @@
-package steve6472.volkaniums.pipeline;
+package steve6472.volkaniums.pipeline.builder;
 
 import org.lwjgl.vulkan.VkDevice;
 import steve6472.volkaniums.SwapChain;
+import steve6472.volkaniums.pipeline.Pipeline;
 
 /**
  * Created by steve6472

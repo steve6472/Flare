@@ -1,4 +1,4 @@
-package steve6472.volkaniums.pipeline;
+package steve6472.volkaniums.pipeline.builder;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
@@ -7,6 +7,7 @@ import org.lwjgl.vulkan.VkGraphicsPipelineCreateInfo;
 import org.lwjgl.vulkan.VkPipelineLayoutCreateInfo;
 import steve6472.volkaniums.ErrorCode;
 import steve6472.volkaniums.ShaderSPIRVUtils;
+import steve6472.volkaniums.pipeline.Pipeline;
 import steve6472.volkaniums.struct.type.StructVertex;
 
 import java.nio.LongBuffer;
