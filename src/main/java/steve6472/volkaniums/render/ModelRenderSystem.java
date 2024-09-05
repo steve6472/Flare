@@ -7,6 +7,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
@@ -84,7 +85,8 @@ public class ModelRenderSystem extends RenderSystem
                     .rotateY((float) MathUtil.animateRadians(4d))
                     .rotateZ((float) Math.toRadians(180)) // Todo: flip the view probably ?
                     .scale(0.05f),
-                new Vector3f(0.3f, 0.3f, 0.3f));
+                new Vector4f(0.3f, 0.3f, 0.3f, 1.0f),
+                j);
 
             Push.PUSH.push(push, frameInfo.commandBuffer, pipeline.pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0);
 

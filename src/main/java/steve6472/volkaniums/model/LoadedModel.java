@@ -3,6 +3,7 @@ package steve6472.volkaniums.model;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import steve6472.volkaniums.model.anim.Animation;
+import steve6472.volkaniums.struct.def.Vertex;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +28,7 @@ public record LoadedModel(ModelMeta meta, Resolution resolution, List<Element> e
 
     public PrimitiveModel toPrimitiveModel()
     {
-        PrimitiveModel model = new PrimitiveModel();
+        PrimitiveModel model = new PrimitiveModel(Vertex.POS3F_COL3F_UV);
 
         Map<UUID, Element> elementMap = new HashMap<>(elements.size());
         for (Element element : elements)

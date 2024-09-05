@@ -46,11 +46,11 @@ public class Pipeline
         return pipelineLayout;
     }
 
-    public void rebuild(VkDevice device, SwapChain swapChain, long... globalSetLayouts)
+    public void rebuild(VkDevice device, SwapChain swapChain, long... setLayouts)
     {
         Preconditions.checkNotNull(constructor, "Tried to rebuild a Pipeline from a temporary object!");
 
-        Pipeline build = constructor.build(device, swapChain, globalSetLayouts);
+        Pipeline build = constructor.build(device, swapChain, setLayouts);
         pipeline = build.pipeline;
         pipelineLayout = build.pipelineLayout;
     }

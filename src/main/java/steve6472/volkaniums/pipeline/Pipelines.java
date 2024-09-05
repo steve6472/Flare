@@ -15,7 +15,7 @@ import static org.lwjgl.vulkan.VK10.*;
  */
 public interface Pipelines
 {
-    PipelineConstructor BASIC = (device, swapChain, globalSetLayouts) -> PipelineBuilder
+    PipelineConstructor BASIC = (device, swapChain, setLayouts) -> PipelineBuilder
         .create(device)
         .shaders()
             .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "shaders/shader_base.vert", VK_SHADER_STAGE_VERTEX_BIT)
@@ -50,5 +50,5 @@ public interface Pipelines
         .pushConstants()
             .constant(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, Push.PUSH.sizeof())
             .done()
-        .build(swapChain.renderPass, globalSetLayouts);
+        .build(swapChain.renderPass, setLayouts);
 }

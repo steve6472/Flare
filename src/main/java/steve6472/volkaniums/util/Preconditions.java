@@ -83,13 +83,13 @@ public class Preconditions
 
 	public static void checkTrue(boolean flag)
 	{
-		if (!flag)
+		if (flag)
 			throw new RuntimeException("Flag is false");
 	}
 
 	public static void checkTrue(boolean flag, String message)
 	{
-		if (!flag)
+		if (flag)
 			throw new RuntimeException(message);
 	}
 

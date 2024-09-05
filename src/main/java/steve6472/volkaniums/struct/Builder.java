@@ -1,6 +1,7 @@
 package steve6472.volkaniums.struct;
 
 import steve6472.volkaniums.AlignmentUtils;
+import steve6472.volkaniums.util.Preconditions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,20 @@ public final class Builder
         members.add(new MemberEntry(memberData, 0, AlignmentUtils.sizeof(memberData.clazz())));
         return this;
     }
+
+    public <T> Builder addMemberArray(MemberData<T> memberData, int arraySize)
+    {
+        Preconditions.checkTrue(arraySize < 0, "Array size has to be 0 or more!");
+
+        members.add(new MemberEntry(memberData.makeArray(arraySize), 0, AlignmentUtils.sizeof(memberData.clazz()) * arraySize, arraySize));
+        return this;
+    }
+
+//    public Builder addStructArray(StructDef struct, int i)
+//    {
+//        members.add(new MemberEntry(data, 0, struct.sizeof() * i));
+//        return this;
+//    }
 
     /**
      * @Deprecated Align not finished

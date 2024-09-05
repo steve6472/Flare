@@ -6,13 +6,12 @@ layout (location = 1) in vec2 uv;
 
 layout (location = 0) out vec4 outColor;
 
-layout (push_constant) uniform Push {
+layout(push_constant) uniform Push {
     mat4 transformation;
-    vec3 color;
+    vec4 color;
+    int arrayIndex;
 } push;
 
 void main() {
-    outColor = vec4(fragColor * push.color, 1.0);
-//    outColor = vec4(1.0, 1.0, 1.0, 1.0);
-//    outColor = vec4(push.color, 1.0);
+    outColor = vec4(fragColor * push.color.rgb, 1.0);
 }

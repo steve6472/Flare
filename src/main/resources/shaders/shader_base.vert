@@ -11,17 +11,19 @@ layout (location = 1) out vec2 uv;
 layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection;
     mat4 view;
+    mat4 transformation[4];
 } ubo;
 
 layout(push_constant) uniform Push {
     mat4 transformation;
-    vec3 color;
+    vec4 color;
+    int arrayIndex;
 } push;
 
 void main() {
-//    gl_Position = vec4(inPosition, 1.0) * push.projection;
-        gl_Position = ubo.projection * ubo.view * push.transformation * vec4(inPosition, 1.0);
-//    gl_Position = vec4(inPosition, 1.0);
+//    gl_Position = ubo.projection * ubo.view * push.transformation * ubo.transformation[push.arrayIndex] * vec4(inPosition, 1.0);
+    gl_Position = ubo.projection * ubo.view * ubo.transformation[push.arrayIndex] * push.transformation * vec4(inPosition, 1.0);
+//    gl_Position.y += push.arrayIndex * 0.2f;
     fragColor = inColor;
     uv = inUv;
 }

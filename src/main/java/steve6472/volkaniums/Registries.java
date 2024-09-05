@@ -21,7 +21,7 @@ public class Registries
     private static final Logger LOGGER = Log.getLogger(Registries.class);
     private static final Map<Key, Supplier<?>> LOADERS = new LinkedHashMap<>();
 
-    public static final ObjectRegistry<Settings.Setting<?>> SETTINGS = createObjectRegistry("setting", () -> Settings.USERNAME);
+    public static final ObjectRegistry<Settings.Setting<?, ?>> SETTINGS = createObjectRegistry("setting", () -> Settings.USERNAME);
 
     public static final Registry<ElementType<?>> MODEL_ELEMENT = createRegistry("model_element", () -> ElementType.CUBE);
     public static final Registry<KeyframeType<?>> KEYFRAME_TYPE = createRegistry("keyframe_type", () -> KeyframeType.ROTATION);

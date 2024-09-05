@@ -48,7 +48,7 @@ public class StructDef
             vertex.members[i] = members[i];
             if (!members[i].getClass().equals(this.members.get(i).memberData().clazz()))
             {
-                throw new RuntimeException("Class type mismatch!");
+                throw new RuntimeException("Class type mismatch! Passed " + members[i].getClass() + ", expected " + this.members.get(i).memberData().clazz());
             }
         }
 

@@ -1,7 +1,10 @@
 package steve6472.volkaniums.struct;
 
 import org.lwjgl.vulkan.VK13;
+import steve6472.volkaniums.AlignmentUtils;
+import steve6472.volkaniums.util.Preconditions;
 
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -16,6 +19,34 @@ public record MemberData<T>(Class<T> clazz, Supplier<T> constructor, int format,
     public static <T> Builder<T> builder(Class<T> clazz)
     {
         return new Builder<>(clazz);
+    }
+
+    public MemberData<T[]> makeArray(final int arraySize)
+    {
+        Preconditions.checkTrue(clazz.isArray(), "Can not make an array type from array!");
+
+        Class<T[]> arrayType = (Class<T[]>) clazz.arrayType();
+
+        Supplier<T[]> construct = () -> {
+            T[] array = (T[]) Array.newInstance(clazz, arraySize);
+            for (int i = 0; i < arraySize; i++)
+            {
+                array[i] = constructor.get();
+            }
+            return array;
+        };
+
+        int sizeof = AlignmentUtils.sizeof(clazz);
+
+        Memcpy<T[]> memcpyArr = (buff, offset, obj) -> {
+            int arrayOffset = 0;
+            for (T t : obj)
+            {
+                memcpy.accept(buff, offset + arrayOffset, t);
+                arrayOffset += sizeof;
+            }
+        };
+        return new MemberData<>(arrayType, construct, format, memcpyArr);
     }
 
     public static final class Builder<T>
@@ -39,12 +70,6 @@ public record MemberData<T>(Class<T> clazz, Supplier<T> constructor, int format,
         public Builder<T> format(int format)
         {
             this.format = format;
-            return this;
-        }
-
-        public Builder<T> memcpy(BiConsumer<ByteBuffer, T> memcpy)
-        {
-            this.memcpy = (buffer, offset, data) -> memcpy.accept(buffer, data);
             return this;
         }
 

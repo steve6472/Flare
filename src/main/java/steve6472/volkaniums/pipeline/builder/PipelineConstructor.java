@@ -12,5 +12,5 @@ import steve6472.volkaniums.pipeline.Pipeline;
 @FunctionalInterface
 public interface PipelineConstructor
 {
-    Pipeline build(VkDevice device, SwapChain swapChain, long... globalSetLayouts);
+    Pipeline build(VkDevice device, SwapChain swapChain, long... setLayouts);
 }

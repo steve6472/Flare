@@ -3,7 +3,7 @@ package steve6472.volkaniums.model;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import steve6472.volkaniums.struct.Struct;
-import steve6472.volkaniums.struct.def.Vertex;
+import steve6472.volkaniums.struct.type.StructVertex;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -19,11 +19,13 @@ public class PrimitiveModel
 {
     public final List<Vector3f> positions;
     public final List<Vector2f> texCoords;
+    public final StructVertex vertexType;
 
-    public PrimitiveModel()
+    public PrimitiveModel(StructVertex vertexType)
     {
         this.positions = new ArrayList<>();
         this.texCoords = new ArrayList<>();
+        this.vertexType = vertexType;
     }
 
     @Deprecated(forRemoval = true)
@@ -39,7 +41,7 @@ public class PrimitiveModel
             Vector2f uv = texCoords.get(i);
             Vector3f pos = positions.get(i);
             Color color = generateRandomSaturatedColor(pos.x, pos.y, pos.z);
-            Struct vertex = Vertex.POS3F_COL3F_UV.create(pos, new Vector3f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f), uv);
+            Struct vertex = vertexType.create(pos, new Vector3f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f), uv);
             vertices.add(vertex);
         }
         return vertices;

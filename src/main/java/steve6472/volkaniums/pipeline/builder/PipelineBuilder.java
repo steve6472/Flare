@@ -95,11 +95,11 @@ public final class PipelineBuilder
         return new PipelineBuilder(device);
     }
 
-    public Pipeline build(long renderPass, long... globalSetLayouts)
+    public Pipeline build(long renderPass, long... setLayouts)
     {
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            long pipelineLayout = createPipelineLayout(stack, globalSetLayouts);
+            long pipelineLayout = createPipelineLayout(stack, setLayouts);
 
             VkGraphicsPipelineCreateInfo.Buffer pipelineInfo = VkGraphicsPipelineCreateInfo.calloc(1, stack);
             pipelineInfo.sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO);
@@ -130,12 +130,12 @@ public final class PipelineBuilder
         }
     }
 
-    private long createPipelineLayout(MemoryStack stack, long... globalSetLayouts)
+    private long createPipelineLayout(MemoryStack stack, long... setLayouts)
     {
         VkPipelineLayoutCreateInfo pipelineLayoutInfo = VkPipelineLayoutCreateInfo.calloc(stack);
         pipelineLayoutInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);
         pipelineLayoutInfo.pPushConstantRanges(pushConstantRange.createRange(stack));
-        pipelineLayoutInfo.pSetLayouts(stack.longs(globalSetLayouts));
+        pipelineLayoutInfo.pSetLayouts(stack.longs(setLayouts));
 
         LongBuffer pPipelineLayout = stack.longs(VK_NULL_HANDLE);
 

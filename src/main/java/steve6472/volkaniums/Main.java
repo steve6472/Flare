@@ -1,5 +1,6 @@
 package steve6472.volkaniums;
 
+import com.google.gson.JsonObject;
 import org.joml.Matrix4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
@@ -9,6 +10,8 @@ import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.settings.Settings;
+import steve6472.volkaniums.settings.SettingsLoader;
+import steve6472.volkaniums.settings.ValidationLevel;
 import steve6472.volkaniums.struct.def.UBO;
 import steve6472.volkaniums.util.Log;
 
@@ -80,6 +83,7 @@ public class Main
     private void initContent()
     {
         Registries.createContents();
+        //TODO: SettingsLoader.loadSettings(...);
     }
 
     private void mainLoop()
@@ -142,7 +146,12 @@ public class Main
                     frameInfo.globalDescriptorSet = flightFrame.descriptorSet;
                     // Update
 
-                    var globalUBO = UBO.GLOBAL_UBO.create(camera.getProjectionMatrix(), new Matrix4f().translate(0, 0, -2));
+                    var globalUBO = UBO.GLOBAL_UBO.create(camera.getProjectionMatrix(), new Matrix4f().translate(0, 0, -2), new Matrix4f[] {
+                        new Matrix4f().translate(0, -1f, 0),
+                        new Matrix4f(),
+                        new Matrix4f().translate(0, 1f, 0),
+                        new Matrix4f().rotateZ((float) (Math.PI * 0.25f))
+                    });
 
                     flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_UBO::memcpy, globalUBO);
                     flightFrame.uboBuffer.flush();
@@ -159,7 +168,6 @@ public class Main
         // Wait for the device to complete all operations before release resources
         vkDeviceWaitIdle(device);
 
-        globalSetLayout.cleanup();
         for (FlightFrame flightFrame : frame)
             flightFrame.uboBuffer.cleanup();
     }
@@ -169,6 +177,7 @@ public class Main
         LOGGER.fine("Cleanup");
 
         renderer.cleanup();
+        globalSetLayout.cleanup();
         globalPool.cleanup();
 
         vkDestroyDevice(device, null);

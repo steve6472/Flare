@@ -1,6 +1,7 @@
 package steve6472.volkaniums.settings;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import steve6472.volkaniums.Registries;
 import steve6472.volkaniums.registry.Key;
 import steve6472.volkaniums.registry.Keyable;
@@ -59,7 +60,7 @@ public class Settings
         return obj;
     }
 
-    public static abstract class Setting<T> implements Serializable<T>, Keyable
+    public static abstract class Setting<SELF, T> implements Serializable<SELF>, Keyable
     {
         Key key;
 
@@ -68,9 +69,13 @@ public class Settings
         {
             return key;
         }
+
+        public abstract T get();
+
+        public abstract void set(T value);
     }
 
-    private static abstract class PrimitiveSetting<V, T> extends Setting<T>
+    private static abstract class PrimitiveSetting<V, SELF> extends Setting<SELF, V>
     {
         protected final V defaultValue;
         protected V currentValue;
@@ -86,9 +91,22 @@ public class Settings
             this(defaultValue, defaultValue);
         }
 
+        @Override
         public V get()
         {
             return currentValue;
+        }
+
+        @Override
+        public void set(V value)
+        {
+            currentValue = value;
+        }
+
+        @Override
+        public String toString()
+        {
+            return "PrimitiveSetting{" + "defaultValue=" + defaultValue + ", currentValue=" + currentValue + ", key=" + key + '}';
         }
     }
 
@@ -130,32 +148,46 @@ public class Settings
         }
     }
 
-    public static class EnumSetting<E extends Enum<E> & StringValue> extends Setting<E>
+    public static class EnumSetting<T extends Enum<T> & StringValue> extends Setting<EnumSetting<T>, T>
     {
-        protected final E defaultValue;
-        protected E currentValue;
+        protected final T defaultValue;
+        protected T currentValue;
 
-        private EnumSetting(E defaultValue, E currentValue)
+        private EnumSetting(T defaultValue, T currentValue)
         {
             this.defaultValue = defaultValue;
             this.currentValue = currentValue;
         }
 
-        private EnumSetting(E defaultValue)
+        private EnumSetting(T defaultValue)
         {
             this(defaultValue, defaultValue);
         }
 
-        public E get()
+        @Override
+        public T get()
         {
             return currentValue;
         }
 
         @Override
-        public Codec<E> codec()
+        public void set(T value)
         {
-            E[] enumConstants = defaultValue.getDeclaringClass().getEnumConstants();
-            return StringValue.fromValues(() -> enumConstants);
+            currentValue = value;
+        }
+
+        @Override
+        public Codec<EnumSetting<T>> codec()
+        {
+            T[] enumConstants = defaultValue.getDeclaringClass().getEnumConstants();
+            Codec<T> valueCodec = StringValue.fromValues(() -> enumConstants);
+            return valueCodec.xmap(a -> new EnumSetting<>(defaultValue, a), EnumSetting::get);
+        }
+
+        @Override
+        public String toString()
+        {
+            return "EnumSetting{" + "defaultValue=" + defaultValue + ", currentValue=" + currentValue + ", key=" + key + '}';
         }
     }
 }

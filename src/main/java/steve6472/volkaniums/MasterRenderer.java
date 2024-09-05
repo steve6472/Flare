@@ -28,7 +28,7 @@ public class MasterRenderer
 
     private final SwapChain swapChain;
     private final Commands commands;
-    private final long globalSetLayout;
+    private final long[] setLayouts;
 
     private int currentFrameIndex;
     private SyncFrame thisFrame;
@@ -38,16 +38,16 @@ public class MasterRenderer
 
     private final List<RenderSystem> renderSystems = new ArrayList<>();
 
-    public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, long surface, long globalSetLayout)
+    public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, long surface, long... setLayouts)
     {
         this.window = window;
         this.device = device;
         this.graphicsQueue = graphicsQueue;
         this.presentQueue = presentQueue;
+        this.setLayouts = setLayouts;
 
         swapChain = new SwapChain(device, window, surface, this);
         commands = new Commands();
-        this.globalSetLayout = globalSetLayout;
         commands.createCommandPool(device, surface);
 
         renderSystems.add(new ModelRenderSystem(device, new Pipeline(Pipelines.BASIC), commands, graphicsQueue));
@@ -57,7 +57,7 @@ public class MasterRenderer
 
     public void rebuildPipelines()
     {
-        renderSystems.forEach(renderSystem -> renderSystem.pipeline.rebuild(device, swapChain, globalSetLayout));
+        renderSystems.forEach(renderSystem -> renderSystem.pipeline.rebuild(device, swapChain, setLayouts));
     }
 
     public void destroyPipelines()

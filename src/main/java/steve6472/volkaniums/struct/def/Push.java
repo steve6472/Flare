@@ -14,6 +14,7 @@ public interface Push
 {
     StructPush PUSH = builder()
         .addMember(MAT_4F) // transformation
-        .addMember(VEC_3F) // color
+        .addMember(VEC_4F) // color
+        .addMember(INT)    // arrayIndex
         .build(StructPush::new);
 }
