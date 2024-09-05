@@ -54,4 +54,10 @@ public class Pipeline
         pipeline = build.pipeline;
         pipelineLayout = build.pipelineLayout;
     }
+
+    public void cleanup(VkDevice device)
+    {
+        vkDestroyPipeline(device, pipeline, null);
+        vkDestroyPipelineLayout(device, pipelineLayout, null);
+    }
 }

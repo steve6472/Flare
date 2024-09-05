@@ -10,5 +10,5 @@ import java.nio.ByteBuffer;
 @FunctionalInterface
 public interface Memcpy<T>
 {
-    void accept(ByteBuffer buffer, int offset, T data);
+    void accept(ByteBuffer buffer, int alignment, T data);
 }

@@ -11,8 +11,6 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
-import static org.lwjgl.glfw.GLFW.glfwWaitEvents;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK10.*;
 
@@ -27,10 +25,8 @@ public class MasterRenderer
     private final VkDevice device;
     private final VkQueue graphicsQueue;
     private final VkQueue presentQueue;
-    private final long surface;
 
     private final SwapChain swapChain;
-    private final Pipeline pipeline;
     private final Commands commands;
     private final long globalSetLayout;
 
@@ -48,71 +44,30 @@ public class MasterRenderer
         this.device = device;
         this.graphicsQueue = graphicsQueue;
         this.presentQueue = presentQueue;
-        this.surface = surface;
 
-        swapChain = new SwapChain();
-        pipeline = new Pipeline(Pipelines.BASIC);
+        swapChain = new SwapChain(device, window, surface, this);
         commands = new Commands();
         this.globalSetLayout = globalSetLayout;
         commands.createCommandPool(device, surface);
 
-        renderSystems.add(new ModelRenderSystem(device, pipeline, commands, graphicsQueue));
+        renderSystems.add(new ModelRenderSystem(device, new Pipeline(Pipelines.BASIC), commands, graphicsQueue));
 
-        createSwapChainObjects();
+        swapChain.createSwapChainObjects();
     }
 
-    private void createSwapChainObjects()
+    public void rebuildPipelines()
     {
-        swapChain.createSwapChain(surface, device, window.window());
-        swapChain.createImageViews(device);
-        swapChain.createRenderPass(device, swapChain);
-
-        pipeline.rebuild(device, swapChain, globalSetLayout);
-        swapChain.createDepthResources(device, commands.commandPool, graphicsQueue);
-        swapChain.createFrameBuffers(device);
-        commands.createCommandBuffers(device);
-        swapChain.createSyncObjects(device);
+        renderSystems.forEach(renderSystem -> renderSystem.pipeline.rebuild(device, swapChain, globalSetLayout));
     }
 
-    private void recreateSwapChain()
+    public void destroyPipelines()
     {
-        try (MemoryStack stack = MemoryStack.stackPush())
-        {
-            IntBuffer width = stack.ints(0);
-            IntBuffer height = stack.ints(0);
-
-            while (width.get(0) == 0 && height.get(0) == 0)
-            {
-                glfwGetFramebufferSize(window.window(), width, height);
-                glfwWaitEvents();
-            }
-        }
-        vkDeviceWaitIdle(device);
-
-        cleanupSwapChain();
-        createSwapChainObjects();
-    }
-
-    private void cleanupSwapChain()
-    {
-        swapChain.swapChainFramebuffers.forEach(framebuffer -> vkDestroyFramebuffer(device, framebuffer, null));
-
-        commands.freeCommandBuffers(device);
-
-        vkDestroyPipeline(device, pipeline.pipeline(), null);
-        vkDestroyPipelineLayout(device, pipeline.pipelineLayout(), null);
-        vkDestroyRenderPass(device, swapChain.renderPass, null);
-        swapChain.swapChainImageViews.forEach(imageView -> vkDestroyImageView(device, imageView, null));
-        vkDestroyImageView(device, swapChain.depthImageView, null);
-        vkFreeMemory(device, swapChain.depthImageMemory, null);
-        vkDestroyImage(device, swapChain.depthImage, null);
-        vkDestroySwapchainKHR(device, swapChain.swapChain, null);
-        swapChain.cleanup(device);
+        renderSystems.forEach(renderSystem -> renderSystem.pipeline.cleanup(device));
     }
 
     public void cleanup()
     {
-        cleanupSwapChain();
+        swapChain.cleanupSwapChain();
 
         renderSystems.forEach(RenderSystem::cleanup);
 
@@ -131,7 +86,7 @@ public class MasterRenderer
 
         if (vkResult == VK_ERROR_OUT_OF_DATE_KHR)
         {
-            recreateSwapChain();
+            swapChain.recreateSwapChain();
             return null;
         } else if (vkResult != VK_SUCCESS)
         {
@@ -175,7 +130,7 @@ public class MasterRenderer
         if (vkResult == VK_ERROR_OUT_OF_DATE_KHR || vkResult == VK_SUBOPTIMAL_KHR || window.isFramebufferResize())
         {
             window.resetFramebufferResizeFlag();
-            recreateSwapChain();
+            swapChain.recreateSwapChain();
         } else if (vkResult != VK_SUCCESS)
         {
             throw new RuntimeException("Failed to present swap chain image");
@@ -227,12 +182,22 @@ public class MasterRenderer
         return commands.commandBuffers.get(currentFrameIndex);
     }
 
+    public Commands getCommands()
+    {
+        return commands;
+    }
+
     public int getCurrentFrameIndex()
     {
         if (!isFrameStarted)
             throw new RuntimeException("Cannot get frame index when frame not in progress");
 
         return currentFrameIndex;
+    }
+
+    public VkQueue getGraphicsQueue()
+    {
+        return graphicsQueue;
     }
 
     public long getSwapChainRenderPass()

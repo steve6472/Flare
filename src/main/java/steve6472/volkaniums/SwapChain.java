@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
+import static org.lwjgl.glfw.GLFW.glfwWaitEvents;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK13.*;
 
@@ -22,6 +23,11 @@ import static org.lwjgl.vulkan.VK13.*;
  */
 public class SwapChain
 {
+    private final VkDevice device;
+    private final Window window;
+    private final long surface;
+    private final MasterRenderer masterRenderer;
+
     public long swapChain;
     // TODO: LongArrayList
     public List<Long> swapChainImages;
@@ -40,6 +46,61 @@ public class SwapChain
     public List<SyncFrame> inFlightFrames;
 
     public static final int MAX_FRAMES_IN_FLIGHT = 2;
+
+    public SwapChain(VkDevice device, Window window, long surface, MasterRenderer masterRenderer)
+    {
+        this.device = device;
+        this.window = window;
+        this.surface = surface;
+        this.masterRenderer = masterRenderer;
+    }
+
+    public void createSwapChainObjects()
+    {
+        createSwapChain(surface, device, window.window());
+        createImageViews(device);
+        createRenderPass(device);
+        masterRenderer.rebuildPipelines();
+        createDepthResources(device, masterRenderer.getCommands().commandPool, masterRenderer.getGraphicsQueue());
+        createFrameBuffers(device);
+        masterRenderer.getCommands().createCommandBuffers(device);
+        createSyncObjects(device);
+    }
+
+    public void recreateSwapChain()
+    {
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            IntBuffer width = stack.ints(0);
+            IntBuffer height = stack.ints(0);
+
+            while (width.get(0) == 0 && height.get(0) == 0)
+            {
+                glfwGetFramebufferSize(window.window(), width, height);
+                glfwWaitEvents();
+            }
+        }
+        vkDeviceWaitIdle(device);
+
+        cleanupSwapChain();
+        createSwapChainObjects();
+    }
+
+    public void cleanupSwapChain()
+    {
+        swapChainFramebuffers.forEach(framebuffer -> vkDestroyFramebuffer(device, framebuffer, null));
+
+        masterRenderer.getCommands().freeCommandBuffers(device);
+
+        masterRenderer.destroyPipelines();
+        vkDestroyRenderPass(device, renderPass, null);
+        swapChainImageViews.forEach(imageView -> vkDestroyImageView(device, imageView, null));
+        vkDestroyImageView(device, depthImageView, null);
+        vkFreeMemory(device, depthImageMemory, null);
+        vkDestroyImage(device, depthImage, null);
+        vkDestroySwapchainKHR(device, swapChain, null);
+        cleanup(device);
+    }
 
     public void createSwapChain(long surface, VkDevice device, long window)
     {
@@ -116,7 +177,7 @@ public class SwapChain
         }
     }
 
-    public void createRenderPass(VkDevice device, SwapChain swapChain)
+    public void createRenderPass(VkDevice device)
     {
         try (MemoryStack stack = MemoryStack.stackPush())
         {
@@ -126,7 +187,7 @@ public class SwapChain
             // COLOR
 
             VkAttachmentDescription colorAttachment = attachments.get(0);
-            colorAttachment.format(swapChain.swapChainImageFormat);
+            colorAttachment.format(swapChainImageFormat);
             colorAttachment.samples(VK_SAMPLE_COUNT_1_BIT);
             colorAttachment.loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR);
             colorAttachment.storeOp(VK_ATTACHMENT_STORE_OP_STORE);
@@ -142,7 +203,7 @@ public class SwapChain
             // DEPTH
 
             VkAttachmentDescription depthAttachment = attachments.get(1);
-            depthAttachment.format(swapChain.findDepthFormat(device, stack));
+            depthAttachment.format(findDepthFormat(device, stack));
             depthAttachment.samples(VK_SAMPLE_COUNT_1_BIT);
             depthAttachment.loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR);
             depthAttachment.storeOp(VK_ATTACHMENT_STORE_OP_DONT_CARE);
