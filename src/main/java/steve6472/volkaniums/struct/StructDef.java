@@ -40,7 +40,7 @@ public class StructDef
 
     public Struct create(Object... members)
     {
-        Preconditions.checkEqual(this.members.size(), members.length, "Passed members do not have the same count as Vertex members");
+        Preconditions.checkEqual(this.members.size(), members.length, "Passed members do not have the same count as Vertex members. Expected " + this.members.size() + ", got " + members.length);
 
         Struct vertex = new Struct(this.members.size());
         for (int i = 0; i < vertex.members.length; i++)

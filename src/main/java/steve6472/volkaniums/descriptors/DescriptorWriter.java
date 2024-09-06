@@ -4,6 +4,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.*;
 import steve6472.volkaniums.VkBuffer;
+import steve6472.volkaniums.util.Preconditions;
 
 import java.nio.LongBuffer;
 import java.util.ArrayList;
@@ -53,7 +54,9 @@ public class DescriptorWriter
 
     private int getDescriptorType(int binding)
     {
-        return setLayout.bindings.get(binding).descriptorType();
+        VkDescriptorSetLayoutBinding setBinding = setLayout.bindings.get(binding);
+        Preconditions.checkNotNull(setBinding, "Binding " + binding + " is not created!");
+        return setBinding.descriptorType();
     }
 
     private VkWriteDescriptorSet.Buffer createWriteBuffers(MemoryStack stack)

@@ -21,4 +21,9 @@ public interface UBO
         .addMember(MAT_4F) // view
         .addMemberArray(MAT_4F, 4)
         .build();
+
+    StructDef GLOBAL_UBO_TEST = builder()
+        .addMember(MAT_4F) // projection
+        .addMember(MAT_4F) // view
+        .build();
 }

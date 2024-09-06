@@ -6,6 +6,8 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import steve6472.volkaniums.struct.MemberData;
 
+import java.nio.ByteBuffer;
+
 import static org.lwjgl.vulkan.VK10.*;
 import static steve6472.volkaniums.struct.MemberData.builder;
 
@@ -37,13 +39,13 @@ public interface MemberType
     MemberData<Float> FLOAT = builder(Float.class)
         .constructor(() -> 0f)
         .format(VK_FORMAT_R32_SFLOAT)
-        .memcpy((buff, offset, obj) -> buff.putFloat(offset, obj))
+        .memcpy(ByteBuffer::putFloat)
         .build();
 
     MemberData<Integer> INT = builder(Integer.class)
         .constructor(() -> 0)
         .format(VK_FORMAT_R32_SINT)
-        .memcpy((buff, offset, obj) -> buff.putInt(offset, obj))
+        .memcpy(ByteBuffer::putInt)
         .build();
 
     MemberData<Matrix4f> MAT_4F = builder(Matrix4f.class)

@@ -11,6 +11,9 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.lwjgl.vulkan.KHRShaderDrawParameters.VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+
 /**
  * Created by steve6472
  * Date: 7/30/2024
@@ -20,7 +23,7 @@ public class PhysicalDevicePicker
 {
     private static final Logger LOGGER = Log.getLogger(PhysicalDevicePicker.class);
 
-    public static final Set<String> DEVICE_EXTENSIONS = Stream.of(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+    public static final Set<String> DEVICE_EXTENSIONS = Stream.of(VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME)
         .collect(Collectors.toSet());
 
     public static VkPhysicalDevice pickPhysicalDevice(VkInstance instance, long surface)

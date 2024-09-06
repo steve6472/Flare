@@ -1,29 +1,18 @@
 package steve6472.volkaniums;
 
-import com.google.gson.JsonObject;
-import org.joml.Matrix4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
-import steve6472.volkaniums.descriptors.DescriptorPool;
-import steve6472.volkaniums.descriptors.DescriptorSetLayout;
-import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.settings.Settings;
-import steve6472.volkaniums.settings.SettingsLoader;
-import steve6472.volkaniums.settings.ValidationLevel;
-import steve6472.volkaniums.struct.def.UBO;
 import steve6472.volkaniums.util.Log;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.vulkan.VK13.*;
-import static steve6472.volkaniums.SwapChain.MAX_FRAMES_IN_FLIGHT;
 
 public class Main
 {
@@ -37,10 +26,8 @@ public class Main
     private Window window;
     private UserInput userInput;
     private MasterRenderer renderer;
-    private DescriptorPool globalPool;
     private VkInstance instance;
     private VkPhysicalDevice physicalDevice;
-    private DescriptorSetLayout globalSetLayout;
     private long debugMessenger;
     private long surface;
     private VkDevice device;
@@ -69,15 +56,7 @@ public class Main
         createSurface();
         physicalDevice = PhysicalDevicePicker.pickPhysicalDevice(instance, surface);
         createLogicalDevice();
-        globalSetLayout = DescriptorSetLayout
-            .builder(device)
-            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-            .build();
-        renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, surface, globalSetLayout.descriptorSetLayout);
-        globalPool = DescriptorPool.builder(device)
-            .setMaxSets(MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT)
-            .build();
+        renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, surface);
     }
 
     private void initContent()
@@ -88,36 +67,6 @@ public class Main
 
     private void mainLoop()
     {
-        final class FlightFrame
-        {
-            VkBuffer uboBuffer;
-            long descriptorSet;
-        }
-
-        List<FlightFrame> frame = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
-
-        for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            frame.add(new FlightFrame());
-
-            VkBuffer global = new VkBuffer(
-                device,
-                UBO.GLOBAL_UBO.sizeof(),
-                1,
-                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-            global.map();
-            frame.get(i).uboBuffer = global;
-
-            try (MemoryStack stack = MemoryStack.stackPush())
-            {
-                DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
-                frame.get(i).descriptorSet = descriptorWriter
-                    .writeBuffer(0, frame.get(i).uboBuffer, stack)
-                    .build();
-            }
-        }
-
         long currentTime = System.nanoTime();
         while (!window.shouldWindowClose())
         {
@@ -142,20 +91,6 @@ public class Main
                     frameInfo.frameIndex = renderer.getCurrentFrameIndex();
                     frameInfo.commandBuffer = commandBuffer;
 
-                    FlightFrame flightFrame = frame.get(frameInfo.frameIndex);
-                    frameInfo.globalDescriptorSet = flightFrame.descriptorSet;
-                    // Update
-
-                    var globalUBO = UBO.GLOBAL_UBO.create(camera.getProjectionMatrix(), new Matrix4f().translate(0, 0, -2), new Matrix4f[] {
-                        new Matrix4f().translate(0, -1f, 0),
-                        new Matrix4f(),
-                        new Matrix4f().translate(0, 1f, 0),
-                        new Matrix4f().rotateZ((float) (Math.PI * 0.25f))
-                    });
-
-                    flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_UBO::memcpy, globalUBO);
-                    flightFrame.uboBuffer.flush();
-
                     // Render
                     renderer.beginSwapChainRenderPass(commandBuffer, stack);
                     renderer.render(frameInfo, stack);
@@ -167,9 +102,6 @@ public class Main
 
         // Wait for the device to complete all operations before release resources
         vkDeviceWaitIdle(device);
-
-        for (FlightFrame flightFrame : frame)
-            flightFrame.uboBuffer.cleanup();
     }
 
     private void cleanup()
@@ -177,8 +109,6 @@ public class Main
         LOGGER.fine("Cleanup");
 
         renderer.cleanup();
-        globalSetLayout.cleanup();
-        globalPool.cleanup();
 
         vkDestroyDevice(device, null);
 
@@ -255,9 +185,14 @@ public class Main
 
             VkPhysicalDeviceFeatures deviceFeatures = VkPhysicalDeviceFeatures.calloc(stack);
 
+            VkPhysicalDeviceVulkan11Features vulkan11Features = VkPhysicalDeviceVulkan11Features.calloc(stack);
+            vulkan11Features.sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES);
+            vulkan11Features.shaderDrawParameters(true);
+
             VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.calloc(stack);
 
             createInfo.sType(VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO);
+            createInfo.pNext(vulkan11Features);
             createInfo.pQueueCreateInfos(queueCreateInfos);
             // queueCreateInfoCount is automatically set
 

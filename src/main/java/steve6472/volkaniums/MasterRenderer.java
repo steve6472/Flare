@@ -6,6 +6,7 @@ import steve6472.volkaniums.pipeline.Pipeline;
 import steve6472.volkaniums.pipeline.Pipelines;
 import steve6472.volkaniums.render.ModelRenderSystem;
 import steve6472.volkaniums.render.RenderSystem;
+import steve6472.volkaniums.render.TestRenderSystem;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -28,7 +29,6 @@ public class MasterRenderer
 
     private final SwapChain swapChain;
     private final Commands commands;
-    private final long[] setLayouts;
 
     private int currentFrameIndex;
     private SyncFrame thisFrame;
@@ -38,26 +38,26 @@ public class MasterRenderer
 
     private final List<RenderSystem> renderSystems = new ArrayList<>();
 
-    public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, long surface, long... setLayouts)
+    public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, long surface)
     {
         this.window = window;
         this.device = device;
         this.graphicsQueue = graphicsQueue;
         this.presentQueue = presentQueue;
-        this.setLayouts = setLayouts;
 
         swapChain = new SwapChain(device, window, surface, this);
         commands = new Commands();
         commands.createCommandPool(device, surface);
 
-        renderSystems.add(new ModelRenderSystem(device, new Pipeline(Pipelines.BASIC), commands, graphicsQueue));
+//        renderSystems.add(new ModelRenderSystem(device, new Pipeline(Pipelines.BASIC), commands, graphicsQueue));
+        renderSystems.add(new TestRenderSystem(device, new Pipeline(Pipelines.TEST), commands, graphicsQueue));
 
         swapChain.createSwapChainObjects();
     }
 
     public void rebuildPipelines()
     {
-        renderSystems.forEach(renderSystem -> renderSystem.pipeline.rebuild(device, swapChain, setLayouts));
+        renderSystems.forEach(renderSystem -> renderSystem.pipeline.rebuild(device, swapChain, renderSystem.setLayouts()));
     }
 
     public void destroyPipelines()

@@ -13,5 +13,4 @@ public class FrameInfo
     public float frameTime;
     public VkCommandBuffer commandBuffer;
     public Camera camera;
-    public long globalDescriptorSet;
 }

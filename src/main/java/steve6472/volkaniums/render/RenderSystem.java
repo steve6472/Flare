@@ -21,6 +21,8 @@ public abstract class RenderSystem
         this.pipeline = pipeline;
     }
 
+    public abstract long[] setLayouts();
+
     public abstract void render(FrameInfo frameInfo, MemoryStack stack);
     public abstract void cleanup();
 }
