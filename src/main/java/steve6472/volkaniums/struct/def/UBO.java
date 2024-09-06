@@ -12,10 +12,6 @@ import static steve6472.volkaniums.struct.Struct.builder;
  */
 public interface UBO
 {
-    StructDef BONE = builder()
-        .addMember(MAT_4F)
-        .build();
-
     StructDef GLOBAL_UBO = builder()
         .addMember(MAT_4F) // projection
         .addMember(MAT_4F) // view

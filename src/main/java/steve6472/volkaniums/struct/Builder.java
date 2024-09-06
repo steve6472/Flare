@@ -18,7 +18,7 @@ public final class Builder
 
     public <T> Builder addMember(MemberData<T> memberData)
     {
-        members.add(new MemberEntry(memberData, 0, AlignmentUtils.sizeof(memberData.clazz())));
+        members.add(new MemberEntry(memberData, AlignmentUtils.sizeof(memberData.clazz())));
         return this;
     }
 
@@ -26,7 +26,7 @@ public final class Builder
     {
         Preconditions.checkTrue(arraySize < 0, "Array size has to be 0 or more!");
 
-        members.add(new MemberEntry(memberData.makeArray(arraySize), 0, AlignmentUtils.sizeof(memberData.clazz()) * arraySize, arraySize));
+        members.add(new MemberEntry(memberData.makeArray(arraySize), AlignmentUtils.sizeof(memberData.clazz()) * arraySize, arraySize));
         return this;
     }
 
@@ -35,18 +35,6 @@ public final class Builder
 //        members.add(new MemberEntry(data, 0, struct.sizeof() * i));
 //        return this;
 //    }
-
-    /**
-     * @Deprecated Align not finished
-     */
-    @Deprecated
-    public Builder align(int alignment)
-    {
-        MemberEntry oldEntry = members.removeLast();
-        MemberEntry newEntry = new MemberEntry(oldEntry.memberData(), alignment, oldEntry.size() + alignment);
-        members.add(newEntry);
-        return this;
-    }
 
     public StructDef build()
     {

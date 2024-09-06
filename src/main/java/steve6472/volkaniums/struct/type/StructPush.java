@@ -21,7 +21,7 @@ public final class StructPush extends StructDef
         try (MemoryStack stack = MemoryStack.stackPush())
         {
             ByteBuffer buffer = stack.calloc(sizeof());
-            memcpy(buffer, struct);
+            memcpy(buffer, offset, struct);
 
             vkCmdPushConstants(commandBuffer, pipelineLayout, flags, offset, buffer);
         }

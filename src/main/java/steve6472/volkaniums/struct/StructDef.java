@@ -59,9 +59,9 @@ public class StructDef
      * Memcpy
      */
 
-    public void memcpy(ByteBuffer buffer, Collection<Struct> structs)
+    public void memcpy(ByteBuffer buffer, int offset, Collection<Struct> structs)
     {
-        int totalOffset = 0;
+        int totalOffset = offset;
         for (Struct vertex : structs)
         {
             int localOffset = 0;
@@ -78,9 +78,9 @@ public class StructDef
         }
     }
 
-    public void memcpy(ByteBuffer buffer, Struct... structs)
+    public void memcpy(ByteBuffer buffer, int offset, Struct... structs)
     {
-        int totalOffset = 0;
+        int totalOffset = offset;
         for (Struct vertex : structs)
         {
             int localOffset = 0;

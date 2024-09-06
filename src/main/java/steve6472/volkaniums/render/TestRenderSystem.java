@@ -6,7 +6,6 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import org.joml.Matrix4f;
-import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
@@ -19,8 +18,6 @@ import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.model.LoadedModel;
 import steve6472.volkaniums.pipeline.Pipeline;
-import steve6472.volkaniums.struct.Struct;
-import steve6472.volkaniums.struct.def.Push;
 import steve6472.volkaniums.struct.def.SBO;
 import steve6472.volkaniums.struct.def.UBO;
 import steve6472.volkaniums.struct.def.Vertex;
@@ -30,7 +27,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -158,7 +154,7 @@ public class TestRenderSystem extends RenderSystem
         flightFrame.sboBuffer.writeToBuffer(SBO.BONES::memcpy, sbo);
         flightFrame.sboBuffer.flush();
 
-//        flightFrame.sboBuffer.writeToBuffer(SBO.BONES::memcpy, List.of(smallSbo), 64, 64);
+        flightFrame.sboBuffer.writeToBuffer(SBO.BONES::memcpy, List.of(smallSbo), 64, 64);
 //        flightFrame.sboBuffer.flush(64, 64);
 
         pipeline.bind(frameInfo.commandBuffer);
