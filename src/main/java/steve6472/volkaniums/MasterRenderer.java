@@ -6,6 +6,7 @@ import steve6472.volkaniums.pipeline.Pipeline;
 import steve6472.volkaniums.pipeline.Pipelines;
 import steve6472.volkaniums.render.ModelRenderSystem;
 import steve6472.volkaniums.render.RenderSystem;
+import steve6472.volkaniums.render.SkinRenderSystem;
 import steve6472.volkaniums.render.TestRenderSystem;
 
 import java.nio.IntBuffer;
@@ -49,8 +50,9 @@ public class MasterRenderer
         commands = new Commands();
         commands.createCommandPool(device, surface);
 
-//        renderSystems.add(new ModelRenderSystem(device, new Pipeline(Pipelines.BASIC), commands, graphicsQueue));
-        renderSystems.add(new TestRenderSystem(device, new Pipeline(Pipelines.TEST), commands, graphicsQueue));
+        renderSystems.add(new ModelRenderSystem(device, new Pipeline(Pipelines.BASIC), commands, graphicsQueue));
+//        renderSystems.add(new TestRenderSystem(device, new Pipeline(Pipelines.TEST), commands, graphicsQueue));
+//        renderSystems.add(new SkinRenderSystem(device, new Pipeline(Pipelines.TEST), commands, graphicsQueue));
 
         swapChain.createSwapChainObjects();
     }

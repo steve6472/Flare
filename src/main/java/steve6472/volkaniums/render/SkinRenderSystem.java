@@ -6,23 +6,21 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import org.joml.Matrix4f;
-import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
-import steve6472.volkaniums.*;
-import steve6472.volkaniums.assets.Texture;
-import steve6472.volkaniums.assets.TextureSampler;
+import steve6472.volkaniums.Commands;
+import steve6472.volkaniums.FrameInfo;
+import steve6472.volkaniums.Model3d;
+import steve6472.volkaniums.VkBuffer;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
-import steve6472.volkaniums.pipeline.Pipeline;
 import steve6472.volkaniums.model.LoadedModel;
-import steve6472.volkaniums.struct.Struct;
-import steve6472.volkaniums.struct.def.Push;
+import steve6472.volkaniums.pipeline.Pipeline;
+import steve6472.volkaniums.struct.def.SBO;
 import steve6472.volkaniums.struct.def.UBO;
 import steve6472.volkaniums.struct.def.Vertex;
-import steve6472.volkaniums.util.Log;
 import steve6472.volkaniums.util.MathUtil;
 
 import java.io.BufferedReader;
@@ -31,10 +29,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.function.Function;
 
 import static org.lwjgl.vulkan.VK10.*;
-import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
 import static steve6472.volkaniums.SwapChain.MAX_FRAMES_IN_FLIGHT;
 
 /**
@@ -42,17 +39,15 @@ import static steve6472.volkaniums.SwapChain.MAX_FRAMES_IN_FLIGHT;
  * Date: 8/31/2024
  * Project: Volkaniums <br>
  */
-public class ModelRenderSystem extends RenderSystem
+public class SkinRenderSystem extends RenderSystem
 {
     Model3d model3d;
 
     private DescriptorPool globalPool;
     private DescriptorSetLayout globalSetLayout;
-    List<FlightFrame> frame = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
-    Texture texture;
-    TextureSampler sampler;
+    List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
 
-    public ModelRenderSystem(VkDevice device, Pipeline pipeline, Commands commands, VkQueue graphicsQueue)
+    public SkinRenderSystem(VkDevice device, Pipeline pipeline, Commands commands, VkQueue graphicsQueue)
     {
         super(device, pipeline);
 
@@ -61,37 +56,42 @@ public class ModelRenderSystem extends RenderSystem
         globalSetLayout = DescriptorSetLayout
             .builder(device)
             .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-            .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+            .addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
             .build();
         globalPool = DescriptorPool.builder(device)
             .setMaxSets(MAX_FRAMES_IN_FLIGHT)
             .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT)
             .build();
-
-        texture = new Texture();
-        texture.createTextureImage(device, "C:\\Users\\Steve\\Desktop\\loony.png", commands.commandPool, graphicsQueue);
-        sampler = new TextureSampler(texture, device);
 
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
-            frame.add(new FlightFrame());
+            FlightFrame frame = new FlightFrame();
+            frames.add(frame);
 
             VkBuffer global = new VkBuffer(
                 device,
-                UBO.GLOBAL_UBO.sizeof(),
+                UBO.GLOBAL_UBO_TEST.sizeof(),
                 1,
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
             global.map();
-            frame.get(i).uboBuffer = global;
+            frame.uboBuffer = global;
+
+            VkBuffer sbo = new VkBuffer(
+                device,
+                SBO.BONES.sizeof(),
+                1,
+                VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+            sbo.map();
+            frame.sboBuffer = sbo;
 
             try (MemoryStack stack = MemoryStack.stackPush())
             {
                 DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
-                frame.get(i).descriptorSet = descriptorWriter
-                    .writeBuffer(0, frame.get(i).uboBuffer, stack)
-                    .writeImage(1, sampler, stack)
+                frame.descriptorSet = descriptorWriter
+                    .writeBuffer(0, frame.uboBuffer, stack)
+                    .writeBuffer(1, frame.sboBuffer, stack)
                     .build();
             }
         }
@@ -126,18 +126,26 @@ public class ModelRenderSystem extends RenderSystem
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
-        FlightFrame flightFrame = frame.get(frameInfo.frameIndex);
+        FlightFrame flightFrame = frames.get(frameInfo.frameIndex);
         // Update
 
-        var globalUBO = UBO.GLOBAL_UBO.create(frameInfo.camera.getProjectionMatrix(), new Matrix4f().translate(0, 0, -2), new Matrix4f[] {
-            new Matrix4f().translate(0, -1f, 0),
-            new Matrix4f(),
-            new Matrix4f().translate(0, 1f, 0),
-            new Matrix4f().rotateZ((float) (Math.PI * 0.25f))
+        var globalUBO = UBO.GLOBAL_UBO_TEST.create(frameInfo.camera.getProjectionMatrix(), new Matrix4f().translate(0, 0, -2));
+
+        flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_UBO_TEST::memcpy, globalUBO);
+        flightFrame.uboBuffer.flush();
+
+        Function<Integer, Matrix4f> base = (j) -> new Matrix4f()
+            .scale(1f / 16f)
+            .translate(0, 0, 0)
+            .rotateY((float) MathUtil.animateRadians(4d));
+//            .rotateZ((float) Math.toRadians(180));
+
+        var sbo = SBO.BONES.create((Object) new Matrix4f[] {
+            new Matrix4f(base.apply(1))
         });
 
-        flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_UBO::memcpy, globalUBO);
-        flightFrame.uboBuffer.flush();
+        flightFrame.sboBuffer.writeToBuffer(SBO.BONES::memcpy, sbo);
+        flightFrame.sboBuffer.flush();
 
         pipeline.bind(frameInfo.commandBuffer);
 
@@ -149,39 +157,28 @@ public class ModelRenderSystem extends RenderSystem
             stack.longs(flightFrame.descriptorSet),
             null);
 
-        for (int j = 0; j < 4; j++)
-        {
-            Struct push = Push.PUSH.create(new Matrix4f()
-                    .translate(j - 1.5f, 0.75f, 0)
-                    .rotateY((float) MathUtil.animateRadians(4d))
-                    .rotateZ((float) Math.toRadians(180)) // Todo: flip the view probably ?
-                    .scale(0.05f),
-                new Vector4f(0.3f, 0.3f, 0.3f, 1.0f),
-                j);
-
-            Push.PUSH.push(push, frameInfo.commandBuffer, pipeline.pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0);
-
-            model3d.bind(frameInfo.commandBuffer);
-            model3d.draw(frameInfo.commandBuffer);
-        }
+        model3d.bind(frameInfo.commandBuffer);
+        model3d.draw(frameInfo.commandBuffer);
     }
 
     @Override
     public void cleanup()
     {
-        sampler.cleanup(device);
-        texture.cleanup(device);
         model3d.destroy();
         globalSetLayout.cleanup();
         globalPool.cleanup();
 
-        for (FlightFrame flightFrame : frame)
+        for (FlightFrame flightFrame : frames)
+        {
             flightFrame.uboBuffer.cleanup();
+            flightFrame.sboBuffer.cleanup();
+        }
     }
 
     final static class FlightFrame
     {
         VkBuffer uboBuffer;
+        VkBuffer sboBuffer;
         long descriptorSet;
     }
 }

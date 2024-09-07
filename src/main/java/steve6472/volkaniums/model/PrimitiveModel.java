@@ -41,7 +41,7 @@ public class PrimitiveModel
             Vector2f uv = texCoords.get(i);
             Vector3f pos = positions.get(i);
             Color color = generateRandomSaturatedColor(pos.x, pos.y, pos.z);
-            Struct vertex = vertexType.create(pos, new Vector3f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f), uv);
+            Struct vertex = vertexType.create(pos, new Vector3f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f), uv.mul(1f / 64f, new Vector2f()));
             vertices.add(vertex);
         }
         return vertices;

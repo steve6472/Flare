@@ -1,17 +1,16 @@
 package steve6472.volkaniums.descriptors;
 
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.*;
 import steve6472.volkaniums.VkBuffer;
+import steve6472.volkaniums.assets.TextureSampler;
 import steve6472.volkaniums.util.Preconditions;
 
 import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.lwjgl.vulkan.VK10.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-import static org.lwjgl.vulkan.VK10.vkUpdateDescriptorSets;
+import static org.lwjgl.vulkan.VK10.*;
 
 /**
  * Created by steve6472
@@ -50,6 +49,16 @@ public class DescriptorWriter
     {
         writes.add(new Write(getDescriptorType(binding), binding, null, bufferInfo));
         return this;
+    }
+
+    public DescriptorWriter writeImage(int binding, TextureSampler textureSampler, MemoryStack stack)
+    {
+        VkDescriptorImageInfo.Buffer imageInfo = VkDescriptorImageInfo.calloc(1, stack);
+        imageInfo.imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        imageInfo.imageView(textureSampler.textureImageView);
+        imageInfo.sampler(textureSampler.textureSampler);
+
+        return writeImage(binding, imageInfo);
     }
 
     private int getDescriptorType(int binding)
@@ -117,11 +126,11 @@ public class DescriptorWriter
             write.dstBinding(binding);
             write.dstArrayElement(0);
             write.descriptorType(type);
+            write.descriptorCount(1);
             if (bufferInfo != null)
                 write.pBufferInfo(bufferInfo);
             else
                 write.pImageInfo(imageInfo);
-            write.descriptorCount(1);
         }
     }
 }

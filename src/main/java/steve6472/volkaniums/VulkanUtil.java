@@ -74,7 +74,7 @@ public final class VulkanUtil
         }
     }
 
-    private static int findMemoryType(MemoryStack stack, VkPhysicalDevice physicalDevice, int typeFilter, int properties)
+    public static int findMemoryType(MemoryStack stack, VkPhysicalDevice physicalDevice, int typeFilter, int properties)
     {
         VkPhysicalDeviceMemoryProperties memProperties = VkPhysicalDeviceMemoryProperties.malloc(stack);
         vkGetPhysicalDeviceMemoryProperties(physicalDevice, memProperties);

@@ -6,6 +6,8 @@ layout (location = 1) in vec2 uv;
 
 layout (location = 0) out vec4 outColor;
 
+layout(set = 0, binding = 1) uniform sampler2D texSampler;
+
 layout(push_constant) uniform Push {
     mat4 transformation;
     vec4 color;
@@ -13,5 +15,5 @@ layout(push_constant) uniform Push {
 } push;
 
 void main() {
-    outColor = vec4(fragColor * push.color.rgb, 1.0);
+    outColor = texture(texSampler, uv);
 }

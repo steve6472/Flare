@@ -1,13 +1,16 @@
 package steve6472.volkaniums.descriptors;
 
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.VkDescriptorSetLayoutBinding;
 import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo;
 import org.lwjgl.vulkan.VkDevice;
+import steve6472.volkaniums.util.Log;
 
 import java.nio.LongBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import static org.lwjgl.vulkan.VK10.*;
 
@@ -20,6 +23,7 @@ public class DescriptorSetLayout
 {
     VkDevice device;
     public final long descriptorSetLayout;
+    private VkDescriptorSetLayoutBinding.Buffer layoutBindings;
     public Map<Integer, VkDescriptorSetLayoutBinding> bindings = new HashMap<>();
 
     private DescriptorSetLayout(VkDevice device, Map<Integer, LayoutBinding> bindings)
@@ -27,22 +31,21 @@ public class DescriptorSetLayout
         this.device = device;
         try (MemoryStack stack = MemoryStack.stackPush())
         {
+            layoutBindings = VkDescriptorSetLayoutBinding.malloc(bindings.size());
+
             for (int i = 0; i < bindings.size(); i++)
             {
                 LayoutBinding layoutBinding = bindings.get(i);
 
-                VkDescriptorSetLayoutBinding binding = VkDescriptorSetLayoutBinding.malloc();
+                VkDescriptorSetLayoutBinding binding = layoutBindings.get(i);
                 binding.binding(layoutBinding.binding());
-                binding.descriptorType(layoutBinding.type());
                 binding.descriptorCount(layoutBinding.count());
+                binding.descriptorType(layoutBinding.type());
+                binding.pImmutableSamplers(null);
                 binding.stageFlags(layoutBinding.flags());
 
                 this.bindings.put(i, binding);
             }
-
-            VkDescriptorSetLayoutBinding.Buffer layoutBindings = VkDescriptorSetLayoutBinding.calloc(bindings.size(), stack);
-
-            this.bindings.forEach(layoutBindings::put);
 
             VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = VkDescriptorSetLayoutCreateInfo.calloc(stack);
             descriptorSetLayoutInfo.sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO);
@@ -62,7 +65,7 @@ public class DescriptorSetLayout
     public void cleanup()
     {
         vkDestroyDescriptorSetLayout(device, descriptorSetLayout, null);
-        bindings.forEach((k, v) -> v.free());
+        layoutBindings.free();
     }
 
     public static Builder builder(VkDevice device)
