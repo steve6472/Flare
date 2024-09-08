@@ -6,6 +6,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
@@ -31,6 +32,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 import static org.lwjgl.vulkan.VK10.*;
@@ -129,11 +131,20 @@ public class ModelRenderSystem extends RenderSystem
         FlightFrame flightFrame = frame.get(frameInfo.frameIndex);
         // Update
 
-        var globalUBO = UBO.GLOBAL_UBO.create(frameInfo.camera.getProjectionMatrix(), new Matrix4f().translate(0, 0, -2), new Matrix4f[] {
-            new Matrix4f().translate(0, -1f, 0),
-            new Matrix4f(),
-            new Matrix4f().translate(0, 1f, 0),
-            new Matrix4f().rotateZ((float) (Math.PI * 0.25f))
+        var globalUBO = UBO.GLOBAL_UBO.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix(), new Matrix4f[] {
+//            new Matrix4f().translate(0, -1f, 0),
+//            new Matrix4f(),
+//            new Matrix4f().translate(0, 1f, 0),
+//            new Matrix4f().rotateZ((float) (Math.PI * 0.25f))
+            new Matrix4f().translate(-1.5f, -0.75f, 0).rotateY(0).scale(1f / 12f),
+            new Matrix4f().translate(-0.5f, -0.75f, 0).rotateY((float) Math.PI * 0.5f).scale(1f / 16f),
+            new Matrix4f().translate(0.5f, -0.75f, 0).rotateY((float) Math.PI).scale(1f / 16f),
+            new Matrix4f().translate(1.5f, -0.75f, 0).rotateY((float) Math.PI * 1.5f).scale(1f / 16f)
+
+//            new Matrix4f().translate(-1.5f, -0.75f, 0).scale(1f / 16f),
+//            new Matrix4f().translate(-0.5f, -0.75f, 0).scale(1f / 16f),
+//            new Matrix4f().translate(0.5f, -0.75f, 0).scale(1f / 16f),
+//            new Matrix4f().translate(1.5f, -0.75f, 0).scale(1f / 16f)
         });
 
         flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_UBO::memcpy, globalUBO);
@@ -151,11 +162,7 @@ public class ModelRenderSystem extends RenderSystem
 
         for (int j = 0; j < 4; j++)
         {
-            Struct push = Push.PUSH.create(new Matrix4f()
-                    .translate(j - 1.5f, 0.75f, 0)
-                    .rotateY((float) MathUtil.animateRadians(4d))
-                    .rotateZ((float) Math.toRadians(180)) // Todo: flip the view probably ?
-                    .scale(0.05f),
+            Struct push = Push.PUSH.create(new Matrix4f(),
                 new Vector4f(0.3f, 0.3f, 0.3f, 1.0f),
                 j);
 

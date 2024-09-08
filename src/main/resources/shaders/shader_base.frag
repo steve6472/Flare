@@ -16,4 +16,5 @@ layout(push_constant) uniform Push {
 
 void main() {
     outColor = texture(texSampler, uv);
+    if (outColor.a == 0) discard;
 }

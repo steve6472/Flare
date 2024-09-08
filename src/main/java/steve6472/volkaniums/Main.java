@@ -1,5 +1,7 @@
 package steve6472.volkaniums;
 
+import org.joml.Vector2i;
+import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
@@ -90,6 +92,12 @@ public class Main
                     frameInfo.camera = camera;
                     frameInfo.frameIndex = renderer.getCurrentFrameIndex();
                     frameInfo.commandBuffer = commandBuffer;
+
+                    frameInfo.camera.setViewTarget(new Vector3f(1f, 1f, -3), new Vector3f(0, 0, 0));
+                    Vector2i mousePos = userInput.getMousePositionRelativeToTopLeftOfTheWindow();
+                    if (window.isFocused())
+                        frameInfo.camera.headOrbit(mousePos.x, mousePos.y, 0.4f, 3f);
+                    System.out.printf("%.2f, %.2f, %.2f\n", camera.viewPosition.x, camera.viewPosition.y, camera.viewPosition.z);
 
                     // Render
                     renderer.beginSwapChainRenderPass(commandBuffer, stack);
@@ -247,6 +255,7 @@ public class Main
 
     public static void main(String[] args)
     {
+        System.setProperty("joml.format", "false");
         Main main = new Main();
         main.run();
     }

@@ -7,6 +7,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
@@ -14,15 +15,18 @@ import steve6472.volkaniums.Commands;
 import steve6472.volkaniums.FrameInfo;
 import steve6472.volkaniums.Model3d;
 import steve6472.volkaniums.VkBuffer;
+import steve6472.volkaniums.assets.Texture;
+import steve6472.volkaniums.assets.TextureSampler;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.model.LoadedModel;
 import steve6472.volkaniums.pipeline.Pipeline;
-import steve6472.volkaniums.struct.def.SBO;
+import steve6472.volkaniums.struct.Struct;
+import steve6472.volkaniums.struct.def.Push;
 import steve6472.volkaniums.struct.def.UBO;
 import steve6472.volkaniums.struct.def.Vertex;
-import steve6472.volkaniums.util.MathUtil;
+import steve6472.volkaniums.struct.type.StructVertex;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,7 +34,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 import static org.lwjgl.vulkan.VK10.*;
 import static steve6472.volkaniums.SwapChain.MAX_FRAMES_IN_FLIGHT;
@@ -40,15 +43,15 @@ import static steve6472.volkaniums.SwapChain.MAX_FRAMES_IN_FLIGHT;
  * Date: 8/31/2024
  * Project: Volkaniums <br>
  */
-public class SkinRenderSystem extends RenderSystem
+public class DebugLineRenderSystem extends RenderSystem
 {
     Model3d model3d;
 
     private DescriptorPool globalPool;
     private DescriptorSetLayout globalSetLayout;
-    List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
+    List<FlightFrame> frame = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
 
-    public SkinRenderSystem(VkDevice device, Pipeline pipeline, Commands commands, VkQueue graphicsQueue)
+    public DebugLineRenderSystem(VkDevice device, Pipeline pipeline, Commands commands, VkQueue graphicsQueue)
     {
         super(device, pipeline);
 
@@ -57,7 +60,6 @@ public class SkinRenderSystem extends RenderSystem
         globalSetLayout = DescriptorSetLayout
             .builder(device)
             .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-            .addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
             .build();
         globalPool = DescriptorPool.builder(device)
             .setMaxSets(MAX_FRAMES_IN_FLIGHT)
@@ -66,33 +68,22 @@ public class SkinRenderSystem extends RenderSystem
 
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
-            FlightFrame frame = new FlightFrame();
-            frames.add(frame);
+            frame.add(new FlightFrame());
 
             VkBuffer global = new VkBuffer(
                 device,
-                UBO.GLOBAL_UBO_TEST.sizeof(),
+                UBO.DEBUG_LINE.sizeof(),
                 1,
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
             global.map();
-            frame.uboBuffer = global;
-
-            VkBuffer sbo = new VkBuffer(
-                device,
-                SBO.BONES.sizeof(),
-                1,
-                VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-            sbo.map();
-            frame.sboBuffer = sbo;
+            frame.get(i).uboBuffer = global;
 
             try (MemoryStack stack = MemoryStack.stackPush())
             {
                 DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
-                frame.descriptorSet = descriptorWriter
-                    .writeBuffer(0, frame.uboBuffer, stack)
-                    .writeBuffer(1, frame.sboBuffer, stack)
+                frame.get(i).descriptorSet = descriptorWriter
+                    .writeBuffer(0, frame.get(i).uboBuffer, stack)
                     .build();
             }
         }
@@ -100,22 +91,22 @@ public class SkinRenderSystem extends RenderSystem
 
     private void createModel(Commands commands, VkQueue graphicsQueue)
     {
-        final String PATH = "C:\\Users\\Steve\\Desktop\\model.bbmodel";
-        final File file = new File(PATH);
+        final Vector4f RED = new Vector4f(1, 0, 0, 1);
+        final Vector4f GREEN = new Vector4f(0, 1, 0, 1);
+        final Vector4f BLUE = new Vector4f(0, 0, 1, 1);
 
-        BufferedReader reader = null;
-        try
-        {
-            reader = new BufferedReader(new FileReader(file));
-        } catch (FileNotFoundException e)
-        {
-            throw new RuntimeException(e);
-        }
-        JsonElement jsonElement = JsonParser.parseReader(reader);
-        DataResult<Pair<LoadedModel, JsonElement>> decode = LoadedModel.CODEC.decode(JsonOps.INSTANCE, jsonElement);
+        List<Struct> vertices = new ArrayList<>();
+        vertices.add(Vertex.POS3F_COL4F.create(new Vector3f(0, 0, 0), RED));
+        vertices.add(Vertex.POS3F_COL4F.create(new Vector3f(1, 0, 0), RED));
+
+        vertices.add(Vertex.POS3F_COL4F.create(new Vector3f(0, 0, 0), GREEN));
+        vertices.add(Vertex.POS3F_COL4F.create(new Vector3f(0, 1, 0), GREEN));
+
+        vertices.add(Vertex.POS3F_COL4F.create(new Vector3f(0, 0, 0), BLUE));
+        vertices.add(Vertex.POS3F_COL4F.create(new Vector3f(0, 0, 1), BLUE));
 
         model3d = new Model3d();
-        model3d.createVertexBuffer(device, commands, graphicsQueue, decode.getOrThrow().getFirst().toPrimitiveModel().toVkVertices(), Vertex.POS3F_COL3F_UV);
+        model3d.createVertexBuffer(device, commands, graphicsQueue, vertices, Vertex.POS3F_COL4F);
     }
 
     @Override
@@ -127,26 +118,14 @@ public class SkinRenderSystem extends RenderSystem
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
-        FlightFrame flightFrame = frames.get(frameInfo.frameIndex);
+        FlightFrame flightFrame = frame.get(frameInfo.frameIndex);
         // Update
 
-        var globalUBO = UBO.GLOBAL_UBO_TEST.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix());
+//        var globalUBO = UBO.DEBUG_LINE.create(frameInfo.camera.getProjectionMatrix(), new Matrix4f().translate(0, 0, -2));
+        var globalUBO = UBO.DEBUG_LINE.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix());
 
-        flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_UBO_TEST::memcpy, globalUBO);
+        flightFrame.uboBuffer.writeToBuffer(UBO.DEBUG_LINE::memcpy, globalUBO);
         flightFrame.uboBuffer.flush();
-
-        Function<Integer, Matrix4f> base = (j) -> new Matrix4f()
-            .scale(1f / 16f)
-            .translate(0, 0, 0)
-            .rotateY((float) MathUtil.animateRadians(4d));
-//            .rotateZ((float) Math.toRadians(180));
-
-        var sbo = SBO.BONES.create((Object) new Matrix4f[] {
-            new Matrix4f(base.apply(1))
-        });
-
-        flightFrame.sboBuffer.writeToBuffer(SBO.BONES::memcpy, sbo);
-        flightFrame.sboBuffer.flush();
 
         pipeline.bind(frameInfo.commandBuffer);
 
@@ -169,17 +148,13 @@ public class SkinRenderSystem extends RenderSystem
         globalSetLayout.cleanup();
         globalPool.cleanup();
 
-        for (FlightFrame flightFrame : frames)
-        {
+        for (FlightFrame flightFrame : frame)
             flightFrame.uboBuffer.cleanup();
-            flightFrame.sboBuffer.cleanup();
-        }
     }
 
     final static class FlightFrame
     {
         VkBuffer uboBuffer;
-        VkBuffer sboBuffer;
         long descriptorSet;
     }
 }

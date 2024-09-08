@@ -18,6 +18,11 @@ public interface UBO
         .addMemberArray(MAT_4F, 4)
         .build();
 
+    StructDef DEBUG_LINE = builder()
+        .addMember(MAT_4F) // projection
+        .addMember(MAT_4F) // view
+        .build();
+
     StructDef GLOBAL_UBO_TEST = builder()
         .addMember(MAT_4F) // projection
         .addMember(MAT_4F) // view

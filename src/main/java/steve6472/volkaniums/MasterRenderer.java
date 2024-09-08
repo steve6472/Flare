@@ -4,10 +4,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 import steve6472.volkaniums.pipeline.Pipeline;
 import steve6472.volkaniums.pipeline.Pipelines;
-import steve6472.volkaniums.render.ModelRenderSystem;
-import steve6472.volkaniums.render.RenderSystem;
-import steve6472.volkaniums.render.SkinRenderSystem;
-import steve6472.volkaniums.render.TestRenderSystem;
+import steve6472.volkaniums.render.*;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -53,6 +50,7 @@ public class MasterRenderer
         renderSystems.add(new ModelRenderSystem(device, new Pipeline(Pipelines.BASIC), commands, graphicsQueue));
 //        renderSystems.add(new TestRenderSystem(device, new Pipeline(Pipelines.TEST), commands, graphicsQueue));
 //        renderSystems.add(new SkinRenderSystem(device, new Pipeline(Pipelines.TEST), commands, graphicsQueue));
+        renderSystems.add(new DebugLineRenderSystem(device, new Pipeline(Pipelines.DEBUG_LINE), commands, graphicsQueue));
 
         swapChain.createSwapChainObjects();
     }

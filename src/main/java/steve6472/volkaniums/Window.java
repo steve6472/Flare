@@ -72,4 +72,9 @@ public class Window
     {
         return glfwWindowShouldClose(window);
     }
+
+    public boolean isFocused()
+    {
+        return glfwGetWindowAttrib(window, GLFW_FOCUSED) == GLFW_TRUE;
+    }
 }

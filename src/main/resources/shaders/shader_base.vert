@@ -22,7 +22,7 @@ layout(push_constant) uniform Push {
 
 void main() {
 //    gl_Position = ubo.projection * ubo.view * push.transformation * ubo.transformation[push.arrayIndex] * vec4(inPosition, 1.0);
-    gl_Position = ubo.projection * ubo.view * ubo.transformation[push.arrayIndex] * push.transformation * vec4(inPosition, 1.0);
+    gl_Position = ubo.projection * ubo.view * ubo.transformation[push.arrayIndex] * vec4(inPosition, 1.0);
 //    gl_Position.y += push.arrayIndex * 0.2f;
     fragColor = inColor;
     uv = inUv;

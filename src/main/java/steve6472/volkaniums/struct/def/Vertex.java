@@ -17,6 +17,11 @@ public interface Vertex
         .addMember(VEC_3F)  // color
         .build(StructVertex::new);
 
+    StructVertex POS3F_COL4F = builder()
+        .addMember(VEC_3F)  // position
+        .addMember(VEC_4F)  // color
+        .build(StructVertex::new);
+
     StructVertex POS3F_COL3F_UV = builder()
         .addMember(VEC_3F)  // position
         .addMember(VEC_3F)  // color
