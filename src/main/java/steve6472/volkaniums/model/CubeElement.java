@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import steve6472.volkaniums.Constants;
 import steve6472.volkaniums.util.ExtraCodecs;
 
 import java.util.*;
@@ -32,7 +33,7 @@ public record CubeElement(UUID uuid, Vector3f from, Vector3f to, Vector3f origin
                     newFaces.put(k, v);
                 }
             });
-            return new CubeElement(uuid1, from1, to1, origin1, inflate1, newFaces);
+            return new CubeElement(uuid1, from1.mul(Constants.BB_MODEL_SCALE), to1.mul(Constants.BB_MODEL_SCALE), origin1, inflate1 * Constants.BB_MODEL_SCALE, newFaces);
         })
     );
 

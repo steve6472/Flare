@@ -88,13 +88,13 @@ public interface Pipelines
             .done()
         .build(swapChain.renderPass, setLayouts);
 
-    PipelineConstructor TEST = (device, swapChain, setLayouts) -> PipelineBuilder
+    PipelineConstructor SKIN = (device, swapChain, setLayouts) -> PipelineBuilder
         .create(device)
         .shaders()
-            .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "shaders/shader_test.vert", VK_SHADER_STAGE_VERTEX_BIT)
-            .addShader(ShaderSPIRVUtils.ShaderKind.FRAGMENT_SHADER, "shaders/shader_test.frag", VK_SHADER_STAGE_FRAGMENT_BIT)
+            .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "shaders/skin.vert", VK_SHADER_STAGE_VERTEX_BIT)
+            .addShader(ShaderSPIRVUtils.ShaderKind.FRAGMENT_SHADER, "shaders/skin.frag", VK_SHADER_STAGE_FRAGMENT_BIT)
             .done()
-        .vertexInputInfo(Vertex.POS3F_COL3F_UV)
+        .vertexInputInfo(Vertex.SKIN)
         .inputAssembly(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, false)
         .viewport()
             .viewportBounds(0.0f, swapChain.swapChainExtent.height(), swapChain.swapChainExtent.width(), -swapChain.swapChainExtent.height())
@@ -119,6 +119,9 @@ public interface Pipelines
             .done()
         .colorBlend(true, VK_LOGIC_OP_COPY, 0f, 0f, 0f, 0f)
             .attachment(VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT, false)
+            .done()
+        .pushConstants()
+            .constant(VK_SHADER_STAGE_VERTEX_BIT, 0, Push.SKIN)
             .done()
         .build(swapChain.renderPass, setLayouts);
 }

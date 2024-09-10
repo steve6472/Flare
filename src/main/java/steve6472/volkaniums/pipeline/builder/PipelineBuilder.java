@@ -8,6 +8,7 @@ import org.lwjgl.vulkan.VkPipelineLayoutCreateInfo;
 import steve6472.volkaniums.ErrorCode;
 import steve6472.volkaniums.ShaderSPIRVUtils;
 import steve6472.volkaniums.pipeline.Pipeline;
+import steve6472.volkaniums.struct.type.StructPush;
 import steve6472.volkaniums.struct.type.StructVertex;
 
 import java.nio.LongBuffer;
@@ -302,6 +303,11 @@ public final class PipelineBuilder
             constant.size = size;
             pushConstantRange.constants.add(constant);
             return this;
+        }
+
+        public PushConstantBuilder constant(int stageFlags, int offset, StructPush push)
+        {
+            return constant(stageFlags, offset, push.sizeof());
         }
     }
 

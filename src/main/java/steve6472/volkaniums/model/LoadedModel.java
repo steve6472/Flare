@@ -1,14 +1,14 @@
 package steve6472.volkaniums.model;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import steve6472.volkaniums.model.anim.Animation;
 import steve6472.volkaniums.struct.def.Vertex;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by steve6472
@@ -36,12 +36,33 @@ public record LoadedModel(ModelMeta meta, Resolution resolution, List<Element> e
             elementMap.put(element.uuid(), element);
         }
 
-//        Stack<Matrix4f> matrixStack = new ObjectArrayList<>(32);
-//        matrixStack.push(new Matrix4f());
+        //        Stack<Matrix4f> matrixStack = new ObjectArrayList<>(32);
+        //        matrixStack.push(new Matrix4f());
 
         for (OutlinerUUID outlinerUUID : outliner)
         {
             recursiveOutliner(outlinerUUID, elementMap, model);
+        }
+
+        return model;
+    }
+
+    public PrimitiveSkinModel toPrimitiveSkinModel()
+    {
+        PrimitiveSkinModel model = new PrimitiveSkinModel(Vertex.SKIN, this);
+
+        Map<UUID, Element> elementMap = new HashMap<>(elements.size());
+        for (Element element : elements)
+        {
+            elementMap.put(element.uuid(), element);
+        }
+
+        //        Stack<Matrix4f> matrixStack = new ObjectArrayList<>(32);
+        //        matrixStack.push(new Matrix4f());
+
+        for (OutlinerUUID outliner : outliner)
+        {
+            recursiveOutlinerSkin(outliner, null, new Matrix4f(), elementMap, model);
         }
 
         return model;
@@ -63,6 +84,52 @@ public record LoadedModel(ModelMeta meta, Resolution resolution, List<Element> e
 
             model.positions.addAll(element.toVertices());
             model.texCoords.addAll(element.toUVs());
+        }
+    }
+
+    private void recursiveOutlinerSkin(OutlinerUUID outliner, OutlinerUUID parent, Matrix4f parentTransform, Map<UUID, Element> elementMap, PrimitiveSkinModel model)
+    {
+        if (outliner instanceof OutlinerElement el)
+        {
+            Matrix4f transformMatrix = new Matrix4f(parentTransform);
+            transformMatrix.translate(el.origin());
+            transformMatrix.rotateZ(el.rotation().z);
+            transformMatrix.rotateY(el.rotation().y);
+            transformMatrix.rotateX(el.rotation().x);
+            transformMatrix.translate(-el.origin().x, -el.origin().y, -el.origin().z);
+
+            model.skinData.transformations.put(el.uuid(), new Pair<>(model.skinData.transformations.size() + 1, transformMatrix));
+
+            List<OutlinerUUID> children = el.children();
+            for (OutlinerUUID child : children)
+            {
+                recursiveOutlinerSkin(child, outliner, transformMatrix, elementMap, model);
+            }
+        } else
+        {
+            Element element = elementMap.get(outliner.uuid());
+            if (element == null)
+                throw new RuntimeException("Element " + outliner.uuid + " is null!");
+
+            List<Vector3f> vertices = element.toVertices();
+            List<Integer> bones1 = new ArrayList<>(vertices.size());
+
+            int boneIndex = 0;
+            if (parent != null)
+            {
+                Pair<Integer, Matrix4f> integerMatrix4fPair = model.skinData.transformations.get(parent.uuid());
+                if (integerMatrix4fPair != null)
+                    boneIndex = integerMatrix4fPair.getFirst();
+            }
+
+            for (int i = 0; i < vertices.size(); i++)
+            {
+                bones1.add(boneIndex);
+            }
+
+            model.positions.addAll(vertices);
+            model.texCoords.addAll(element.toUVs());
+            model.transformationIndicies.addAll(bones1);
         }
     }
 }

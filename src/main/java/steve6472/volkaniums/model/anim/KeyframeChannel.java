@@ -84,21 +84,21 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
     public static final class RotationKeyframe extends KeyframeChannel<Vec3DataPoint>
     {
         public static final Codec<RotationKeyframe> CODEC = createKeyframe(Vec3DataPoint.CODEC, RotationKeyframe::new);
-        public RotationKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)  {super(interpolation, time, dataPoints); }
+        public RotationKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.ROTATION; }
     }
 
     public static final class PositionKeyframe extends KeyframeChannel<Vec3DataPoint>
     {
         public static final Codec<PositionKeyframe> CODEC = createKeyframe(Vec3DataPoint.CODEC, PositionKeyframe::new);
-        public PositionKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)  {super(interpolation, time, dataPoints); }
+        public PositionKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.POSITION; }
     }
 
     public static final class ScaleKeyframe extends KeyframeChannel<Vec3DataPoint>
     {
         public static final Codec<ScaleKeyframe> CODEC = createKeyframe(Vec3DataPoint.CODEC, ScaleKeyframe::new);
-        public ScaleKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)  {super(interpolation, time, dataPoints); }
+        public ScaleKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.SCALE; }
     }
 
@@ -108,21 +108,21 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
     public static final class ParticleKeyframe extends KeyframeChannel<ParticleDataPoint>
     {
         public static final Codec<ParticleKeyframe> CODEC = createKeyframe(ParticleDataPoint.CODEC, ParticleKeyframe::new);
-        public ParticleKeyframe(Interpolation interpolation, double time, List<ParticleDataPoint> dataPoints)  {super(interpolation, time, dataPoints); }
+        public ParticleKeyframe(Interpolation interpolation, double time, List<ParticleDataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.PARTICLE; }
     }
 
     public static final class SoundKeyframe extends KeyframeChannel<SoundDataPoint>
     {
         public static final Codec<SoundKeyframe> CODEC = createKeyframe(SoundDataPoint.CODEC, SoundKeyframe::new);
-        public SoundKeyframe(Interpolation interpolation, double time, List<SoundDataPoint> dataPoints)  {super(interpolation, time, dataPoints); }
+        public SoundKeyframe(Interpolation interpolation, double time, List<SoundDataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.SOUND; }
     }
 
     public static final class TimelineKeyframe extends KeyframeChannel<TimelineDataPoint>
     {
         public static final Codec<TimelineKeyframe> CODEC = createKeyframe(TimelineDataPoint.CODEC, TimelineKeyframe::new);
-        public TimelineKeyframe(Interpolation interpolation, double time, List<TimelineDataPoint> dataPoints)  {super(interpolation, time, dataPoints); }
+        public TimelineKeyframe(Interpolation interpolation, double time, List<TimelineDataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.TIMELINE; }
     }
 }

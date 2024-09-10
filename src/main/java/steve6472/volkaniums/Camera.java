@@ -41,7 +41,7 @@ public class Camera
 
     public void setViewDirection(Vector3f cameraPosition, Vector3f pointInSpace)
     {
-        viewMatrix.identity().lookAt(pointInSpace, cameraPosition, Constants.UP);
+        viewMatrix.identity().lookAt(pointInSpace, cameraPosition, Constants.CAMERA_UP);
     }
 
     public void setViewTarget(Vector3f cameraPosition, Vector3f pointInSpace)

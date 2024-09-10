@@ -6,7 +6,6 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
@@ -14,16 +13,11 @@ import steve6472.volkaniums.Commands;
 import steve6472.volkaniums.FrameInfo;
 import steve6472.volkaniums.Model3d;
 import steve6472.volkaniums.VkBuffer;
-import steve6472.volkaniums.assets.Texture;
-import steve6472.volkaniums.assets.TextureSampler;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.model.LoadedModel;
-import steve6472.volkaniums.model.PrimitiveSkinModel;
 import steve6472.volkaniums.pipeline.Pipeline;
-import steve6472.volkaniums.struct.Struct;
-import steve6472.volkaniums.struct.def.Push;
 import steve6472.volkaniums.struct.def.SBO;
 import steve6472.volkaniums.struct.def.UBO;
 import steve6472.volkaniums.struct.def.Vertex;
@@ -34,7 +28,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -46,18 +39,15 @@ import static steve6472.volkaniums.SwapChain.MAX_FRAMES_IN_FLIGHT;
  * Date: 8/31/2024
  * Project: Volkaniums <br>
  */
-public class SkinRenderSystem extends RenderSystem
+public class SBORenderSystem extends RenderSystem
 {
     Model3d model3d;
 
     private DescriptorPool globalPool;
     private DescriptorSetLayout globalSetLayout;
     List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
-    Texture texture;
-    TextureSampler sampler;
-    PrimitiveSkinModel primitiveSkinModel;
 
-    public SkinRenderSystem(VkDevice device, Pipeline pipeline, Commands commands, VkQueue graphicsQueue)
+    public SBORenderSystem(VkDevice device, Pipeline pipeline, Commands commands, VkQueue graphicsQueue)
     {
         super(device, pipeline);
 
@@ -67,16 +57,11 @@ public class SkinRenderSystem extends RenderSystem
             .builder(device)
             .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
             .addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-            .addBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
             .build();
         globalPool = DescriptorPool.builder(device)
             .setMaxSets(MAX_FRAMES_IN_FLIGHT)
             .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT)
             .build();
-
-        texture = new Texture();
-        texture.createTextureImage(device, "resources\\white_shaded.png", commands.commandPool, graphicsQueue);
-        sampler = new TextureSampler(texture, device);
 
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
@@ -95,7 +80,7 @@ public class SkinRenderSystem extends RenderSystem
             VkBuffer sbo = new VkBuffer(
                 device,
                 SBO.BONES.sizeof(),
-                1,
+                4,
                 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
             sbo.map();
@@ -107,7 +92,6 @@ public class SkinRenderSystem extends RenderSystem
                 frame.descriptorSet = descriptorWriter
                     .writeBuffer(0, frame.uboBuffer, stack)
                     .writeBuffer(1, frame.sboBuffer, stack)
-                    .writeImage(2, sampler, stack)
                     .build();
             }
         }
@@ -115,8 +99,7 @@ public class SkinRenderSystem extends RenderSystem
 
     private void createModel(Commands commands, VkQueue graphicsQueue)
     {
-//        final String PATH = "resources\\primitive_cube.bbmodel";
-        final String PATH = "resources\\chain.bbmodel";
+        final String PATH = "C:\\Users\\Steve\\Desktop\\model.bbmodel";
         final File file = new File(PATH);
 
         BufferedReader reader = null;
@@ -131,9 +114,7 @@ public class SkinRenderSystem extends RenderSystem
         DataResult<Pair<LoadedModel, JsonElement>> decode = LoadedModel.CODEC.decode(JsonOps.INSTANCE, jsonElement);
 
         model3d = new Model3d();
-        LoadedModel loadedModel = decode.getOrThrow().getFirst();
-        primitiveSkinModel = loadedModel.toPrimitiveSkinModel();
-        model3d.createVertexBuffer(device, commands, graphicsQueue, primitiveSkinModel.toVkVertices(1f / 16f), Vertex.SKIN);
+        model3d.createVertexBuffer(device, commands, graphicsQueue, decode.getOrThrow().getFirst().toPrimitiveModel().toVkVertices(1f / 64f), Vertex.POS3F_COL3F_UV);
     }
 
     @Override
@@ -153,10 +134,27 @@ public class SkinRenderSystem extends RenderSystem
         flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_UBO_TEST::memcpy, globalUBO);
         flightFrame.uboBuffer.flush();
 
-        var sbo = SBO.BONES.create((Object) primitiveSkinModel.skinData.toArray());
+        Function<Integer, Matrix4f> base = (j) -> new Matrix4f()
+            .translate(j - 1.5f, 0.75f, 0)
+            .rotateY((float) MathUtil.animateRadians(4d))
+            .scale(0.05f);
+
+        var sbo = SBO.BONES.create((Object) new Matrix4f[] {
+            new Matrix4f(base.apply(0)).translate(0, -10f, 0),
+            new Matrix4f(base.apply(1)),
+            new Matrix4f(base.apply(2)).translate(0, 10f, 0),
+            new Matrix4f(base.apply(3)).rotateZ((float) (Math.PI * 0.25f))
+        });
+
+        var smallSbo = SBO.BONES.create((Object) new Matrix4f[] {
+            new Matrix4f(base.apply(1)).scale(0.5f)
+        });
 
         flightFrame.sboBuffer.writeToBuffer(SBO.BONES::memcpy, sbo);
         flightFrame.sboBuffer.flush();
+
+        flightFrame.sboBuffer.writeToBuffer(SBO.BONES::memcpy, List.of(smallSbo), 64, 64);
+//        flightFrame.sboBuffer.flush(64, 64);
 
         pipeline.bind(frameInfo.commandBuffer);
 
@@ -168,11 +166,8 @@ public class SkinRenderSystem extends RenderSystem
             stack.longs(flightFrame.descriptorSet),
             null);
 
-        Struct struct = Push.SKIN.create(primitiveSkinModel.skinData.transformations.size());
-        Push.SKIN.push(struct, frameInfo.commandBuffer, pipeline.pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0);
-
         model3d.bind(frameInfo.commandBuffer);
-        model3d.draw(frameInfo.commandBuffer);
+        model3d.draw(frameInfo.commandBuffer, 4);
     }
 
     @Override
@@ -181,8 +176,6 @@ public class SkinRenderSystem extends RenderSystem
         model3d.destroy();
         globalSetLayout.cleanup();
         globalPool.cleanup();
-        texture.cleanup(device);
-        sampler.cleanup(device);
 
         for (FlightFrame flightFrame : frames)
         {

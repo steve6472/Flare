@@ -47,9 +47,10 @@ public class MasterRenderer
         commands = new Commands();
         commands.createCommandPool(device, surface);
 
-        renderSystems.add(new ModelRenderSystem(device, new Pipeline(Pipelines.BASIC), commands, graphicsQueue));
-//        renderSystems.add(new TestRenderSystem(device, new Pipeline(Pipelines.TEST), commands, graphicsQueue));
-//        renderSystems.add(new SkinRenderSystem(device, new Pipeline(Pipelines.TEST), commands, graphicsQueue));
+//        renderSystems.add(new BackdropRenderSystem(device, new Pipeline(Pipelines.BASIC), commands, graphicsQueue));
+//        renderSystems.add(new ModelRenderSystem(device, new Pipeline(Pipelines.BASIC), commands, graphicsQueue));
+//        renderSystems.add(new SBORenderSystem(device, new Pipeline(Pipelines.TEST), commands, graphicsQueue));
+        renderSystems.add(new SkinRenderSystem(device, new Pipeline(Pipelines.SKIN), commands, graphicsQueue));
         renderSystems.add(new DebugLineRenderSystem(device, new Pipeline(Pipelines.DEBUG_LINE), commands, graphicsQueue));
 
         swapChain.createSwapChainObjects();

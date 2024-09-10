@@ -18,7 +18,7 @@ class RasterizationInfo
 
     int polygonMode = VK_POLYGON_MODE_FILL;
     int cullMode = VK_CULL_MODE_BACK_BIT;
-    int frontFace = VK_FRONT_FACE_CLOCKWISE;
+    int frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
     float lineWidth = 1.0f;
 

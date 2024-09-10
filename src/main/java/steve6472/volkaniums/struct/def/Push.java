@@ -17,4 +17,8 @@ public interface Push
         .addMember(VEC_4F) // color
         .addMember(INT)    // arrayIndex
         .build(StructPush::new);
+
+    StructPush SKIN = builder()
+        .addMember(INT) // stride
+        .build(StructPush::new);
 }

@@ -6,6 +6,7 @@ import org.joml.GeometryUtils;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import steve6472.volkaniums.Constants;
 import steve6472.volkaniums.util.ExtraCodecs;
 
 import java.util.*;
@@ -23,8 +24,14 @@ public record MeshElement(UUID uuid, Vector3f rotation, Vector3f origin, Map<Str
         ExtraCodecs.VEC_3F.fieldOf("origin").forGetter(o -> o.origin),
         ExtraCodecs.mapListCodec(Codec.STRING, ExtraCodecs.VEC_3F).fieldOf("vertices").forGetter(o -> o.vertices),
         ExtraCodecs.mapListCodec(Codec.STRING, MeshFace.CODEC).fieldOf("faces").forGetter(o ->o.faces)
-        ).apply(instance, MeshElement::new)
+        ).apply(instance, (uuid1, rotation1, origin1, vertices1, faces1) -> new MeshElement(uuid1, rotation1, origin1, scaleVertices(vertices1), faces1))
     );
+
+    private static Map<String, Vector3f> scaleVertices(Map<String, Vector3f> vertices)
+    {
+        vertices.forEach((k, v) -> v.mul(Constants.BB_MODEL_SCALE));
+        return vertices;
+    }
 
     @Override
     public ElementType<?> getType()

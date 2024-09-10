@@ -38,7 +38,7 @@ public class Texture implements Keyable
             if (pixels == null)
                 throw new RuntimeException("Failed to load texture image " + path);
 
-            long imageSize = (long) pWidth.get(0) * (long) pHeight.get(0) * (long) pChannels.get(0);
+            long imageSize = (long) pWidth.get(0) * (long) pHeight.get(0)/* * (long) pChannels.get(0)*/ * 4;
 
             VkBuffer stagingBuffer = new VkBuffer(
                 device,

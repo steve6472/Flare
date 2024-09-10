@@ -101,7 +101,7 @@ public class ModelRenderSystem extends RenderSystem
 
     private void createModel(Commands commands, VkQueue graphicsQueue)
     {
-        final String PATH = "C:\\Users\\Steve\\Desktop\\model.bbmodel";
+        final String PATH = "resources\\model.bbmodel";
         final File file = new File(PATH);
 
         BufferedReader reader = null;
@@ -116,7 +116,7 @@ public class ModelRenderSystem extends RenderSystem
         DataResult<Pair<LoadedModel, JsonElement>> decode = LoadedModel.CODEC.decode(JsonOps.INSTANCE, jsonElement);
 
         model3d = new Model3d();
-        model3d.createVertexBuffer(device, commands, graphicsQueue, decode.getOrThrow().getFirst().toPrimitiveModel().toVkVertices(), Vertex.POS3F_COL3F_UV);
+        model3d.createVertexBuffer(device, commands, graphicsQueue, decode.getOrThrow().getFirst().toPrimitiveModel().toVkVertices(1f / 64f), Vertex.POS3F_COL3F_UV);
     }
 
     @Override
@@ -136,10 +136,10 @@ public class ModelRenderSystem extends RenderSystem
 //            new Matrix4f(),
 //            new Matrix4f().translate(0, 1f, 0),
 //            new Matrix4f().rotateZ((float) (Math.PI * 0.25f))
-            new Matrix4f().translate(-1.5f, -0.75f, 0).rotateY(0).scale(1f / 12f),
-            new Matrix4f().translate(-0.5f, -0.75f, 0).rotateY((float) Math.PI * 0.5f).scale(1f / 16f),
-            new Matrix4f().translate(0.5f, -0.75f, 0).rotateY((float) Math.PI).scale(1f / 16f),
-            new Matrix4f().translate(1.5f, -0.75f, 0).rotateY((float) Math.PI * 1.5f).scale(1f / 16f)
+            new Matrix4f().translate(-1.5f, -0.75f, 0).rotateY(0),
+            new Matrix4f().translate(-0.5f, -0.75f, 0).rotateY((float) Math.PI * 0.5f),
+            new Matrix4f().translate(0.5f, -0.75f, 0).rotateY((float) Math.PI),
+            new Matrix4f().translate(1.5f, -0.75f, 0).rotateY((float) Math.PI * 1.5f)
 
 //            new Matrix4f().translate(-1.5f, -0.75f, 0).scale(1f / 16f),
 //            new Matrix4f().translate(-0.5f, -0.75f, 0).scale(1f / 16f),

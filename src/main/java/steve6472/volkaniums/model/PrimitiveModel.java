@@ -2,6 +2,7 @@ package steve6472.volkaniums.model;
 
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import steve6472.volkaniums.Model3d;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.type.StructVertex;
 
@@ -29,7 +30,7 @@ public class PrimitiveModel
     }
 
     @Deprecated(forRemoval = true)
-    public List<Struct> toVkVertices()
+    public List<Struct> toVkVertices(float uvScale)
     {
         if (positions.size() != texCoords.size())
             throw new RuntimeException("Different count of vertices and texture coordinates");
@@ -41,29 +42,10 @@ public class PrimitiveModel
             Vector2f uv = texCoords.get(i);
             Vector3f pos = positions.get(i);
             Color color = generateRandomSaturatedColor(pos.x, pos.y, pos.z);
-            Struct vertex = vertexType.create(pos, new Vector3f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f), uv.mul(1f / 64f, new Vector2f()));
+            Struct vertex = vertexType.create(pos, new Vector3f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f), uv.mul(uvScale, new Vector2f()));
             vertices.add(vertex);
         }
         return vertices;
-    }
-
-    @Deprecated(forRemoval = true)
-    private static Color generateRandomSaturatedColor(float seed1, float seed2) {
-        // Combine the float seeds into a single long seed
-        long combinedSeed = Float.floatToIntBits(seed1) ^ Float.floatToIntBits(seed2);
-
-        // Initialize the random number generator with the combined seed
-        Random random = new Random(combinedSeed);
-
-        // Generate a random hue value (0.0 to 1.0)
-        float hue = random.nextFloat();
-
-        // Saturation and brightness are set to maximum values for a fully saturated color
-        float saturation = 1.0f;
-        float brightness = 1.0f;
-
-        // Convert HSB (Hue, Saturation, Brightness) to RGB
-        return Color.getHSBColor(hue, saturation, brightness);
     }
 
     @Deprecated(forRemoval = true)
