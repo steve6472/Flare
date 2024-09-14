@@ -10,7 +10,7 @@ import steve6472.volkaniums.registry.StringValue;
  */
 public enum Loop implements StringValue
 {
-    LOOP("loop");
+    LOOP("loop"), ONCE("once");
 
     public static final Codec<Loop> CODEC = StringValue.fromValues(Loop::values);
 

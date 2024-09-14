@@ -10,10 +10,11 @@ import java.util.List;
  * Date: 8/20/2024
  * Project: Volkaniums <br>
  */
-public record Animator(AnimatorType type, List<KeyFrame> keyframes)
+public record Animator(AnimatorType type, boolean rotationGlobal, List<KeyFrame> keyframes)
 {
     public static final Codec<Animator> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         AnimatorType.CODEC.fieldOf("type").forGetter(o -> o.type),
+        Codec.BOOL.optionalFieldOf("rotation_global", true).forGetter(o -> o.rotationGlobal),
         KeyframeChannel.CODEC.listOf().fieldOf("keyframes").forGetter(o -> o.keyframes)
     ).apply(instance, Animator::new));
 }

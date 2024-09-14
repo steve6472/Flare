@@ -26,6 +26,11 @@ public record LoadedModel(ModelMeta meta, Resolution resolution, List<Element> e
         Animation.CODEC.listOf().optionalFieldOf("animations", List.of()).forGetter(o -> o.animations)
     ).apply(instance, LoadedModel::new));
 
+    public Animation getAnimationByName(String name)
+    {
+        return animations.stream().filter(anim -> anim.name().equals(name)).findFirst().orElse(null);
+    }
+
     public PrimitiveModel toPrimitiveModel()
     {
         PrimitiveModel model = new PrimitiveModel(Vertex.POS3F_COL3F_UV);

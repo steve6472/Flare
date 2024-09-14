@@ -33,4 +33,10 @@ public final class KeyframeType<T extends KeyFrame> extends Type<T>
         Registries.KEYFRAME_TYPE.register(obj);
         return obj;
     }
+
+    @Override
+    public String toString()
+    {
+        return "KeyframeType{key='" + key() + "'}";
+    }
 }

@@ -18,4 +18,13 @@ public record Vec3DataPoint(ScriptValue x, ScriptValue y, ScriptValue z) impleme
         ScriptValue.CODEC.fieldOf("y").forGetter(o -> o.y),
         ScriptValue.CODEC.fieldOf("z").forGetter(o -> o.z)
     ).apply(instance, Vec3DataPoint::new));
+
+    public static Codec<Vec3DataPoint> scaledResultCodec(double scale)
+    {
+        return RecordCodecBuilder.create(instance -> instance.group(
+            ScriptValue.scaledResultCodec(scale).fieldOf("x").forGetter(o -> o.x),
+            ScriptValue.scaledResultCodec(scale).fieldOf("y").forGetter(o -> o.y),
+            ScriptValue.scaledResultCodec(scale).fieldOf("z").forGetter(o -> o.z)
+        ).apply(instance, Vec3DataPoint::new));
+    }
 }

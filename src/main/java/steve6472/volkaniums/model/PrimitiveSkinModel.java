@@ -1,7 +1,5 @@
 package steve6472.volkaniums.model;
 
-import com.mojang.datafixers.util.Pair;
-import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import steve6472.volkaniums.struct.Struct;

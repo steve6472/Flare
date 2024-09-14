@@ -96,7 +96,10 @@ public class Main
                     frameInfo.camera.setViewTarget(new Vector3f(1f, 1f, -3), new Vector3f(0, 0, 0));
                     Vector2i mousePos = userInput.getMousePositionRelativeToTopLeftOfTheWindow();
                     if (window.isFocused())
-                        frameInfo.camera.headOrbit(mousePos.x, mousePos.y, 0.4f, 1f);
+                    {
+                        frameInfo.camera.center.set(0, 1, 0);
+                        frameInfo.camera.headOrbit(mousePos.x, mousePos.y, 0.4f, 2f);
+                    }
 
                     // Render
                     renderer.beginSwapChainRenderPass(commandBuffer, stack);

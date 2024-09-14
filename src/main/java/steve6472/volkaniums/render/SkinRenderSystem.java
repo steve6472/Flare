@@ -21,6 +21,7 @@ import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.model.LoadedModel;
 import steve6472.volkaniums.model.PrimitiveSkinModel;
+import steve6472.volkaniums.model.anim.AnimationController;
 import steve6472.volkaniums.pipeline.Pipeline;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.Push;
@@ -56,6 +57,7 @@ public class SkinRenderSystem extends RenderSystem
     Texture texture;
     TextureSampler sampler;
     PrimitiveSkinModel primitiveSkinModel;
+    AnimationController animationController;
 
     public SkinRenderSystem(VkDevice device, Pipeline pipeline, Commands commands, VkQueue graphicsQueue)
     {
@@ -75,7 +77,7 @@ public class SkinRenderSystem extends RenderSystem
             .build();
 
         texture = new Texture();
-        texture.createTextureImage(device, "resources\\white_shaded.png", commands.commandPool, graphicsQueue);
+        texture.createTextureImage(device, "resources\\loony.png", commands.commandPool, graphicsQueue);
         sampler = new TextureSampler(texture, device);
 
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -116,7 +118,8 @@ public class SkinRenderSystem extends RenderSystem
     private void createModel(Commands commands, VkQueue graphicsQueue)
     {
 //        final String PATH = "resources\\primitive_cube.bbmodel";
-        final String PATH = "resources\\chain.bbmodel";
+//        final String PATH = "resources\\chain.bbmodel";
+        final String PATH = "resources\\model.bbmodel";
         final File file = new File(PATH);
 
         BufferedReader reader = null;
@@ -133,7 +136,12 @@ public class SkinRenderSystem extends RenderSystem
         model3d = new Model3d();
         LoadedModel loadedModel = decode.getOrThrow().getFirst();
         primitiveSkinModel = loadedModel.toPrimitiveSkinModel();
-        model3d.createVertexBuffer(device, commands, graphicsQueue, primitiveSkinModel.toVkVertices(1f / 16f), Vertex.SKIN);
+        model3d.createVertexBuffer(device, commands, graphicsQueue, primitiveSkinModel.toVkVertices(1f / 64f), Vertex.SKIN);
+
+        animationController = new AnimationController(loadedModel.getAnimationByName("idle"), primitiveSkinModel.skinData, loadedModel);
+        animationController.timer.setLoop(true);
+        animationController.timer.start();
+//        animationController.timer.setSpeed(0.1);
     }
 
     @Override
@@ -153,7 +161,9 @@ public class SkinRenderSystem extends RenderSystem
         flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_UBO_TEST::memcpy, globalUBO);
         flightFrame.uboBuffer.flush();
 
-        var sbo = SBO.BONES.create((Object) primitiveSkinModel.skinData.toArray());
+        animationController.tick();
+
+        var sbo = SBO.BONES.create((Object) animationController.skinData.toArray());
 
         flightFrame.sboBuffer.writeToBuffer(SBO.BONES::memcpy, sbo);
         flightFrame.sboBuffer.flush();

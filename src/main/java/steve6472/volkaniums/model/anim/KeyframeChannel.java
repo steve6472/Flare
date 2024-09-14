@@ -2,8 +2,12 @@ package steve6472.volkaniums.model.anim;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import org.joml.Matrix4f;
+import steve6472.volkaniums.Constants;
 import steve6472.volkaniums.model.anim.datapoint.*;
+import steve6472.volkaniums.util.MathUtil;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 
@@ -81,48 +85,119 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
         return "Keyframe[" + "interpolation=" + interpolation + ", " + "time=" + time + ", " + "dataPoints=" + dataPoints + ']';
     }
 
-    public static final class RotationKeyframe extends KeyframeChannel<Vec3DataPoint>
+    public static abstract class EffectKeyframeChannel<T extends DataPoint> extends KeyframeChannel<T>
     {
-        public static final Codec<RotationKeyframe> CODEC = createKeyframe(Vec3DataPoint.CODEC, RotationKeyframe::new);
+        public EffectKeyframeChannel(Interpolation interpolation, double time, List<T> dataPoints)
+        {
+            super(interpolation, time, dataPoints);
+        }
+
+        public abstract void processKeyframe(T effect);
+    }
+
+    public static abstract class AnimationKeyframeChannel<T extends DataPoint> extends KeyframeChannel<T>
+    {
+        public AnimationKeyframeChannel(Interpolation interpolation, double time, List<T> dataPoints)
+        {
+            super(interpolation, time, dataPoints);
+        }
+
+        public abstract void processKeyframe(T first, T second, double ticks, Matrix4f transform);
+    }
+
+
+    public static final class RotationKeyframe extends AnimationKeyframeChannel<Vec3DataPoint>
+    {
+        public static final Codec<RotationKeyframe> CODEC = createKeyframe(Vec3DataPoint.scaledResultCodec(Constants.DEG_TO_RAD), RotationKeyframe::new);
         public RotationKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.ROTATION; }
+
+        @Override
+        public void processKeyframe(Vec3DataPoint first, Vec3DataPoint second, double ticks, Matrix4f transform)
+        {
+            double x = MathUtil.lerp(first.x().getValue(), second.x().getValue(), ticks);
+            double y = MathUtil.lerp(first.y().getValue(), second.y().getValue(), ticks);
+            double z = MathUtil.lerp(first.z().getValue(), second.z().getValue(), ticks);
+
+            transform.rotateZ((float) -z);
+            transform.rotateY((float) -y);
+            transform.rotateX((float) -x);
+        }
     }
 
-    public static final class PositionKeyframe extends KeyframeChannel<Vec3DataPoint>
+    public static final class PositionKeyframe extends AnimationKeyframeChannel<Vec3DataPoint>
     {
-        public static final Codec<PositionKeyframe> CODEC = createKeyframe(Vec3DataPoint.CODEC, PositionKeyframe::new);
+        public static final Codec<PositionKeyframe> CODEC = createKeyframe(Vec3DataPoint.scaledResultCodec(Constants.BB_MODEL_SCALE), PositionKeyframe::new);
         public PositionKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.POSITION; }
+
+        @Override
+        public void processKeyframe(Vec3DataPoint first, Vec3DataPoint second, double ticks, Matrix4f transform)
+        {
+            double x = MathUtil.lerp(first.x().getValue(), second.x().getValue(), ticks);
+            double y = MathUtil.lerp(first.y().getValue(), second.y().getValue(), ticks);
+            double z = MathUtil.lerp(first.z().getValue(), second.z().getValue(), ticks);
+
+            transform.translate((float) -x, (float) -y, (float) -z);
+        }
     }
 
-    public static final class ScaleKeyframe extends KeyframeChannel<Vec3DataPoint>
+    public static final class ScaleKeyframe extends AnimationKeyframeChannel<Vec3DataPoint>
     {
-        public static final Codec<ScaleKeyframe> CODEC = createKeyframe(Vec3DataPoint.CODEC, ScaleKeyframe::new);
+        public static final Codec<ScaleKeyframe> CODEC = createKeyframe(Vec3DataPoint.scaledResultCodec(1.0), ScaleKeyframe::new);
         public ScaleKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.SCALE; }
+
+        @Override
+        public void processKeyframe(Vec3DataPoint first, Vec3DataPoint second, double ticks, Matrix4f transform)
+        {
+            double x = MathUtil.lerp(first.x().getValue(), second.x().getValue(), ticks);
+            double y = MathUtil.lerp(first.y().getValue(), second.y().getValue(), ticks);
+            double z = MathUtil.lerp(first.z().getValue(), second.z().getValue(), ticks);
+
+            transform.scale((float) x, (float) y, (float) z);
+        }
     }
 
 
 
 
-    public static final class ParticleKeyframe extends KeyframeChannel<ParticleDataPoint>
+    public static final class ParticleKeyframe extends EffectKeyframeChannel<ParticleDataPoint>
     {
         public static final Codec<ParticleKeyframe> CODEC = createKeyframe(ParticleDataPoint.CODEC, ParticleKeyframe::new);
         public ParticleKeyframe(Interpolation interpolation, double time, List<ParticleDataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.PARTICLE; }
+
+        @Override
+        public void processKeyframe(ParticleDataPoint effect)
+        {
+
+        }
     }
 
-    public static final class SoundKeyframe extends KeyframeChannel<SoundDataPoint>
+    public static final class SoundKeyframe extends EffectKeyframeChannel<SoundDataPoint>
     {
         public static final Codec<SoundKeyframe> CODEC = createKeyframe(SoundDataPoint.CODEC, SoundKeyframe::new);
         public SoundKeyframe(Interpolation interpolation, double time, List<SoundDataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.SOUND; }
+
+        @Override
+        public void processKeyframe(SoundDataPoint effect)
+        {
+
+        }
     }
 
-    public static final class TimelineKeyframe extends KeyframeChannel<TimelineDataPoint>
+    public static final class TimelineKeyframe extends EffectKeyframeChannel<TimelineDataPoint>
     {
         public static final Codec<TimelineKeyframe> CODEC = createKeyframe(TimelineDataPoint.CODEC, TimelineKeyframe::new);
         public TimelineKeyframe(Interpolation interpolation, double time, List<TimelineDataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.TIMELINE; }
+
+        @Override
+        public void processKeyframe(TimelineDataPoint effect)
+        {
+
+        }
     }
 }

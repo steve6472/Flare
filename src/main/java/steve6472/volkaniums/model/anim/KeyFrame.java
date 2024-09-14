@@ -12,4 +12,7 @@ import steve6472.volkaniums.registry.Typed;
 public interface KeyFrame extends Typed<KeyframeType<?>>
 {
     Codec<KeyFrame> CODEC = Registries.KEYFRAME_TYPE.byKeyCodec().dispatch("channel", KeyFrame::getType, KeyframeType::mapCodec);
+
+    double time();
+    Interpolation interpolation();
 }

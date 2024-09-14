@@ -1,6 +1,7 @@
 package steve6472.volkaniums.model.anim;
 
 import com.mojang.serialization.Codec;
+import steve6472.volkaniums.Constants;
 import steve6472.volkaniums.util.MathUtil;
 
 /**
@@ -12,39 +13,67 @@ public class ScriptValue
 {
     private final String script;
     private final double value;
+    private final double resultScale;
 
     public static final Codec<ScriptValue> CODEC = Codec.withAlternative(Codec.DOUBLE.xmap(ScriptValue::fromValue, v -> v.value), Codec.STRING, ScriptValue::fromScript);
 
-    private ScriptValue(String script, double value)
+    public static Codec<ScriptValue> scaledResultCodec(double scale)
     {
-        this.script = script;
-        this.value = value;
+        return Codec.withAlternative(Codec.DOUBLE.xmap(value1 -> fromValue(value1, scale), v -> v.value), Codec.STRING, script1 -> fromScript(script1, scale));
+    }
+
+    private ScriptValue(String script, double value, double resultScale)
+    {
+        if (script != null && !script.isBlank() && MathUtil.isDecimal(script))
+        {
+            this.value = Double.parseDouble(script);
+            this.script = null;
+        } else
+        {
+            this.script = script;
+            this.value = value;
+        }
+
+        this.resultScale = resultScale;
     }
 
     public static ScriptValue fromScript(String script)
     {
-        return new ScriptValue(script, Double.NaN);
+        return new ScriptValue(script, Double.NaN, 1.0);
+    }
+
+    public static ScriptValue fromScript(String script, double resultScale)
+    {
+        return new ScriptValue(script, Double.NaN, resultScale);
     }
 
     public static ScriptValue fromValue(double value)
     {
-        return new ScriptValue(null, value);
+        return new ScriptValue(null, value, 1.0);
+    }
+
+    public static ScriptValue fromValue(double value, double resultScale)
+    {
+        return new ScriptValue(null, value, resultScale);
     }
 
     public double getValue()
     {
         if (script != null)
         {
-            if (MathUtil.isDecimal(script))
-            {
-                return Double.parseDouble(script);
-            } else
-            {
-                throw new RuntimeException("Scripts not yet implemented");
-            }
+            throw new RuntimeException("Scripts not yet implemented");
         } else
         {
-            return value;
+            return value * resultScale;
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        if (script != null)
+            return "ScriptValue{script=" + script + "}";
+        else
+            return "ScriptValue{" + "value=" + value + '}';
     }
 }
