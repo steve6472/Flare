@@ -1,4 +1,4 @@
-package steve6472.volkaniums.model;
+package steve6472.volkaniums.model.element;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -6,6 +6,10 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import steve6472.volkaniums.Constants;
+import steve6472.volkaniums.model.CubeFace;
+import steve6472.volkaniums.model.Element;
+import steve6472.volkaniums.model.ElementType;
+import steve6472.volkaniums.model.FaceType;
 import steve6472.volkaniums.util.ExtraCodecs;
 
 import java.util.*;
@@ -28,7 +32,7 @@ public record CubeElement(UUID uuid, Vector3f from, Vector3f to, Vector3f origin
         {
             Map<FaceType, CubeFace> newFaces = new HashMap<>();
             faces1.forEach((k, v) -> {
-                if (!(v.uv().x == 0 && v.uv().y == 0 && v.uv().z == 0 && v.uv().w == 0))
+                if (v.texture() != -1 && !(v.uv().x == 0 && v.uv().y == 0 && v.uv().z == 0 && v.uv().w == 0))
                 {
                     newFaces.put(k, v);
                 }

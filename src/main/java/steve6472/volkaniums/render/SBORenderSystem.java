@@ -9,10 +9,7 @@ import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
-import steve6472.volkaniums.Commands;
-import steve6472.volkaniums.FrameInfo;
-import steve6472.volkaniums.Model3d;
-import steve6472.volkaniums.VkBuffer;
+import steve6472.volkaniums.*;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
@@ -47,11 +44,11 @@ public class SBORenderSystem extends RenderSystem
     private DescriptorSetLayout globalSetLayout;
     List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
 
-    public SBORenderSystem(VkDevice device, Pipeline pipeline, Commands commands, VkQueue graphicsQueue)
+    public SBORenderSystem(MasterRenderer masterRenderer, Pipeline pipeline)
     {
-        super(device, pipeline);
+        super(masterRenderer, pipeline);
 
-        createModel(commands, graphicsQueue);
+        createModel(masterRenderer.getCommands(), masterRenderer.getGraphicsQueue());
 
         globalSetLayout = DescriptorSetLayout
             .builder(device)

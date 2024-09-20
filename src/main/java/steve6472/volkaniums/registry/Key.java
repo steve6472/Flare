@@ -50,6 +50,16 @@ public class Key
         return new Key(Main.BASE_NAMESPACE, id);
     }
 
+    public String namespace()
+    {
+        return namespace;
+    }
+
+    public String id()
+    {
+        return id;
+    }
+
     @Override
     public String toString()
     {

@@ -1,4 +1,4 @@
-package steve6472.volkaniums.model;
+package steve6472.volkaniums.model.outliner;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -30,7 +30,7 @@ public final class OutlinerElement extends OutlinerUUID
 
     private final Vector3f origin;
     private final Vector3f rotation;
-    private List<OutlinerUUID> children;
+    private final List<OutlinerUUID> children;
 
     public OutlinerElement(UUID uuid, Vector3f origin, Vector3f rotation, List<OutlinerUUID> children)
     {
@@ -38,6 +38,7 @@ public final class OutlinerElement extends OutlinerUUID
         this.origin = origin;
         this.rotation = rotation;
         this.children = children;
+        fixParents();
     }
 
     public Vector3f origin()
@@ -53,6 +54,14 @@ public final class OutlinerElement extends OutlinerUUID
     public List<OutlinerUUID> children()
     {
         return children;
+    }
+
+    private void fixParents()
+    {
+        for (OutlinerUUID child : children)
+        {
+            child.parent = this;
+        }
     }
 
     @Override

@@ -1,12 +1,14 @@
-package steve6472.volkaniums.model;
+package steve6472.volkaniums.model.element;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.GeometryUtils;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import org.joml.Vector3fc;
 import steve6472.volkaniums.Constants;
+import steve6472.volkaniums.model.Element;
+import steve6472.volkaniums.model.ElementType;
+import steve6472.volkaniums.model.MeshFace;
 import steve6472.volkaniums.util.ExtraCodecs;
 
 import java.util.*;

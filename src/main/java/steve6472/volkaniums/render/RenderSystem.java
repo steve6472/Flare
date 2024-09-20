@@ -3,6 +3,7 @@ package steve6472.volkaniums.render;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
 import steve6472.volkaniums.FrameInfo;
+import steve6472.volkaniums.MasterRenderer;
 import steve6472.volkaniums.pipeline.Pipeline;
 
 /**
@@ -12,13 +13,21 @@ import steve6472.volkaniums.pipeline.Pipeline;
  */
 public abstract class RenderSystem
 {
+    private final MasterRenderer masterRenderer;
+
     public final Pipeline pipeline;
     public final VkDevice device;
 
-    public RenderSystem(VkDevice device, Pipeline pipeline)
+    public RenderSystem(MasterRenderer masterRenderer, Pipeline pipeline)
     {
-        this.device = device;
+        this.masterRenderer = masterRenderer;
         this.pipeline = pipeline;
+        this.device = masterRenderer.getDevice();
+    }
+
+    public MasterRenderer getMasterRenderer()
+    {
+        return masterRenderer;
     }
 
     public abstract long[] setLayouts();

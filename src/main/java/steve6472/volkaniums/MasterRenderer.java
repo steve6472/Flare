@@ -27,6 +27,7 @@ public class MasterRenderer
 
     private final SwapChain swapChain;
     private final Commands commands;
+    private final DebugLineRenderSystem debugLineRenderSystem;
 
     private int currentFrameIndex;
     private SyncFrame thisFrame;
@@ -50,8 +51,9 @@ public class MasterRenderer
 //        renderSystems.add(new BackdropRenderSystem(device, new Pipeline(Pipelines.BASIC), commands, graphicsQueue));
 //        renderSystems.add(new ModelRenderSystem(device, new Pipeline(Pipelines.BASIC), commands, graphicsQueue));
 //        renderSystems.add(new SBORenderSystem(device, new Pipeline(Pipelines.TEST), commands, graphicsQueue));
-        renderSystems.add(new SkinRenderSystem(device, new Pipeline(Pipelines.SKIN), commands, graphicsQueue));
-        renderSystems.add(new DebugLineRenderSystem(device, new Pipeline(Pipelines.DEBUG_LINE), commands, graphicsQueue));
+        debugLineRenderSystem = new DebugLineRenderSystem(this, new Pipeline(Pipelines.DEBUG_LINE));
+        renderSystems.add(debugLineRenderSystem);
+        renderSystems.add(new SkinRenderSystem(this, new Pipeline(Pipelines.SKIN)));
 
         swapChain.createSwapChainObjects();
     }
@@ -209,6 +211,16 @@ public class MasterRenderer
     boolean isFrameInProgress()
     {
         return isFrameStarted;
+    }
+
+    public VkDevice getDevice()
+    {
+        return device;
+    }
+
+    public DebugLineRenderSystem debugLines()
+    {
+        return debugLineRenderSystem;
     }
 
     public float getAspectRation()

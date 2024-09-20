@@ -10,10 +10,7 @@ import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
-import steve6472.volkaniums.Commands;
-import steve6472.volkaniums.FrameInfo;
-import steve6472.volkaniums.Model3d;
-import steve6472.volkaniums.VkBuffer;
+import steve6472.volkaniums.*;
 import steve6472.volkaniums.assets.Texture;
 import steve6472.volkaniums.assets.TextureSampler;
 import steve6472.volkaniums.descriptors.DescriptorPool;
@@ -51,11 +48,11 @@ public class BackdropRenderSystem extends RenderSystem
     Texture texture;
     TextureSampler sampler;
 
-    public BackdropRenderSystem(VkDevice device, Pipeline pipeline, Commands commands, VkQueue graphicsQueue)
+    public BackdropRenderSystem(MasterRenderer masterRenderer, Pipeline pipeline)
     {
-        super(device, pipeline);
+        super(masterRenderer, pipeline);
 
-        createModel(commands, graphicsQueue);
+        createModel(masterRenderer.getCommands(), masterRenderer.getGraphicsQueue());
 
         globalSetLayout = DescriptorSetLayout
             .builder(device)
@@ -69,7 +66,7 @@ public class BackdropRenderSystem extends RenderSystem
             .build();
 
         texture = new Texture();
-        texture.createTextureImage(device, "resources\\backdrop.png", commands.commandPool, graphicsQueue);
+        texture.createTextureImage(device, "resources\\backdrop.png", masterRenderer.getCommands().commandPool, masterRenderer.getGraphicsQueue());
         sampler = new TextureSampler(texture, device);
 
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)

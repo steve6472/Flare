@@ -3,6 +3,10 @@ package steve6472.volkaniums.model;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import steve6472.volkaniums.Registries;
+import steve6472.volkaniums.model.element.CubeElement;
+import steve6472.volkaniums.model.element.LocatorElement;
+import steve6472.volkaniums.model.element.MeshElement;
+import steve6472.volkaniums.model.element.NullObjectElement;
 import steve6472.volkaniums.registry.Key;
 import steve6472.volkaniums.registry.Type;
 
@@ -15,6 +19,8 @@ public final class ElementType<T extends Element> extends Type<T>
 {
     public static final ElementType<CubeElement> CUBE = register("cube", CubeElement.CODEC);
     public static final ElementType<MeshElement> MESH = register("mesh", MeshElement.CODEC);
+    public static final ElementType<LocatorElement> LOCATOR = register("locator", LocatorElement.CODEC);
+    public static final ElementType<NullObjectElement> NULL_OBJECT = register("null_object", NullObjectElement.CODEC);
 
     public ElementType(Key key, MapCodec<T> codec)
     {

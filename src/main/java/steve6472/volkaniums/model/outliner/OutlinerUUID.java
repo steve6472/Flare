@@ -1,4 +1,4 @@
-package steve6472.volkaniums.model;
+package steve6472.volkaniums.model.outliner;
 
 import com.mojang.serialization.Codec;
 import steve6472.volkaniums.util.ExtraCodecs;
@@ -15,6 +15,7 @@ public class OutlinerUUID
     public static final Codec<OutlinerUUID> CODEC = ExtraCodecs.UUID.xmap(OutlinerUUID::new, OutlinerUUID::uuid);
 
     protected final UUID uuid;
+    OutlinerUUID parent;
 
     public OutlinerUUID(UUID uuid)
     {
@@ -24,6 +25,11 @@ public class OutlinerUUID
     public UUID uuid()
     {
         return uuid;
+    }
+
+    public OutlinerUUID parent()
+    {
+        return parent;
     }
 
     @Override

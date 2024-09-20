@@ -54,11 +54,11 @@ public class ModelRenderSystem extends RenderSystem
     Texture texture;
     TextureSampler sampler;
 
-    public ModelRenderSystem(VkDevice device, Pipeline pipeline, Commands commands, VkQueue graphicsQueue)
+    public ModelRenderSystem(MasterRenderer masterRenderer, Pipeline pipeline)
     {
-        super(device, pipeline);
+        super(masterRenderer, pipeline);
 
-        createModel(commands, graphicsQueue);
+        createModel(masterRenderer.getCommands(), masterRenderer.getGraphicsQueue());
 
         globalSetLayout = DescriptorSetLayout
             .builder(device)
@@ -72,7 +72,7 @@ public class ModelRenderSystem extends RenderSystem
             .build();
 
         texture = new Texture();
-        texture.createTextureImage(device, "C:\\Users\\Steve\\Desktop\\loony.png", commands.commandPool, graphicsQueue);
+        texture.createTextureImage(device, "C:\\Users\\Steve\\Desktop\\loony.png", masterRenderer.getCommands().commandPool, masterRenderer.getGraphicsQueue());
         sampler = new TextureSampler(texture, device);
 
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)

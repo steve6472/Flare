@@ -12,8 +12,6 @@ import steve6472.volkaniums.struct.Memcpy;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.util.Collection;
-import java.util.List;
-import java.util.function.BiConsumer;
 
 import static org.lwjgl.vulkan.VK13.*;
 

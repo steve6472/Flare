@@ -24,9 +24,9 @@ public class ScriptValue
 
     private ScriptValue(String script, double value, double resultScale)
     {
-        if (script != null && !script.isBlank() && MathUtil.isDecimal(script))
+        if (script != null && (MathUtil.isDecimal(script) || script.isBlank()))
         {
-            this.value = Double.parseDouble(script);
+            this.value = script.isBlank() ? 0 : Double.parseDouble(script);
             this.script = null;
         } else
         {

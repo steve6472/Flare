@@ -2,7 +2,6 @@ package steve6472.volkaniums.model;
 
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import steve6472.volkaniums.Model3d;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.type.StructVertex;
 

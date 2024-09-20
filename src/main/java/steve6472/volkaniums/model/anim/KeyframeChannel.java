@@ -7,7 +7,6 @@ import steve6472.volkaniums.Constants;
 import steve6472.volkaniums.model.anim.datapoint.*;
 import steve6472.volkaniums.util.MathUtil;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 
@@ -102,7 +101,7 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
             super(interpolation, time, dataPoints);
         }
 
-        public abstract void processKeyframe(T first, T second, double ticks, Matrix4f transform);
+        public abstract void processKeyframe(T first, T second, double ticks, Matrix4f transform, boolean invert);
     }
 
 
@@ -113,15 +112,15 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
         @Override public KeyframeType<?> getType()  { return KeyframeType.ROTATION; }
 
         @Override
-        public void processKeyframe(Vec3DataPoint first, Vec3DataPoint second, double ticks, Matrix4f transform)
+        public void processKeyframe(Vec3DataPoint first, Vec3DataPoint second, double ticks, Matrix4f transform, boolean invert)
         {
             double x = MathUtil.lerp(first.x().getValue(), second.x().getValue(), ticks);
             double y = MathUtil.lerp(first.y().getValue(), second.y().getValue(), ticks);
             double z = MathUtil.lerp(first.z().getValue(), second.z().getValue(), ticks);
 
-            transform.rotateZ((float) -z);
-            transform.rotateY((float) -y);
-            transform.rotateX((float) -x);
+            transform.rotateZ((float) z * (invert ? -1f : 1f));
+            transform.rotateY((float) y * (invert ? -1f : 1f));
+            transform.rotateX((float) x * (invert ? -1f : 1f));
         }
     }
 
@@ -132,13 +131,13 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
         @Override public KeyframeType<?> getType()  { return KeyframeType.POSITION; }
 
         @Override
-        public void processKeyframe(Vec3DataPoint first, Vec3DataPoint second, double ticks, Matrix4f transform)
+        public void processKeyframe(Vec3DataPoint first, Vec3DataPoint second, double ticks, Matrix4f transform, boolean invert)
         {
             double x = MathUtil.lerp(first.x().getValue(), second.x().getValue(), ticks);
             double y = MathUtil.lerp(first.y().getValue(), second.y().getValue(), ticks);
             double z = MathUtil.lerp(first.z().getValue(), second.z().getValue(), ticks);
 
-            transform.translate((float) -x, (float) -y, (float) -z);
+            transform.translate((float) -x * (invert ? -1f : 1f), (float) -y * (invert ? -1f : 1f), (float) -z * (invert ? -1f : 1f));
         }
     }
 
@@ -149,13 +148,13 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
         @Override public KeyframeType<?> getType()  { return KeyframeType.SCALE; }
 
         @Override
-        public void processKeyframe(Vec3DataPoint first, Vec3DataPoint second, double ticks, Matrix4f transform)
+        public void processKeyframe(Vec3DataPoint first, Vec3DataPoint second, double ticks, Matrix4f transform, boolean invert)
         {
             double x = MathUtil.lerp(first.x().getValue(), second.x().getValue(), ticks);
             double y = MathUtil.lerp(first.y().getValue(), second.y().getValue(), ticks);
             double z = MathUtil.lerp(first.z().getValue(), second.z().getValue(), ticks);
 
-            transform.scale((float) x, (float) y, (float) z);
+            transform.scale((float) x * (invert ? -1f : 1f), (float) y * (invert ? -1f : 1f), (float) z * (invert ? -1f : 1f));
         }
     }
 

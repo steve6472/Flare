@@ -26,6 +26,7 @@ public class Model3d
     public void destroy()
     {
         vertexBuffer.cleanup();
+        vertexBuffer = null;
     }
 
     public void bind(VkCommandBuffer commandBuffer)
@@ -50,6 +51,9 @@ public class Model3d
 
     public void createVertexBuffer(VkDevice device, Commands commands, VkQueue graphicsQueue, List<Struct> vertices, StructVertex vertexData)
     {
+        if (vertexBuffer != null)
+            vertexBuffer.cleanup();
+
         vertexCount = vertices.size();
 
         long bufferSize = (long) vertexData.sizeof() * vertexCount;

@@ -9,8 +9,8 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.source>23</maven.compiler.source>
+        <maven.compiler.target>23</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lwjgl.version>3.3.4</lwjgl.version>
         <joml.version>1.10.8</joml.version>
@@ -29,100 +29,6 @@
             </resource>
         </resources>
     </build>
-
-    <profiles>
-        <profile>
-            <id>lwjgl-natives-linux-amd64</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                    <arch>amd64</arch>
-                </os>
-            </activation>
-            <properties>
-                <lwjgl.natives>natives-linux</lwjgl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>lwjgl-natives-linux-aarch64</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                    <arch>aarch64</arch>
-                </os>
-            </activation>
-            <properties>
-                <lwjgl.natives>natives-linux-arm64</lwjgl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>lwjgl-natives-linux-arm</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                    <arch>arm</arch>
-                </os>
-            </activation>
-            <properties>
-                <lwjgl.natives>natives-linux-arm32</lwjgl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>lwjgl-natives-linux-arm32</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                    <arch>arm32</arch>
-                </os>
-            </activation>
-            <properties>
-                <lwjgl.natives>natives-linux-arm32</lwjgl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>lwjgl-natives-macos-amd64</id>
-            <activation>
-                <os>
-                    <family>mac</family>
-                    <arch>amd64</arch>
-                </os>
-            </activation>
-            <properties>
-                <lwjgl.natives>natives-macos</lwjgl.natives>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.lwjgl</groupId>
-                    <artifactId>lwjgl-vulkan</artifactId>
-                    <classifier>natives-macos</classifier>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>lwjgl-natives-windows-amd64</id>
-            <activation>
-                <os>
-                    <family>windows</family>
-                    <arch>amd64</arch>
-                </os>
-            </activation>
-            <properties>
-                <lwjgl.natives>natives-windows</lwjgl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>lwjgl-natives-windows-x86</id>
-            <activation>
-                <os>
-                    <family>windows</family>
-                    <arch>x86</arch>
-                </os>
-            </activation>
-            <properties>
-                <lwjgl.natives>natives-windows-x86</lwjgl.natives>
-            </properties>
-        </profile>
-    </profiles>
 
     <dependencyManagement>
         <dependencies>
@@ -221,5 +127,99 @@
             <version>${joml.version}</version>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>lwjgl-natives-linux-amd64</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <properties>
+                <lwjgl.natives>natives-linux</lwjgl.natives>
+            </properties>
+        </profile>
+        <profile>
+            <id>lwjgl-natives-linux-aarch64</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <properties>
+                <lwjgl.natives>natives-linux-arm64</lwjgl.natives>
+            </properties>
+        </profile>
+        <profile>
+            <id>lwjgl-natives-linux-arm</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                    <arch>arm</arch>
+                </os>
+            </activation>
+            <properties>
+                <lwjgl.natives>natives-linux-arm32</lwjgl.natives>
+            </properties>
+        </profile>
+        <profile>
+            <id>lwjgl-natives-linux-arm32</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                    <arch>arm32</arch>
+                </os>
+            </activation>
+            <properties>
+                <lwjgl.natives>natives-linux-arm32</lwjgl.natives>
+            </properties>
+        </profile>
+        <profile>
+            <id>lwjgl-natives-macos-amd64</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <properties>
+                <lwjgl.natives>natives-macos</lwjgl.natives>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.lwjgl</groupId>
+                    <artifactId>lwjgl-vulkan</artifactId>
+                    <classifier>natives-macos</classifier>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>lwjgl-natives-windows-amd64</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <properties>
+                <lwjgl.natives>natives-windows</lwjgl.natives>
+            </properties>
+        </profile>
+        <profile>
+            <id>lwjgl-natives-windows-x86</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                    <arch>x86</arch>
+                </os>
+            </activation>
+            <properties>
+                <lwjgl.natives>natives-windows-x86</lwjgl.natives>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

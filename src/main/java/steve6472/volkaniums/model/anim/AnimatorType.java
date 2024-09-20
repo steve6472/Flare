@@ -11,7 +11,8 @@ import steve6472.volkaniums.registry.StringValue;
 public enum AnimatorType implements StringValue
 {
     BONE("bone"),
-    EFFECT("effect");
+    EFFECT("effect"),
+    NULL_OBJECT("null_object");
 
     public static final Codec<AnimatorType> CODEC = StringValue.fromValues(AnimatorType::values);
 

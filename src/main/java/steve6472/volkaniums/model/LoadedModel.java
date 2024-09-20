@@ -6,6 +6,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import steve6472.volkaniums.model.anim.Animation;
+import steve6472.volkaniums.model.outliner.OutlinerElement;
+import steve6472.volkaniums.model.outliner.OutlinerUUID;
 import steve6472.volkaniums.struct.def.Vertex;
 
 import java.util.*;
@@ -85,7 +87,7 @@ public record LoadedModel(ModelMeta meta, Resolution resolution, List<Element> e
         {
             Element element = elementMap.get(outliner.uuid());
             if (element == null)
-                throw new RuntimeException("Element " + outliner.uuid + " is null!");
+                throw new RuntimeException("Element " + outliner.uuid() + " is null!");
 
             model.positions.addAll(element.toVertices());
             model.texCoords.addAll(element.toUVs());
@@ -103,6 +105,7 @@ public record LoadedModel(ModelMeta meta, Resolution resolution, List<Element> e
             transformMatrix.rotateX(el.rotation().x);
             transformMatrix.translate(-el.origin().x, -el.origin().y, -el.origin().z);
 
+//            System.out.println("Adding " + el.uuid() + " with index of " + (model.skinData.transformations.size() + 1));
             model.skinData.transformations.put(el.uuid(), new Pair<>(model.skinData.transformations.size() + 1, transformMatrix));
 
             List<OutlinerUUID> children = el.children();
@@ -114,7 +117,7 @@ public record LoadedModel(ModelMeta meta, Resolution resolution, List<Element> e
         {
             Element element = elementMap.get(outliner.uuid());
             if (element == null)
-                throw new RuntimeException("Element " + outliner.uuid + " is null!");
+                throw new RuntimeException("Element " + outliner.uuid() + " is null!");
 
             List<Vector3f> vertices = element.toVertices();
             List<Integer> bones1 = new ArrayList<>(vertices.size());
@@ -136,5 +139,75 @@ public record LoadedModel(ModelMeta meta, Resolution resolution, List<Element> e
             model.texCoords.addAll(element.toUVs());
             model.transformationIndicies.addAll(bones1);
         }
+    }
+
+    /*
+     * Getters for.. stuff
+     */
+
+    public <T extends Element> Optional<T> getElementByUUIDWithType(Class<T> clazz, UUID uuid)
+    {
+        List<Element> list = elements()
+            .stream()
+            .filter(el -> el.uuid().equals(uuid) && el.getClass().equals(clazz))
+            .toList();
+        if (list.size() > 1)
+            throw new RuntimeException("Too many locators with the same UUID (" + uuid + ")");
+        if (list.isEmpty())
+            return Optional.empty();
+        return Optional.of(clazz.cast(list.getFirst()));
+    }
+
+    public <T extends Element> List<T> getElementsWithType(Class<T> clazz)
+    {
+        return elements()
+            .stream()
+            .filter(el -> el.getClass().equals(clazz))
+            .map(clazz::cast)
+            .toList();
+    }
+
+    public Optional<Element> getElementByUUID(UUID uuid)
+    {
+        List<Element> list = elements()
+            .stream()
+            .filter(el -> el.uuid().equals(uuid))
+            .toList();
+        if (list.size() > 1)
+            throw new RuntimeException("Too many elements with the same UUID (" + uuid + ")");
+        if (list.isEmpty())
+            return Optional.empty();
+        return Optional.of(list.getFirst());
+    }
+
+    public Optional<OutlinerUUID> getOutlinerByChildElementUUID(UUID elementUUID)
+    {
+        for (OutlinerUUID outlinerUUID : outliner())
+        {
+            if (outlinerUUID instanceof OutlinerElement && outlinerUUID.uuid().equals(elementUUID))
+                return Optional.empty();
+
+            Optional<OutlinerUUID> result = recursiveGetOutlinerByChildElementUUID(outlinerUUID, elementUUID);
+            if (result.isPresent())
+                return result;
+        }
+        return Optional.empty();
+    }
+
+    private Optional<OutlinerUUID> recursiveGetOutlinerByChildElementUUID(OutlinerUUID outlinerUUID, UUID elementUUID)
+    {
+        if (outlinerUUID instanceof OutlinerElement el)
+        {
+            for (OutlinerUUID child : el.children())
+            {
+                if (child.uuid().equals(elementUUID))
+                    return Optional.of(outlinerUUID);
+
+                Optional<OutlinerUUID> result = recursiveGetOutlinerByChildElementUUID(child, elementUUID);
+                if (result.isPresent())
+                    return result;
+            }
+        }
+        return Optional.empty();
     }
 }

@@ -1,37 +1,19 @@
 package steve6472.volkaniums.render;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JsonOps;
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
-import steve6472.volkaniums.Commands;
-import steve6472.volkaniums.FrameInfo;
-import steve6472.volkaniums.Model3d;
-import steve6472.volkaniums.VkBuffer;
-import steve6472.volkaniums.assets.Texture;
-import steve6472.volkaniums.assets.TextureSampler;
+import steve6472.volkaniums.*;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
-import steve6472.volkaniums.model.LoadedModel;
 import steve6472.volkaniums.pipeline.Pipeline;
 import steve6472.volkaniums.struct.Struct;
-import steve6472.volkaniums.struct.def.Push;
 import steve6472.volkaniums.struct.def.UBO;
 import steve6472.volkaniums.struct.def.Vertex;
-import steve6472.volkaniums.struct.type.StructVertex;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,17 +27,17 @@ import static steve6472.volkaniums.SwapChain.MAX_FRAMES_IN_FLIGHT;
  */
 public class DebugLineRenderSystem extends RenderSystem
 {
-    Model3d model3d;
-
     private DescriptorPool globalPool;
     private DescriptorSetLayout globalSetLayout;
     List<FlightFrame> frame = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
+    public List<Model3d> models = new ArrayList<>();
+    public List<Model3d> frameModels = new ArrayList<>();
 
-    public DebugLineRenderSystem(VkDevice device, Pipeline pipeline, Commands commands, VkQueue graphicsQueue)
+    public DebugLineRenderSystem(MasterRenderer masterRenderer, Pipeline pipeline)
     {
-        super(device, pipeline);
+        super(masterRenderer, pipeline);
 
-        createModel(commands, graphicsQueue);
+        createModel(masterRenderer.getCommands(), masterRenderer.getGraphicsQueue());
 
         globalSetLayout = DescriptorSetLayout
             .builder(device)
@@ -105,8 +87,9 @@ public class DebugLineRenderSystem extends RenderSystem
         vertices.add(Vertex.POS3F_COL4F.create(new Vector3f(0, 0, 0), BLUE));
         vertices.add(Vertex.POS3F_COL4F.create(new Vector3f(0, 0, 1), BLUE));
 
-        model3d = new Model3d();
+        Model3d model3d = new Model3d();
         model3d.createVertexBuffer(device, commands, graphicsQueue, vertices, Vertex.POS3F_COL4F);
+//        models.add(model3d);
     }
 
     @Override
@@ -137,14 +120,34 @@ public class DebugLineRenderSystem extends RenderSystem
             stack.longs(flightFrame.descriptorSet),
             null);
 
-        model3d.bind(frameInfo.commandBuffer);
-        model3d.draw(frameInfo.commandBuffer);
+        for (Model3d model3d : models)
+        {
+            if (model3d.vertexBuffer == null)
+                continue;
+
+            model3d.bind(frameInfo.commandBuffer);
+            model3d.draw(frameInfo.commandBuffer);
+        }
+
+        for (Model3d frameModel : frameModels)
+        {
+            frameModel.bind(frameInfo.commandBuffer);
+            frameModel.draw(frameInfo.commandBuffer);
+            frameModel.destroy();
+        }
+        frameModels.clear();
     }
 
     @Override
     public void cleanup()
     {
-        model3d.destroy();
+        for (Model3d model : models)
+        {
+            if (model.vertexBuffer == null)
+                continue;
+
+            model.destroy();
+        }
         globalSetLayout.cleanup();
         globalPool.cleanup();
 
