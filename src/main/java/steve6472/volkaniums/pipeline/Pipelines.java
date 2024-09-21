@@ -3,6 +3,7 @@ package steve6472.volkaniums.pipeline;
 import steve6472.volkaniums.ShaderSPIRVUtils;
 import steve6472.volkaniums.pipeline.builder.PipelineBuilder;
 import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
+import steve6472.volkaniums.settings.Settings;
 import steve6472.volkaniums.struct.def.Push;
 import steve6472.volkaniums.struct.def.Vertex;
 
@@ -31,7 +32,6 @@ public interface Pipelines
             .done()
         .rasterization()
             .flags(false, false, false)
-            .lineWidth(1.0f)
             .polygonInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE)
             .done()
         .multisampling()
@@ -68,7 +68,7 @@ public interface Pipelines
             .done()
         .rasterization()
             .flags(false, false, false)
-            .lineWidth(4.0f)
+            .lineWidth(Settings.ENABLE_WIDE_LINES.get() ? Settings.LINE_WIDTH.get() : 1.0f)
             .polygonInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE)
             .done()
         .multisampling()
@@ -104,7 +104,6 @@ public interface Pipelines
             .done()
         .rasterization()
             .flags(false, false, false)
-            .lineWidth(1.0f)
             .polygonInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE)
             .done()
         .multisampling()

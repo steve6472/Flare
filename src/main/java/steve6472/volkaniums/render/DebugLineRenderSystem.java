@@ -1,19 +1,17 @@
 package steve6472.volkaniums.render;
 
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VkDevice;
-import org.lwjgl.vulkan.VkQueue;
 import steve6472.volkaniums.*;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.pipeline.Pipeline;
+import steve6472.volkaniums.render.debug.DebugRender;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.UBO;
 import steve6472.volkaniums.struct.def.Vertex;
 
+import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,17 +25,13 @@ import static steve6472.volkaniums.SwapChain.MAX_FRAMES_IN_FLIGHT;
  */
 public class DebugLineRenderSystem extends RenderSystem
 {
-    private DescriptorPool globalPool;
-    private DescriptorSetLayout globalSetLayout;
+    private final DescriptorPool globalPool;
+    private final DescriptorSetLayout globalSetLayout;
     List<FlightFrame> frame = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
-    public List<Model3d> models = new ArrayList<>();
-    public List<Model3d> frameModels = new ArrayList<>();
 
     public DebugLineRenderSystem(MasterRenderer masterRenderer, Pipeline pipeline)
     {
         super(masterRenderer, pipeline);
-
-        createModel(masterRenderer.getCommands(), masterRenderer.getGraphicsQueue());
 
         globalSetLayout = DescriptorSetLayout
             .builder(device)
@@ -71,27 +65,6 @@ public class DebugLineRenderSystem extends RenderSystem
         }
     }
 
-    private void createModel(Commands commands, VkQueue graphicsQueue)
-    {
-        final Vector4f RED = new Vector4f(1, 0, 0, 1);
-        final Vector4f GREEN = new Vector4f(0, 1, 0, 1);
-        final Vector4f BLUE = new Vector4f(0, 0, 1, 1);
-
-        List<Struct> vertices = new ArrayList<>();
-        vertices.add(Vertex.POS3F_COL4F.create(new Vector3f(0, 0, 0), RED));
-        vertices.add(Vertex.POS3F_COL4F.create(new Vector3f(1, 0, 0), RED));
-
-        vertices.add(Vertex.POS3F_COL4F.create(new Vector3f(0, 0, 0), GREEN));
-        vertices.add(Vertex.POS3F_COL4F.create(new Vector3f(0, 1, 0), GREEN));
-
-        vertices.add(Vertex.POS3F_COL4F.create(new Vector3f(0, 0, 0), BLUE));
-        vertices.add(Vertex.POS3F_COL4F.create(new Vector3f(0, 0, 1), BLUE));
-
-        Model3d model3d = new Model3d();
-        model3d.createVertexBuffer(device, commands, graphicsQueue, vertices, Vertex.POS3F_COL4F);
-//        models.add(model3d);
-    }
-
     @Override
     public long[] setLayouts()
     {
@@ -101,14 +74,21 @@ public class DebugLineRenderSystem extends RenderSystem
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
-        FlightFrame flightFrame = frame.get(frameInfo.frameIndex);
-        // Update
+        List<Struct> verticies = DebugRender.getInstance().createVerticies();
+        if (verticies.isEmpty())
+            return;
 
-//        var globalUBO = UBO.DEBUG_LINE.create(frameInfo.camera.getProjectionMatrix(), new Matrix4f().translate(0, 0, -2));
+        FlightFrame flightFrame = frame.get(frameInfo.frameIndex);
+
         var globalUBO = UBO.DEBUG_LINE.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix());
 
         flightFrame.uboBuffer.writeToBuffer(UBO.DEBUG_LINE::memcpy, globalUBO);
         flightFrame.uboBuffer.flush();
+
+        if (flightFrame.vertexBuffer != null)
+        {
+            flightFrame.vertexBuffer.cleanup();
+        }
 
         pipeline.bind(frameInfo.commandBuffer);
 
@@ -120,44 +100,55 @@ public class DebugLineRenderSystem extends RenderSystem
             stack.longs(flightFrame.descriptorSet),
             null);
 
-        for (Model3d model3d : models)
-        {
-            if (model3d.vertexBuffer == null)
-                continue;
+        VkBuffer stagingBuffer = new VkBuffer(
+            device,
+            Vertex.POS3F_COL4F.sizeof(),
+            verticies.size(),
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-            model3d.bind(frameInfo.commandBuffer);
-            model3d.draw(frameInfo.commandBuffer);
-        }
+        stagingBuffer.map();
+        stagingBuffer.writeToBuffer(Vertex.POS3F_COL4F::memcpy, verticies);
 
-        for (Model3d frameModel : frameModels)
-        {
-            frameModel.bind(frameInfo.commandBuffer);
-            frameModel.draw(frameInfo.commandBuffer);
-            frameModel.destroy();
-        }
-        frameModels.clear();
+        VkBuffer vertexBuffer = new VkBuffer(
+            device,
+            Vertex.POS3F_COL4F.sizeof(),
+            verticies.size(),
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+            VK_MEMORY_HEAP_DEVICE_LOCAL_BIT);
+
+        long bufferSize = (long) Vertex.POS3F_COL4F.sizeof() * verticies.size();
+        VkBuffer.copyBuffer(getMasterRenderer().getCommands(), device, getMasterRenderer().getGraphicsQueue(), stagingBuffer, vertexBuffer, bufferSize);
+        stagingBuffer.cleanup();
+
+        LongBuffer vertexBuffers = stack.longs(vertexBuffer.getBuffer());
+        LongBuffer offsets = stack.longs(0);
+        vkCmdBindVertexBuffers(frameInfo.commandBuffer, 0, vertexBuffers, offsets);
+        vkCmdDraw(frameInfo.commandBuffer, verticies.size(), 1, 0, 0);
+
+        flightFrame.vertexBuffer = vertexBuffer;
     }
 
     @Override
     public void cleanup()
     {
-        for (Model3d model : models)
-        {
-            if (model.vertexBuffer == null)
-                continue;
-
-            model.destroy();
-        }
         globalSetLayout.cleanup();
         globalPool.cleanup();
 
         for (FlightFrame flightFrame : frame)
+        {
             flightFrame.uboBuffer.cleanup();
+            if (flightFrame.vertexBuffer != null)
+            {
+                flightFrame.vertexBuffer.cleanup();
+            }
+        }
     }
 
     final static class FlightFrame
     {
         VkBuffer uboBuffer;
+        VkBuffer vertexBuffer;
         long descriptorSet;
     }
 }

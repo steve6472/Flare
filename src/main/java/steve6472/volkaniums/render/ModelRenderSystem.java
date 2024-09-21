@@ -72,7 +72,7 @@ public class ModelRenderSystem extends RenderSystem
             .build();
 
         texture = new Texture();
-        texture.createTextureImage(device, "C:\\Users\\Steve\\Desktop\\loony.png", masterRenderer.getCommands().commandPool, masterRenderer.getGraphicsQueue());
+        texture.createTextureImage(device, "resources\\loony.png", masterRenderer.getCommands().commandPool, masterRenderer.getGraphicsQueue());
         sampler = new TextureSampler(texture, device);
 
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)

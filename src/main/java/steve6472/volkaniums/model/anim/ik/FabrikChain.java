@@ -7,7 +7,7 @@ import java.util.Arrays;
 // Ensure chain has at least one segment ?
 public record FabrikChain(FabrikSegment... segments)
 {
-    public static final int MAX_ITERATIONS = 10;
+    public static final int MAX_ITERATIONS = 200;
     public static final float MIN_ERROR = 1e-4f;
 
     public static FabrikChain fromVerticies(Vector3f... points)
@@ -29,12 +29,10 @@ public record FabrikChain(FabrikSegment... segments)
 //        if (!canBeSolved(endEffector))
 //        {
 //            stretchTowards(endEffector);
-////            backwards(endEffector);
-////            forwards(start);
 //            return;
 //        }
 
-        for (int i = 0; i < 200; i++)
+        for (int i = 0; i < MAX_ITERATIONS; i++)
         {
             backwards(endEffector);
             forwards(start);
@@ -139,21 +137,5 @@ public record FabrikChain(FabrikSegment... segments)
     public String toString()
     {
         return Arrays.toString(segments);
-    }
-
-    public String toDesmos()
-    {
-        StringBuilder s = new StringBuilder("[");
-
-        for (int i = 0; i < segments.length; i++)
-        {
-            FabrikSegment seg = segments[i];
-            s.append(seg.pos()).append(",").append(seg.other());
-            if (i <= segments.length - 2)
-                s.append(",");
-        }
-        s.append("]");
-
-        return s.toString();
     }
 }

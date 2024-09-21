@@ -49,12 +49,12 @@ public class Model3d
         vkCmdDraw(commandBuffer, vertexCount, instaceCount, 0, 0);
     }
 
-    public void createVertexBuffer(VkDevice device, Commands commands, VkQueue graphicsQueue, List<Struct> vertices, StructVertex vertexData)
+    public void createVertexBuffer(VkDevice device, Commands commands, VkQueue graphicsQueue, List<Struct> verticies, StructVertex vertexData)
     {
         if (vertexBuffer != null)
             vertexBuffer.cleanup();
 
-        vertexCount = vertices.size();
+        vertexCount = verticies.size();
 
         long bufferSize = (long) vertexData.sizeof() * vertexCount;
 
@@ -66,7 +66,7 @@ public class Model3d
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
         stagingBuffer.map();
-        stagingBuffer.writeToBuffer(vertexData::memcpy, vertices);
+        stagingBuffer.writeToBuffer(vertexData::memcpy, verticies);
 
         vertexBuffer = new VkBuffer(
             device,

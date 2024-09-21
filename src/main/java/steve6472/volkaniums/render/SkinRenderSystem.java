@@ -74,7 +74,7 @@ public class SkinRenderSystem extends RenderSystem
             .build();
 
         texture = new Texture();
-        texture.createTextureImage(device, "resources\\chain.png", masterRenderer.getCommands().commandPool, masterRenderer.getGraphicsQueue());
+        texture.createTextureImage(device, "resources\\white_shaded.png", masterRenderer.getCommands().commandPool, masterRenderer.getGraphicsQueue());
 //        texture.createTextureImage(device, "resources\\loony.png", masterRenderer.getCommands().commandPool, masterRenderer.getGraphicsQueue());
         sampler = new TextureSampler(texture, device);
 
@@ -115,8 +115,8 @@ public class SkinRenderSystem extends RenderSystem
 
     private void createModel(Commands commands, VkQueue graphicsQueue)
     {
-//        final String PATH = "resources\\primitive_cube.bbmodel";
-        final String PATH = "resources\\chain.bbmodel";
+        final String PATH = "resources\\robot_arm.bbmodel";
+//        final String PATH = "resources\\small_chain.bbmodel";
 //        final String PATH = "resources\\model.bbmodel";
         final File file = new File(PATH);
 
@@ -137,16 +137,17 @@ public class SkinRenderSystem extends RenderSystem
         model3d.createVertexBuffer(device, commands, graphicsQueue, primitiveSkinModel.toVkVertices(1f / 16f), Vertex.SKIN);
 
 //        animationController = new AnimationController(loadedModel.getAnimationByName("looping_chain"), primitiveSkinModel.skinData, loadedModel);
-        animationController = new AnimationController(loadedModel.getAnimationByName("flip"), primitiveSkinModel.skinData, loadedModel);
+        animationController = new AnimationController(loadedModel.getAnimationByName("grab_loop"), primitiveSkinModel.skinData, loadedModel);
+//        animationController = new AnimationController(loadedModel.getAnimationByName("flip"), primitiveSkinModel.skinData, loadedModel);
 //        animationController = new AnimationController(loadedModel.getAnimationByName("straight"), primitiveSkinModel.skinData, loadedModel);
 //        animationController = new AnimationController(loadedModel.getAnimationByName("idle"), primitiveSkinModel.skinData, loadedModel);
         animationController.timer.setLoop(true);
         animationController.timer.start();
-//        animationController.debugModel(device, commands, graphicsQueue);
-        if (animationController.debugModel != null)
-            getMasterRenderer().debugLines().models.add(animationController.debugModel);
+        animationController.debugModel(device, commands, graphicsQueue);
+//        if (animationController.debugModel != null)
+//            getMasterRenderer().debugLines().models.add(animationController.debugModel);
 
-        animationController.timer.setSpeed(0.3333);
+        animationController.timer.setSpeed(0.1);
     }
 
     @Override

@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static steve6472.volkaniums.model.anim.AnimationController.BLUE;
+import static steve6472.volkaniums.render.debug.DebugRender.*;
 
 /**
  * Created by steve6472
@@ -57,12 +57,24 @@ public class Ik
 
     public void tick(OutlinerUUID child, Matrix4f transform, double animTime, SkinData skinData)
     {
+//        IkThing ikThing = map.get(child.uuid());
+//        if (ikThing != null)
+//        {
+//            Matrix4f newerTransform = new Matrix4f(transform);
+//            controller.animateBone(child.uuid().toString(), KeyframeType.POSITION, animTime, newerTransform, true);
+//            Vector3f endEffector = new Vector3f(noe.position());
+//            newerTransform.transformPosition(endEffector);
+//            controller.addCube(BLUE, endEffector, 0.04f);
+//            ikThing.tick(endEffector, skinData);
+//        }
+
         model.getElementByUUIDWithType(NullObjectElement.class, child.uuid()).ifPresent(element -> {
             Matrix4f newerTransform = new Matrix4f(transform);
             controller.animateBone(element.uuid().toString(), KeyframeType.POSITION, animTime, newerTransform, true);
             Vector3f endEffector = new Vector3f(element.position());
             newerTransform.transformPosition(endEffector);
-            controller.addCube(BLUE, endEffector, 0.04f);
+
+            addDebugObjectForFrame(lineCube(endEffector, 0.04f, BLUE));
 
             if (!element.ikTarget().isBlank())
             {

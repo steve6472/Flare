@@ -49,11 +49,11 @@ public class MasterRenderer
         commands.createCommandPool(device, surface);
 
 //        renderSystems.add(new BackdropRenderSystem(device, new Pipeline(Pipelines.BASIC), commands, graphicsQueue));
-//        renderSystems.add(new ModelRenderSystem(device, new Pipeline(Pipelines.BASIC), commands, graphicsQueue));
+        renderSystems.add(new ModelRenderSystem(this, new Pipeline(Pipelines.BASIC)));
 //        renderSystems.add(new SBORenderSystem(device, new Pipeline(Pipelines.TEST), commands, graphicsQueue));
         debugLineRenderSystem = new DebugLineRenderSystem(this, new Pipeline(Pipelines.DEBUG_LINE));
         renderSystems.add(debugLineRenderSystem);
-        renderSystems.add(new SkinRenderSystem(this, new Pipeline(Pipelines.SKIN)));
+//        renderSystems.add(new SkinRenderSystem(this, new Pipeline(Pipelines.SKIN)));
 
         swapChain.createSwapChainObjects();
     }

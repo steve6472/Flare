@@ -2,10 +2,12 @@ package steve6472.volkaniums;
 
 import org.joml.Vector2i;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
+import steve6472.volkaniums.render.debug.DebugRender;
 import steve6472.volkaniums.settings.Settings;
 import steve6472.volkaniums.util.Log;
 
@@ -15,6 +17,7 @@ import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.vulkan.VK13.*;
+import static steve6472.volkaniums.render.debug.DebugRender.*;
 
 public class Main
 {
@@ -93,12 +96,15 @@ public class Main
                     frameInfo.frameIndex = renderer.getCurrentFrameIndex();
                     frameInfo.commandBuffer = commandBuffer;
 
-                    frameInfo.camera.setViewTarget(new Vector3f(1f, 1f, -3), new Vector3f(0, 0, 0));
+                    addDebugObjectForFrame(cross(new Vector3f(0, 0, 0), 0.1f, WHITE));
+
+//                    frameInfo.camera.setViewTarget(new Vector3f(1f, 1f, -3), new Vector3f(0, 0, 0));
+                    frameInfo.camera.setViewTarget(new Vector3f(1f, 1.5f, -1), new Vector3f(0, 0.5f, 0));
                     Vector2i mousePos = userInput.getMousePositionRelativeToTopLeftOfTheWindow();
                     if (window.isFocused())
                     {
-                        frameInfo.camera.center.set(0, 1f, 0);
-                        frameInfo.camera.headOrbit(mousePos.x, mousePos.y, 0.4f, 1.5f);
+                        frameInfo.camera.center.set(0, 0f, 0);
+                        frameInfo.camera.headOrbit(mousePos.x, mousePos.y, 0.4f, 2.5f);
                     }
 
                     // Render
@@ -195,6 +201,7 @@ public class Main
 
             VkPhysicalDeviceFeatures deviceFeatures = VkPhysicalDeviceFeatures.calloc(stack);
             deviceFeatures.samplerAnisotropy(true);
+            deviceFeatures.wideLines(Settings.ENABLE_WIDE_LINES.get());
 
             VkPhysicalDeviceVulkan11Features vulkan11Features = VkPhysicalDeviceVulkan11Features.calloc(stack);
             vulkan11Features.sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES);

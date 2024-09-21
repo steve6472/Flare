@@ -12,6 +12,8 @@ import steve6472.volkaniums.model.anim.ik.Ik;
 import steve6472.volkaniums.model.element.LocatorElement;
 import steve6472.volkaniums.model.outliner.OutlinerElement;
 import steve6472.volkaniums.model.outliner.OutlinerUUID;
+import steve6472.volkaniums.render.debug.DebugRender;
+import steve6472.volkaniums.render.debug.objects.DebugLine;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.Vertex;
 import steve6472.volkaniums.util.Log;
@@ -19,6 +21,8 @@ import steve6472.volkaniums.util.Preconditions;
 
 import java.util.*;
 import java.util.logging.Logger;
+
+import static steve6472.volkaniums.render.debug.DebugRender.*;
 
 /**
  * Created by steve6472
@@ -40,13 +44,6 @@ public class AnimationController
      * Debug
      */
 
-    public static final Vector4f RED = new Vector4f(1, 0, 0, 1);
-    public static final Vector4f ORANGE = new Vector4f(1, 0.6f, 0, 1);
-    public static final Vector4f GREEN = new Vector4f(0, 1, 0, 1);
-    public static final Vector4f BLUE = new Vector4f(0, 0, 1, 1);
-    public static final Vector4f PURPLE = new Vector4f(1, 0, 1, 1);
-    public static final Vector4f YELLOW = new Vector4f(1, 1, 0, 1);
-    public static final Vector4f CYAN = new Vector4f(0, 1, 1, 1);
     private Commands commands;
     private VkQueue graphicsQueue;
     private VkDevice device;
@@ -93,6 +90,9 @@ public class AnimationController
 
         skinData = masterSkinData.copy();
 
+//        if (true)
+//            return;
+
 //        if (System.currentTimeMillis() % 200 != 0)
 //            return;
 //        System.out.println("--TICK--");
@@ -107,7 +107,7 @@ public class AnimationController
 
         for (Vector3f vector3f : pointsToRender)
         {
-            addCube(YELLOW, vector3f, 0.05f);
+            addDebugObjectForFrame(lineCube(vector3f, 0.05f, YELLOW));
         }
 
         if (vertices != null && !vertices.isEmpty())
@@ -141,35 +141,41 @@ public class AnimationController
                 {
                     Vector3f translation_ = new Vector3f(outElChild.origin());
                     transform.transformPosition(translation_);
-                    line(RED, translation_, translation);
+                    addDebugObjectForFrame(line(translation_, translation, RED));
                 } else
                 {
-                    model.getElementByUUIDWithType(LocatorElement.class, child.uuid()).ifPresent(element ->
-                    {
-                        Vector3f translation_ = new Vector3f(element.position());
-                        transform.transformPosition(translation_);
-                        line(ORANGE, translation_, translation);
-                    });
-
                     /*
                      * Debug rendering
                      */
-                    ik.tick(child, transform, animTime, skinData);
 
-                    model.getElementByUUIDWithType(LocatorElement.class, child.uuid()).ifPresent(element -> {
-                        Matrix4f newerTransform = new Matrix4f(transform);
-                        animateBone(element.uuid().toString(), KeyframeType.POSITION, animTime, newerTransform, true);
-                        Vector3f translation_ = new Vector3f(element.position());
-                        newerTransform.transformPosition(translation_);
-                        addCube(GREEN, translation_, 0.08f);
-                    });
+//                    model.getElementByUUIDWithType(LocatorElement.class, child.uuid()).ifPresent(element ->
+//                    {
+//                        Vector3f translation_ = new Vector3f(element.position());
+//                        transform.transformPosition(translation_);
+//                        line(ORANGE, translation_, translation);
+//                    });
+//
+//                    model.getElementByUUIDWithType(LocatorElement.class, child.uuid()).ifPresent(element -> {
+//                        Matrix4f newerTransform = new Matrix4f(transform);
+//                        animateBone(element.uuid().toString(), KeyframeType.POSITION, animTime, newerTransform, true);
+//                        Vector3f translation_ = new Vector3f(element.position());
+//                        newerTransform.transformPosition(translation_);
+//                        addCube(GREEN, translation_, 0.08f);
+//                    });
+                }
+
+                if (child instanceof OutlinerUUID outlinerUUID)
+                {
+                    ik.tick(outlinerUUID, transform, animTime, skinData);
                 }
             }
-            addCube(PURPLE, translation, 0.1f);
+            addDebugObjectForFrame(lineCube(translation, 0.1f, PURPLE));
 
             skinData.transformations.get(parent.uuid()).getSecond().mul(newTransform);
         }
     }
+
+    // TODO: some way to programmatically set the end effector for specific IK
 
     public void animateBone(String boneName, KeyframeType<?> type, double currentAnimationTime, Matrix4f transform, boolean invert)
     {
@@ -191,70 +197,6 @@ public class AnimationController
     private void processEffect(KeyframeChannel<?> channel)
     {
         // Remember that they have to activate only once per their frame
-    }
-
-    private void line(Vector4f color, Vector3f from, Vector3f to)
-    {
-        if (debugModel == null) return;
-        vertices.add(Vertex.POS3F_COL4F.create(from, color));
-        vertices.add(Vertex.POS3F_COL4F.create(to, color));
-    }
-
-    public void addCube(Vector4f color, Vector3f pos, float size)
-    {
-        if (debugModel == null) return;
-        // Half size for centering the cube around pos
-        float halfSize = size / 2.0f;
-
-        // Calculate the 8 corner points of the cube
-        Vector3f p0 = new Vector3f(pos.x - halfSize, pos.y - halfSize, pos.z - halfSize);
-        Vector3f p1 = new Vector3f(pos.x + halfSize, pos.y - halfSize, pos.z - halfSize);
-        Vector3f p2 = new Vector3f(pos.x + halfSize, pos.y + halfSize, pos.z - halfSize);
-        Vector3f p3 = new Vector3f(pos.x - halfSize, pos.y + halfSize, pos.z - halfSize);
-
-        Vector3f p4 = new Vector3f(pos.x - halfSize, pos.y - halfSize, pos.z + halfSize);
-        Vector3f p5 = new Vector3f(pos.x + halfSize, pos.y - halfSize, pos.z + halfSize);
-        Vector3f p6 = new Vector3f(pos.x + halfSize, pos.y + halfSize, pos.z + halfSize);
-        Vector3f p7 = new Vector3f(pos.x - halfSize, pos.y + halfSize, pos.z + halfSize);
-
-        // Front face (p0, p1, p2, p3)
-        vertices.add(Vertex.POS3F_COL4F.create(p0, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p1, color));
-
-        vertices.add(Vertex.POS3F_COL4F.create(p1, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p2, color));
-
-        vertices.add(Vertex.POS3F_COL4F.create(p2, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p3, color));
-
-        vertices.add(Vertex.POS3F_COL4F.create(p3, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p0, color));
-
-        // Back face (p4, p5, p6, p7)
-        vertices.add(Vertex.POS3F_COL4F.create(p4, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p5, color));
-
-        vertices.add(Vertex.POS3F_COL4F.create(p5, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p6, color));
-
-        vertices.add(Vertex.POS3F_COL4F.create(p6, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p7, color));
-
-        vertices.add(Vertex.POS3F_COL4F.create(p7, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p4, color));
-
-        // Connect front and back faces
-        vertices.add(Vertex.POS3F_COL4F.create(p0, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p4, color));
-
-        vertices.add(Vertex.POS3F_COL4F.create(p1, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p5, color));
-
-        vertices.add(Vertex.POS3F_COL4F.create(p2, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p6, color));
-
-        vertices.add(Vertex.POS3F_COL4F.create(p3, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p7, color));
     }
 
     /*

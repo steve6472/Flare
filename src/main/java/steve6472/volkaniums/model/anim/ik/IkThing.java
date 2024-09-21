@@ -13,6 +13,8 @@ import steve6472.volkaniums.model.outliner.OutlinerUUID;
 
 import java.util.*;
 
+import static steve6472.volkaniums.render.debug.DebugRender.*;
+
 /**
  * Created by steve6472
  * Date: 9/19/2024
@@ -94,8 +96,9 @@ public class IkThing
             for (int i = 0; i < elements.size(); i++)
             {
                 FabrikSegment segment = copy.segments()[i];
-                controller.addCube(AnimationController.CYAN, segment.pos(), 0.02f);
-                controller.addCube(AnimationController.CYAN, segment.other(), 0.04f);
+
+                addDebugObjectForFrame(lineCube(segment.pos(), 0.02f, CYAN));
+                addDebugObjectForFrame(lineCube(segment.other(), 0.04f, DARK_CYAN));
 
                 OutlinerElement el = elements.get(i);
                 Matrix4f transformMatrix = new Matrix4f(parentTransform);
@@ -107,6 +110,7 @@ public class IkThing
                 Matrix4f rotationMatrix = calculateRotationMatrix(segment.pos(), segment.other());
                 Vector3f newRot = new Vector3f();
                 rotationMatrix.getEulerAnglesZYX(newRot);
+//                newRot.add((float) Math.PI, 0, 0);
                 newRot.sub(backRot);
                 backRot.add(newRot);
                 transformMatrix.rotateZYX(newRot);
@@ -125,6 +129,7 @@ public class IkThing
         Vector3f dir = new Vector3f();
         pointA.sub(pointB, dir);
         dir.normalize();
+//        Vector3f normalizedA = new Vector3f(0, 1, 0);
         Vector3f normalizedA = Constants.CAMERA_UP;
         Vector3f axis = new Vector3f();
         normalizedA.cross(dir, axis).normalize();

@@ -19,13 +19,18 @@ public class Settings
 {
     // Dummy value mainly for bootstrap
     public static StringSetting USERNAME = registerString("username", "Steve");
-    public static EnumSetting<ValidationLevel> VALIDATION_LEVEL = registerEnum("validation_level", ValidationLevel.NONE);
+    public static EnumSetting<ValidationLevel> VALIDATION_LEVEL = registerEnum("validation_level", ValidationLevel.VERBOSE);
 
     /*
      * Graphics
      */
     public static EnumSetting<PresentMode> PRESENT_MODE = registerEnum("present_mode", PresentMode.MAILBOX);
     public static IntSetting FOV = registerInt("fov", 90);
+    /// Can be disabled if Graphics Card does not support wide lines
+    /// _(disable implementation not fully implemented)_
+    public static BoolSetting ENABLE_WIDE_LINES = registerBool("enable_wide_lines", true);
+    /// Only applied if [#ENABLE_WIDE_LINES] is `true`
+    public static FloatSetting LINE_WIDTH = registerFloat("line_width", 4.0f);
 
     /*
      * Keyboard
@@ -47,6 +52,22 @@ public class Settings
     private static IntSetting registerInt(String id, int defaultValue)
     {
         var obj = new IntSetting(defaultValue);
+        obj.key = Key.defaultNamespace(id);
+        Registries.SETTINGS.register(obj);
+        return obj;
+    }
+
+    private static BoolSetting registerBool(String id, boolean defaultValue)
+    {
+        var obj = new BoolSetting(defaultValue);
+        obj.key = Key.defaultNamespace(id);
+        Registries.SETTINGS.register(obj);
+        return obj;
+    }
+
+    private static FloatSetting registerFloat(String id, float defaultValue)
+    {
+        var obj = new FloatSetting(defaultValue);
         obj.key = Key.defaultNamespace(id);
         Registries.SETTINGS.register(obj);
         return obj;
@@ -131,12 +152,12 @@ public class Settings
 
     public static class IntSetting extends PrimitiveSetting<Integer, IntSetting>
     {
-        private IntSetting(Integer defaultValue, Integer currentValue)
+        private IntSetting(int defaultValue, int currentValue)
         {
             super(defaultValue, currentValue);
         }
 
-        private IntSetting(Integer defaultValue)
+        private IntSetting(int defaultValue)
         {
             super(defaultValue);
         }
@@ -145,6 +166,44 @@ public class Settings
         public Codec<IntSetting> codec()
         {
             return Codec.INT.xmap(s -> new IntSetting(defaultValue, currentValue), s -> s.currentValue);
+        }
+    }
+
+    public static class BoolSetting extends PrimitiveSetting<Boolean, BoolSetting>
+    {
+        private BoolSetting(boolean defaultValue, boolean currentValue)
+        {
+            super(defaultValue, currentValue);
+        }
+
+        private BoolSetting(boolean defaultValue)
+        {
+            super(defaultValue);
+        }
+
+        @Override
+        public Codec<BoolSetting> codec()
+        {
+            return Codec.BOOL.xmap(s -> new BoolSetting(defaultValue, currentValue), s -> s.currentValue);
+        }
+    }
+
+    public static class FloatSetting extends PrimitiveSetting<Float, FloatSetting>
+    {
+        private FloatSetting(float defaultValue, float currentValue)
+        {
+            super(defaultValue, currentValue);
+        }
+
+        private FloatSetting(float defaultValue)
+        {
+            super(defaultValue);
+        }
+
+        @Override
+        public Codec<FloatSetting> codec()
+        {
+            return Codec.FLOAT.xmap(s -> new FloatSetting(defaultValue, currentValue), s -> s.currentValue);
         }
     }
 
