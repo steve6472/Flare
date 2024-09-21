@@ -2,9 +2,6 @@ package steve6472.volkaniums.registry;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import steve6472.volkaniums.Registries;
-import steve6472.volkaniums.model.Element;
-import steve6472.volkaniums.model.ElementType;
 
 /**
  * Created by steve6472

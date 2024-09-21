@@ -15,8 +15,8 @@ import steve6472.volkaniums.assets.TextureSampler;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
-import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
 import steve6472.volkaniums.pipeline.Pipeline;
+import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.Push;
 import steve6472.volkaniums.struct.def.UBO;
@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
 import static steve6472.volkaniums.SwapChain.MAX_FRAMES_IN_FLIGHT;
 
 /**
@@ -37,7 +38,7 @@ import static steve6472.volkaniums.SwapChain.MAX_FRAMES_IN_FLIGHT;
  * Date: 8/31/2024
  * Project: Volkaniums <br>
  */
-public class BackdropRenderSystem extends RenderSystem
+public class BBStaticModelRenderSystem extends RenderSystem
 {
     Model3d model3d;
 
@@ -47,7 +48,7 @@ public class BackdropRenderSystem extends RenderSystem
     Texture texture;
     TextureSampler sampler;
 
-    public BackdropRenderSystem(MasterRenderer masterRenderer, Pipeline pipeline)
+    public BBStaticModelRenderSystem(MasterRenderer masterRenderer, Pipeline pipeline)
     {
         super(masterRenderer, pipeline);
 
@@ -65,7 +66,7 @@ public class BackdropRenderSystem extends RenderSystem
             .build();
 
         texture = new Texture();
-        texture.createTextureImage(device, "resources\\backdrop.png", masterRenderer.getCommands().commandPool, masterRenderer.getGraphicsQueue());
+        texture.createTextureImage(device, "resources\\loony.png", masterRenderer.getCommands().commandPool, masterRenderer.getGraphicsQueue());
         sampler = new TextureSampler(texture, device);
 
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -94,7 +95,7 @@ public class BackdropRenderSystem extends RenderSystem
 
     private void createModel(Commands commands, VkQueue graphicsQueue)
     {
-        final String PATH = "resources\\backdrop.bbmodel";
+        final String PATH = "resources\\model.bbmodel";
         final File file = new File(PATH);
 
         BufferedReader reader = null;
@@ -109,7 +110,8 @@ public class BackdropRenderSystem extends RenderSystem
         DataResult<Pair<LoadedModel, JsonElement>> decode = LoadedModel.CODEC.decode(JsonOps.INSTANCE, jsonElement);
 
         model3d = new Model3d();
-        model3d.createVertexBuffer(device, commands, graphicsQueue, decode.getOrThrow().getFirst().toPrimitiveModel().toVkVertices(1f / 16f), Vertex.POS3F_COL3F_UV);
+        LoadedModel loadedModel = decode.getOrThrow().getFirst();
+        model3d.createVertexBuffer(device, commands, graphicsQueue, loadedModel.toPrimitiveModel().toVkVertices(1f / 64f), Vertex.POS3F_NORMAL_UV);
     }
 
     @Override
@@ -125,7 +127,19 @@ public class BackdropRenderSystem extends RenderSystem
         // Update
 
         var globalUBO = UBO.GLOBAL_UBO.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix(), new Matrix4f[] {
-            new Matrix4f().translate(0, 0, 0).rotateY(0)
+//            new Matrix4f().translate(0, -1f, 0),
+//            new Matrix4f(),
+//            new Matrix4f().translate(0, 1f, 0),
+//            new Matrix4f().rotateZ((float) (Math.PI * 0.25f))
+            new Matrix4f().translate(-1.5f, -0.75f, 0).rotateY(0),
+            new Matrix4f().translate(-0.5f, -0.75f, 0).rotateY((float) Math.PI * 0.5f),
+            new Matrix4f().translate(0.5f, -0.75f, 0).rotateY((float) Math.PI),
+            new Matrix4f().translate(1.5f, -0.75f, 0).rotateY((float) Math.PI * 1.5f)
+
+//            new Matrix4f().translate(-1.5f, -0.75f, 0).scale(1f / 16f),
+//            new Matrix4f().translate(-0.5f, -0.75f, 0).scale(1f / 16f),
+//            new Matrix4f().translate(0.5f, -0.75f, 0).scale(1f / 16f),
+//            new Matrix4f().translate(1.5f, -0.75f, 0).scale(1f / 16f)
         });
 
         flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_UBO::memcpy, globalUBO);
@@ -141,14 +155,17 @@ public class BackdropRenderSystem extends RenderSystem
             stack.longs(flightFrame.descriptorSet),
             null);
 
-        Struct push = Push.PUSH.create(new Matrix4f(),
-            new Vector4f(1, 1, 1, 1.0f),
-            0);
+        for (int j = 0; j < 4; j++)
+        {
+            Struct push = Push.PUSH.create(new Matrix4f(),
+                new Vector4f(0.3f, 0.3f, 0.3f, 1.0f),
+                j);
 
-        Push.PUSH.push(push, frameInfo.commandBuffer, pipeline.pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0);
+            Push.PUSH.push(push, frameInfo.commandBuffer, pipeline.pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0);
 
-        model3d.bind(frameInfo.commandBuffer);
-        model3d.draw(frameInfo.commandBuffer);
+            model3d.bind(frameInfo.commandBuffer);
+            model3d.draw(frameInfo.commandBuffer);
+        }
     }
 
     @Override

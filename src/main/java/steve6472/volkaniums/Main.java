@@ -96,7 +96,7 @@ public class Main
                     frameInfo.frameIndex = renderer.getCurrentFrameIndex();
                     frameInfo.commandBuffer = commandBuffer;
 
-                    addDebugObjectForFrame(cross(new Vector3f(0, 0, 0), 0.1f, WHITE));
+                    addDebugObjectForFrame(cross(new Vector3f(0, 0, 0), 0.1f, DARK_GRAY));
 
 //                    frameInfo.camera.setViewTarget(new Vector3f(1f, 1f, -3), new Vector3f(0, 0, 0));
                     frameInfo.camera.setViewTarget(new Vector3f(1f, 1.5f, -1), new Vector3f(0, 0.5f, 0));

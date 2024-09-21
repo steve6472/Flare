@@ -1,7 +1,7 @@
 package steve6472.volkaniums;
 
-import steve6472.volkaniums.model.ElementType;
-import steve6472.volkaniums.model.anim.KeyframeType;
+import steve6472.volkaniums.assets.model.blockbench.ElementType;
+import steve6472.volkaniums.assets.model.blockbench.anim.KeyframeType;
 import steve6472.volkaniums.registry.*;
 import steve6472.volkaniums.settings.Settings;
 import steve6472.volkaniums.util.Log;

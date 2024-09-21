@@ -34,10 +34,21 @@ public interface Vertex
         .addMember(UV)      // uv
         .build(StructVertex::new);
 
+    StructVertex POS3F_UV = builder()
+        .addMember(VEC_3F)  // position
+        .addMember(UV)      // uv
+        .build(StructVertex::new);
+
+    StructVertex POS3F_NORMAL_UV = builder()
+        .addMember(VEC_3F)  // position
+        .addMember(NORMAL)  // normal
+        .addMember(UV)      // uv
+        .build(StructVertex::new);
+
     StructVertex POS3F_COL3F_NOR3F_UV = builder()
         .addMember(VEC_3F)  // position
         .addMember(VEC_3F)  // color
-        .addMember(VEC_3F)  // normal
+        .addMember(NORMAL)  // normal
         .addMember(UV)      // uv
         .build(StructVertex::new);
 }

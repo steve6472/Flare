@@ -15,11 +15,11 @@ public class Struct
         members = new Object[memberCount];
     }
 
-    public <T> T getMember(int index, Class<?> expectedType)
+    public <T> T getMember(int index, Class<T> expectedType)
     {
         Object member = members[index];
         if (expectedType.isAssignableFrom(member.getClass()))
-            return (T) member;
+            return expectedType.cast(member);
         throw new RuntimeException("Member index: " + index + " " + member.getClass().getSimpleName() + " is not of expected type " + expectedType.getSimpleName());
     }
 

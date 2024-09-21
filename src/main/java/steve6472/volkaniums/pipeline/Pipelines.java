@@ -16,13 +16,13 @@ import static org.lwjgl.vulkan.VK10.*;
  */
 public interface Pipelines
 {
-    PipelineConstructor BASIC = (device, swapChain, setLayouts) -> PipelineBuilder
+    PipelineConstructor BB_STATIC = (device, swapChain, setLayouts) -> PipelineBuilder
         .create(device)
         .shaders()
-            .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "shaders/shader_base.vert", VK_SHADER_STAGE_VERTEX_BIT)
-            .addShader(ShaderSPIRVUtils.ShaderKind.FRAGMENT_SHADER, "shaders/shader_base.frag", VK_SHADER_STAGE_FRAGMENT_BIT)
+            .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "shaders/bb_static.vert", VK_SHADER_STAGE_VERTEX_BIT)
+            .addShader(ShaderSPIRVUtils.ShaderKind.FRAGMENT_SHADER, "shaders/bb_static.frag", VK_SHADER_STAGE_FRAGMENT_BIT)
             .done()
-        .vertexInputInfo(Vertex.POS3F_COL3F_UV)
+        .vertexInputInfo(Vertex.POS3F_NORMAL_UV)
         .inputAssembly(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, false)
         .viewport()
             .viewportBounds(0.0f, swapChain.swapChainExtent.height(), swapChain.swapChainExtent.width(), -swapChain.swapChainExtent.height())

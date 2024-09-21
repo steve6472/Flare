@@ -58,4 +58,5 @@ public interface MemberType
      */
 
     MemberData<Vector2f> UV = VEC_2F;
+    MemberData<Vector3f> NORMAL = VEC_3F;
 }

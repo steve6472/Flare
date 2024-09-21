@@ -49,7 +49,7 @@ public class MasterRenderer
         commands.createCommandPool(device, surface);
 
 //        renderSystems.add(new BackdropRenderSystem(device, new Pipeline(Pipelines.BASIC), commands, graphicsQueue));
-        renderSystems.add(new ModelRenderSystem(this, new Pipeline(Pipelines.BASIC)));
+        renderSystems.add(new BBStaticModelRenderSystem(this, new Pipeline(Pipelines.BB_STATIC)));
 //        renderSystems.add(new SBORenderSystem(device, new Pipeline(Pipelines.TEST), commands, graphicsQueue));
         debugLineRenderSystem = new DebugLineRenderSystem(this, new Pipeline(Pipelines.DEBUG_LINE));
         renderSystems.add(debugLineRenderSystem);
