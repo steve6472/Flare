@@ -19,8 +19,9 @@ public interface Vertex
 
     StructVertex SKIN = builder()
         .addMember(VEC_3F)  // position
-        .addMember(INT)     // bone 1
+        .addMember(NORMAL)  // normal
         .addMember(UV)      // uv
+        .addMember(INT)     // bone index
         .build(StructVertex::new);
 
     StructVertex POS3F_COL4F = builder()

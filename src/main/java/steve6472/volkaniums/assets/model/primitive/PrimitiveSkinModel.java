@@ -29,19 +29,19 @@ public class PrimitiveSkinModel extends PrimitiveStaticModel
         skinData = new SkinData();
     }
 
-    @Deprecated(forRemoval = true)
-    public List<Struct> toVkVertices(float uvScale)
+    @Override
+    public List<Struct> createVerticies()
     {
-        if (positions.size() != texCoords.size())
-            throw new RuntimeException("Different count of vertices and texture coordinates");
+        checkDataSizeEqual(positions, normals, texCoords, transformationIndicies);
 
         List<Struct> vertices = new ArrayList<>(positions.size());
 
         for (int i = 0; i < positions.size(); i++)
         {
-            Vector2f uv = texCoords.get(i);
             Vector3f pos = positions.get(i);
-            Struct vertex = vertexType.create(pos, transformationIndicies.get(i), uv.mul(uvScale, new Vector2f()));
+            Vector3f normal = positions.get(i);
+            Vector2f uv = texCoords.get(i);
+            Struct vertex = vertexType.create(pos, normal, transformationIndicies.get(i), uv);
             vertices.add(vertex);
         }
         return vertices;

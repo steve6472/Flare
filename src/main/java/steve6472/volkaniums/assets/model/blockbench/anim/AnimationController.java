@@ -5,7 +5,7 @@ import org.joml.Vector3f;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
 import steve6472.volkaniums.Commands;
-import steve6472.volkaniums.Model3d;
+import steve6472.volkaniums.assets.model.VkModel;
 import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
 import steve6472.volkaniums.assets.model.blockbench.SkinData;
 import steve6472.volkaniums.assets.model.blockbench.anim.ik.Ik;
@@ -45,7 +45,7 @@ public class AnimationController
     private VkQueue graphicsQueue;
     private VkDevice device;
     private List<Struct> vertices;
-    public Model3d debugModel;
+    public VkModel debugModel;
     private List<Vector3f> pointsToRender = new ArrayList<>();
     private Ik ik;
     // Null Object UUID
@@ -66,7 +66,7 @@ public class AnimationController
         this.graphicsQueue = graphicsQueue;
         this.device = device;
         this.vertices = new ArrayList<>();
-        debugModel = new Model3d();
+        debugModel = new VkModel();
     }
 
     private void updateModel()

@@ -12,6 +12,7 @@ import org.lwjgl.vulkan.VkQueue;
 import steve6472.volkaniums.*;
 import steve6472.volkaniums.assets.Texture;
 import steve6472.volkaniums.assets.TextureSampler;
+import steve6472.volkaniums.assets.model.VkModel;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
@@ -40,7 +41,7 @@ import static steve6472.volkaniums.SwapChain.MAX_FRAMES_IN_FLIGHT;
  */
 public class BBStaticModelRenderSystem extends RenderSystem
 {
-    Model3d model3d;
+    VkModel model3d;
 
     private DescriptorPool globalPool;
     private DescriptorSetLayout globalSetLayout;
@@ -109,9 +110,9 @@ public class BBStaticModelRenderSystem extends RenderSystem
         JsonElement jsonElement = JsonParser.parseReader(reader);
         DataResult<Pair<LoadedModel, JsonElement>> decode = LoadedModel.CODEC.decode(JsonOps.INSTANCE, jsonElement);
 
-        model3d = new Model3d();
+        model3d = new VkModel();
         LoadedModel loadedModel = decode.getOrThrow().getFirst();
-        model3d.createVertexBuffer(device, commands, graphicsQueue, loadedModel.toPrimitiveModel().toVkVertices(1f / 64f), Vertex.POS3F_NORMAL_UV);
+        model3d.createVertexBuffer(device, commands, graphicsQueue, loadedModel.toPrimitiveModel());
     }
 
     @Override

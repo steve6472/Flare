@@ -1,11 +1,13 @@
-package steve6472.volkaniums;
+package steve6472.volkaniums.assets.model;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkCommandBuffer;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
+import steve6472.volkaniums.Commands;
+import steve6472.volkaniums.VkBuffer;
+import steve6472.volkaniums.assets.model.primitive.PrimitiveModel;
 import steve6472.volkaniums.struct.Struct;
-import steve6472.volkaniums.struct.StructDef;
 import steve6472.volkaniums.struct.type.StructVertex;
 
 import java.nio.LongBuffer;
@@ -18,7 +20,7 @@ import static org.lwjgl.vulkan.VK10.*;
  * Date: 7/30/2024
  * Project: Volkaniums <br>
  */
-public class Model3d
+public class VkModel
 {
     public VkBuffer vertexBuffer;
     public int vertexCount = -1;
@@ -49,10 +51,15 @@ public class Model3d
         vkCmdDraw(commandBuffer, vertexCount, instaceCount, 0, 0);
     }
 
+    public void createVertexBuffer(VkDevice device, Commands commands, VkQueue graphicsQueue, PrimitiveModel primitiveModel)
+    {
+        createVertexBuffer(device, commands, graphicsQueue, primitiveModel.createVerticies(), primitiveModel.vertexType());
+    }
+
     public void createVertexBuffer(VkDevice device, Commands commands, VkQueue graphicsQueue, List<Struct> verticies, StructVertex vertexData)
     {
         if (vertexBuffer != null)
-            vertexBuffer.cleanup();
+            throw new RuntimeException("Vertex buffer already exists! Can not create model.");
 
         vertexCount = verticies.size();
 

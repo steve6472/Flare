@@ -14,7 +14,7 @@ import java.util.List;
  * Date: 8/17/2024
  * Project: Volkaniums <br>
  */
-public class PrimitiveStaticModel
+public class PrimitiveStaticModel implements PrimitiveModel
 {
     public final List<Vector3f> positions;
     public final List<Vector3f> normals;
@@ -29,11 +29,16 @@ public class PrimitiveStaticModel
         this.vertexType = vertexType;
     }
 
-    @Deprecated(forRemoval = true)
-    public List<Struct> toVkVertices(float uvScale)
+    @Override
+    public StructVertex vertexType()
     {
-        if (positions.size() != texCoords.size() || positions.size() != normals.size())
-            throw new RuntimeException("Different count of vertices, normals and texture coordinates (" + positions.size() + ", " + normals.size() + ", " + texCoords.size() + ")");
+        return vertexType;
+    }
+
+    @Override
+    public List<Struct> createVerticies()
+    {
+        checkDataSizeEqual(positions, normals, texCoords);
 
         List<Struct> vertices = new ArrayList<>(positions.size());
 
@@ -42,7 +47,7 @@ public class PrimitiveStaticModel
             Vector3f pos = positions.get(i);
             Vector3f normal = normals.get(i);
             Vector2f uv = texCoords.get(i);
-            Struct vertex = vertexType.create(pos, normal, uv.mul(uvScale, new Vector2f()));
+            Struct vertex = vertexType.create(pos, normal, uv);
             vertices.add(vertex);
         }
         return vertices;

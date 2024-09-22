@@ -21,7 +21,6 @@ public record DebugCross(Vector3f center, float halfSize, Vector4f colorX, Vecto
     @Override
     public void addVerticies(List<Struct> vertices)
     {
-
         // X
         vertices.add(vertex(new Vector3f(center).add(halfSize, 0, 0), colorX));
         vertices.add(vertex(new Vector3f(center).sub(halfSize, 0, 0), colorX));

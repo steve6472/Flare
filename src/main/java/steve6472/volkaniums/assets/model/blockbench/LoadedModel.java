@@ -7,6 +7,8 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import steve6472.volkaniums.assets.model.blockbench.anim.Animation;
+import steve6472.volkaniums.assets.model.blockbench.element.CubeElement;
+import steve6472.volkaniums.assets.model.blockbench.element.MeshElement;
 import steve6472.volkaniums.assets.model.blockbench.outliner.OutlinerElement;
 import steve6472.volkaniums.assets.model.blockbench.outliner.OutlinerUUID;
 import steve6472.volkaniums.assets.model.primitive.PrimitiveStaticModel;
@@ -30,6 +32,29 @@ public record LoadedModel(ModelMeta meta, Resolution resolution, List<Element> e
         Texture.CODEC.listOf().fieldOf("textures").forGetter(o -> o.textures),
         Animation.CODEC.listOf().optionalFieldOf("animations", List.of()).forGetter(o -> o.animations)
     ).apply(instance, LoadedModel::new));
+
+    public LoadedModel
+    {
+        fixResolution(resolution, elements);
+    }
+
+    /// @deprecated will be removed after atlas creation is in place
+    @Deprecated(forRemoval = true)
+    private static void fixResolution(Resolution resolution, List<Element> elements)
+    {
+        float scaleX = 1f / resolution.width();
+        float scaleY = 1f / resolution.height();
+
+        for (Element element : elements)
+        {
+            switch (element)
+            {
+                case CubeElement(UUID _, Vector3f _, Vector3f _, Vector3f _, float _, Map<FaceType, CubeFace> faces) -> faces.forEach((_, face) -> face.uv().mul(scaleX, scaleY, scaleX, scaleY));
+                case MeshElement(UUID _, Vector3f _, Vector3f _, Map<String, Vector3f> _, Map<String, MeshFace> faces) -> faces.forEach((_, face) -> face.uv().forEach((_, uv) -> uv.mul(scaleX, scaleY)));
+                default -> {}
+            }
+        }
+    }
 
     public Animation getAnimationByName(String name)
     {
@@ -80,11 +105,12 @@ public record LoadedModel(ModelMeta meta, Resolution resolution, List<Element> e
             model.positions.addAll(vertices);
             List<Vector3f> normals = element.toNormals();
             normals.forEach(normal -> {
-                Matrix3f normalMatrix = new Matrix3f();
-                parentTransform.get3x3(normalMatrix);
-                normalMatrix.invert().transpose();
-
-                normalMatrix.transform(normal);
+                // TODO: fix normals of transformed elements
+//                Matrix3f normalMatrix = new Matrix3f();
+//                parentTransform.get3x3(normalMatrix);
+//                normalMatrix.invert().transpose();
+//
+//                normalMatrix.transform(normal);
                 normal.normalize();
             });
             model.normals.addAll(normals);

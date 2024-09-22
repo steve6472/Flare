@@ -10,6 +10,7 @@ import org.lwjgl.vulkan.VkQueue;
 import steve6472.volkaniums.*;
 import steve6472.volkaniums.assets.Texture;
 import steve6472.volkaniums.assets.TextureSampler;
+import steve6472.volkaniums.assets.model.VkModel;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
@@ -40,7 +41,7 @@ import static steve6472.volkaniums.SwapChain.MAX_FRAMES_IN_FLIGHT;
  */
 public class SkinRenderSystem extends RenderSystem
 {
-    Model3d model3d;
+    VkModel model3d;
 
     private DescriptorPool globalPool;
     private DescriptorSetLayout globalSetLayout;
@@ -125,10 +126,10 @@ public class SkinRenderSystem extends RenderSystem
         JsonElement jsonElement = JsonParser.parseReader(reader);
         DataResult<Pair<LoadedModel, JsonElement>> decode = LoadedModel.CODEC.decode(JsonOps.INSTANCE, jsonElement);
 
-        model3d = new Model3d();
+        model3d = new VkModel();
         LoadedModel loadedModel = decode.getOrThrow().getFirst();
         primitiveSkinModel = loadedModel.toPrimitiveSkinModel();
-        model3d.createVertexBuffer(device, commands, graphicsQueue, primitiveSkinModel.toVkVertices(1f / 16f), Vertex.SKIN);
+        model3d.createVertexBuffer(device, commands, graphicsQueue, primitiveSkinModel);
 
 //        animationController = new AnimationController(loadedModel.getAnimationByName("looping_chain"), primitiveSkinModel.skinData, loadedModel);
         animationController = new AnimationController(loadedModel.getAnimationByName("grab_loop"), primitiveSkinModel.skinData, loadedModel);
