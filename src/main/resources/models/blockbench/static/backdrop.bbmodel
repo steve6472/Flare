@@ -5,7 +5,7 @@
         "box_uv": false
     },
     "name": "backdrop",
-    "model_identifier": "",
+    "model_identifier": "backdrop",
     "visible_box": [1, 1, 0],
     "variable_placeholders": "",
     "variable_placeholder_buttons": [],
@@ -21,6 +21,7 @@
             "box_uv": false,
             "rescale": false,
             "locked": false,
+            "light_emission": 0,
             "render_order": "default",
             "allow_mirror_modeling": true,
             "from": [-24, -5, -24],
@@ -62,6 +63,7 @@
             "box_uv": false,
             "rescale": false,
             "locked": false,
+            "light_emission": 0,
             "render_order": "default",
             "allow_mirror_modeling": true,
             "from": [-24, -4, 24],
@@ -103,6 +105,7 @@
             "box_uv": false,
             "rescale": false,
             "locked": false,
+            "light_emission": 0,
             "render_order": "default",
             "allow_mirror_modeling": true,
             "from": [-25, -4, -24],
@@ -143,11 +146,12 @@
     "outliner": ["9887d5be-e738-f787-62cb-975aee8ea530", "53c52181-8933-f1d0-afca-be566fb85146", "f2410d0f-4626-8a92-ba94-a76c48815221"],
     "textures": [
         {
-            "path": "C:\\storage\\Volkaniums\\resources\\backdrop.png",
+            "path": "C:\\storage\\Volkaniums\\src\\main\\resources\\textures\\backdrop.png",
             "name": "backdrop.png",
             "folder": "block",
             "namespace": "",
             "id": "0",
+            "group": "",
             "width": 16,
             "height": 16,
             "uv_width": 16,
@@ -166,7 +170,7 @@
             "internal": true,
             "saved": true,
             "uuid": "6237f7af-87b6-2cb3-b799-453e4bb65b1a",
-            "relative_path": "backdrop.png",
+            "relative_path": "../../../textures/backdrop.png",
             "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAACpJREFUOE9jtLW1/c9AAWAcNYBhOIRBbGws3nRw6tQpvKmEcdQAhmEQBgBwPzFhDnUXMQAAAABJRU5ErkJggg=="
         }
     ]

@@ -19,6 +19,6 @@ public record Animation(UUID uuid, String name, Loop loop, double length, Map<St
         Codec.STRING.fieldOf("name").forGetter(o -> o.name),
         Loop.CODEC.fieldOf("loop").forGetter(o -> o.loop),
         Codec.DOUBLE.fieldOf("length").forGetter(o -> o.length),
-        ExtraCodecs.mapListCodec(Codec.STRING, Animator.CODEC).fieldOf("animators").forGetter(o -> o.animators)
+        ExtraCodecs.mapListCodec(Codec.STRING, Animator.CODEC).optionalFieldOf("animators", Map.of()).forGetter(o -> o.animators)
     ).apply(instance, Animation::new));
 }

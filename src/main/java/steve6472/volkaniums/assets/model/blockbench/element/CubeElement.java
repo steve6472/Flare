@@ -6,13 +6,13 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import steve6472.volkaniums.Constants;
-import steve6472.volkaniums.assets.model.blockbench.CubeFace;
-import steve6472.volkaniums.assets.model.blockbench.Element;
-import steve6472.volkaniums.assets.model.blockbench.ElementType;
-import steve6472.volkaniums.assets.model.blockbench.FaceType;
+import steve6472.volkaniums.assets.model.blockbench.*;
 import steve6472.volkaniums.util.ExtraCodecs;
+import steve6472.volkaniums.util.ImagePacker;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * Created by steve6472
@@ -45,6 +45,27 @@ public record CubeElement(UUID uuid, Vector3f from, Vector3f to, Vector3f origin
     public ElementType<?> getType()
     {
         return ElementType.CUBE;
+    }
+
+    @Override
+    public void fixUvs(LoadedModel model, ImagePacker packer)
+    {
+        float resX = 1f / model.resolution().width();
+        float resY = 1f / model.resolution().height();
+        float texel = 1f / packer.getImage().getWidth();
+
+        faces.forEach((_, face) -> {
+            TextureData textureData = model.textures().get(face.texture());
+            String textureId = textureData.relativePath();
+            Rectangle rectangle = packer.getRects().get(textureId);
+            Vector4f uv = face.uv();
+            uv.set(
+                (rectangle.x + rectangle.width * uv.x * resX) * texel,
+                (rectangle.y + rectangle.height * uv.y * resY) * texel,
+                (rectangle.x + rectangle.width * uv.z * resX) * texel,
+                (rectangle.y + rectangle.height * uv.w * resY) * texel
+            );
+        });
     }
 
     @Override

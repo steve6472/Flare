@@ -7,9 +7,10 @@ import org.joml.Vector3f;
 import steve6472.volkaniums.Constants;
 import steve6472.volkaniums.assets.model.blockbench.Element;
 import steve6472.volkaniums.assets.model.blockbench.ElementType;
+import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
 import steve6472.volkaniums.util.ExtraCodecs;
+import steve6472.volkaniums.util.ImagePacker;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,6 +35,9 @@ public record NullObjectElement(UUID uuid, Vector3f position, String ikTarget, S
     {
         return ElementType.NULL_OBJECT;
     }
+
+    @Override
+    public void fixUvs(LoadedModel model, ImagePacker packer) { }
 
     @Override
     public List<Vector3f> toVertices()

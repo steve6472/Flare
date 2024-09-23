@@ -1,18 +1,25 @@
 package steve6472.volkaniums;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
-import steve6472.volkaniums.render.debug.DebugRender;
+import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
 import steve6472.volkaniums.settings.Settings;
 import steve6472.volkaniums.util.Log;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -61,7 +68,10 @@ public class Main
         createSurface();
         physicalDevice = PhysicalDevicePicker.pickPhysicalDevice(instance, surface);
         createLogicalDevice();
-        renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, surface);
+        Commands commands = new Commands();
+        commands.createCommandPool(device, surface);
+        Registries.createVkContents(device, commands, graphicsQueue);
+        renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, commands, surface);
     }
 
     private void initContent()
@@ -125,6 +135,10 @@ public class Main
         LOGGER.fine("Cleanup");
 
         renderer.cleanup();
+
+        Registries.STATIC_MODEL.keys().forEach(key -> Registries.STATIC_MODEL.get(key).destroy());
+        Registries.ANIMATED_MODEL.keys().forEach(key -> Registries.ANIMATED_MODEL.get(key).destroy());
+        Registries.SAMPLER.keys().forEach(key -> Registries.SAMPLER.get(key).cleanup(device));
 
         vkDestroyDevice(device, null);
 

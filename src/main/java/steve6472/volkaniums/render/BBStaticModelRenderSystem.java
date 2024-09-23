@@ -1,32 +1,20 @@
 package steve6472.volkaniums.render;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JsonOps;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VkQueue;
 import steve6472.volkaniums.*;
-import steve6472.volkaniums.assets.Texture;
-import steve6472.volkaniums.assets.TextureSampler;
+import steve6472.volkaniums.assets.model.Model;
 import steve6472.volkaniums.assets.model.VkModel;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.pipeline.Pipeline;
-import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
+import steve6472.volkaniums.registry.Key;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.Push;
 import steve6472.volkaniums.struct.def.UBO;
-import steve6472.volkaniums.struct.def.Vertex;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,19 +29,13 @@ import static steve6472.volkaniums.SwapChain.MAX_FRAMES_IN_FLIGHT;
  */
 public class BBStaticModelRenderSystem extends RenderSystem
 {
-    VkModel model3d;
-
     private DescriptorPool globalPool;
     private DescriptorSetLayout globalSetLayout;
     List<FlightFrame> frame = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
-    Texture texture;
-    TextureSampler sampler;
 
     public BBStaticModelRenderSystem(MasterRenderer masterRenderer, Pipeline pipeline)
     {
         super(masterRenderer, pipeline);
-
-        createModel(masterRenderer.getCommands(), masterRenderer.getGraphicsQueue());
 
         globalSetLayout = DescriptorSetLayout
             .builder(device)
@@ -65,10 +47,6 @@ public class BBStaticModelRenderSystem extends RenderSystem
             .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT)
             .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT)
             .build();
-
-        texture = new Texture();
-        texture.createTextureImage(device, "resources\\loony.png", masterRenderer.getCommands().commandPool, masterRenderer.getGraphicsQueue());
-        sampler = new TextureSampler(texture, device);
 
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
@@ -88,31 +66,10 @@ public class BBStaticModelRenderSystem extends RenderSystem
                 DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
                 frame.get(i).descriptorSet = descriptorWriter
                     .writeBuffer(0, frame.get(i).uboBuffer, stack)
-                    .writeImage(1, sampler, stack)
+                    .writeImage(1, Registries.SAMPLER.get(Constants.BLOCKBENCH_TEXTURE), stack)
                     .build();
             }
         }
-    }
-
-    private void createModel(Commands commands, VkQueue graphicsQueue)
-    {
-        final String PATH = "resources\\model.bbmodel";
-        final File file = new File(PATH);
-
-        BufferedReader reader = null;
-        try
-        {
-            reader = new BufferedReader(new FileReader(file));
-        } catch (FileNotFoundException e)
-        {
-            throw new RuntimeException(e);
-        }
-        JsonElement jsonElement = JsonParser.parseReader(reader);
-        DataResult<Pair<LoadedModel, JsonElement>> decode = LoadedModel.CODEC.decode(JsonOps.INSTANCE, jsonElement);
-
-        model3d = new VkModel();
-        LoadedModel loadedModel = decode.getOrThrow().getFirst();
-        model3d.createVertexBuffer(device, commands, graphicsQueue, loadedModel.toPrimitiveModel());
     }
 
     @Override
@@ -164,17 +121,16 @@ public class BBStaticModelRenderSystem extends RenderSystem
 
             Push.PUSH.push(push, frameInfo.commandBuffer, pipeline.pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0);
 
-            model3d.bind(frameInfo.commandBuffer);
-            model3d.draw(frameInfo.commandBuffer);
+            Model model = Registries.STATIC_MODEL.get(Key.defaultNamespace("mesh_pebble"));
+
+            model.bind(frameInfo.commandBuffer);
+            model.draw(frameInfo.commandBuffer);
         }
     }
 
     @Override
     public void cleanup()
     {
-        sampler.cleanup(device);
-        texture.cleanup(device);
-        model3d.destroy();
         globalSetLayout.cleanup();
         globalPool.cleanup();
 

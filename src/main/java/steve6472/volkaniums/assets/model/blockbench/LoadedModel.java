@@ -3,7 +3,6 @@ package steve6472.volkaniums.assets.model.blockbench;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import steve6472.volkaniums.assets.model.blockbench.anim.Animation;
@@ -13,6 +12,8 @@ import steve6472.volkaniums.assets.model.blockbench.outliner.OutlinerElement;
 import steve6472.volkaniums.assets.model.blockbench.outliner.OutlinerUUID;
 import steve6472.volkaniums.assets.model.primitive.PrimitiveStaticModel;
 import steve6472.volkaniums.assets.model.primitive.PrimitiveSkinModel;
+import steve6472.volkaniums.registry.Key;
+import steve6472.volkaniums.registry.Keyable;
 import steve6472.volkaniums.struct.def.Vertex;
 
 import java.util.*;
@@ -22,39 +23,17 @@ import java.util.*;
  * Date: 8/17/2024
  * Project: Volkaniums <br>
  */
-public record LoadedModel(ModelMeta meta, Resolution resolution, List<Element> elements, List<OutlinerUUID> outliner, List<Texture> textures, List<Animation> animations)
+public record LoadedModel(ModelMeta meta, Key key, Resolution resolution, List<Element> elements, List<OutlinerUUID> outliner, List<TextureData> textures, List<Animation> animations) implements Keyable
 {
     public static Codec<LoadedModel> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         ModelMeta.CODEC.fieldOf("meta").forGetter(o -> o.meta),
+        Key.CODEC.fieldOf("model_identifier").forGetter(o -> o.key),
         Resolution.CODEC.fieldOf("resolution").forGetter(o -> o.resolution),
         Element.CODEC.listOf().fieldOf("elements").forGetter(o -> o.elements),
         OutlinerElement.CODEC.listOf().fieldOf("outliner").forGetter(o -> o.outliner),
-        Texture.CODEC.listOf().fieldOf("textures").forGetter(o -> o.textures),
+        TextureData.CODEC.listOf().fieldOf("textures").forGetter(o -> o.textures),
         Animation.CODEC.listOf().optionalFieldOf("animations", List.of()).forGetter(o -> o.animations)
     ).apply(instance, LoadedModel::new));
-
-    public LoadedModel
-    {
-        fixResolution(resolution, elements);
-    }
-
-    /// @deprecated will be removed after atlas creation is in place
-    @Deprecated(forRemoval = true)
-    private static void fixResolution(Resolution resolution, List<Element> elements)
-    {
-        float scaleX = 1f / resolution.width();
-        float scaleY = 1f / resolution.height();
-
-        for (Element element : elements)
-        {
-            switch (element)
-            {
-                case CubeElement(UUID _, Vector3f _, Vector3f _, Vector3f _, float _, Map<FaceType, CubeFace> faces) -> faces.forEach((_, face) -> face.uv().mul(scaleX, scaleY, scaleX, scaleY));
-                case MeshElement(UUID _, Vector3f _, Vector3f _, Map<String, Vector3f> _, Map<String, MeshFace> faces) -> faces.forEach((_, face) -> face.uv().forEach((_, uv) -> uv.mul(scaleX, scaleY)));
-                default -> {}
-            }
-        }
-    }
 
     public Animation getAnimationByName(String name)
     {
@@ -179,6 +158,7 @@ public record LoadedModel(ModelMeta meta, Resolution resolution, List<Element> e
             }
 
             model.positions.addAll(vertices);
+            model.normals.addAll(element.toNormals());
             model.texCoords.addAll(element.toUVs());
             model.transformationIndicies.addAll(bones1);
         }

@@ -18,10 +18,10 @@ import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
 import steve6472.volkaniums.pipeline.Pipeline;
+import steve6472.volkaniums.registry.Key;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.Push;
 import steve6472.volkaniums.struct.def.UBO;
-import steve6472.volkaniums.struct.def.Vertex;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -66,8 +66,8 @@ public class BackdropRenderSystem extends RenderSystem
             .build();
 
         texture = new Texture();
-        texture.createTextureImage(device, "resources\\backdrop.png", masterRenderer.getCommands().commandPool, masterRenderer.getGraphicsQueue());
-        sampler = new TextureSampler(texture, device);
+        texture.createTextureImageFromResource(device, "/textures/backdrop.png", masterRenderer.getCommands().commandPool, masterRenderer.getGraphicsQueue());
+        sampler = new TextureSampler(texture, device, Key.defaultNamespace("backdrop"));
 
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {

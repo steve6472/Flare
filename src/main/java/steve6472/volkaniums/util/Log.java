@@ -28,6 +28,11 @@ public class Log
         }
     }
 
+    public static void exception(Logger logger, Throwable throwable)
+    {
+        logger.log(Level.SEVERE, throwable, throwable::getMessage);
+    }
+
     public static Logger getLogger(Class<?> clazz)
     {
         return getLogger(clazz.getSimpleName());

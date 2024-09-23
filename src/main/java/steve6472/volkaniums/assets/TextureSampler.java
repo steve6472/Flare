@@ -4,6 +4,8 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkSamplerCreateInfo;
 import steve6472.volkaniums.VulkanUtil;
+import steve6472.volkaniums.registry.Key;
+import steve6472.volkaniums.registry.Keyable;
 
 import java.nio.LongBuffer;
 
@@ -14,15 +16,17 @@ import static org.lwjgl.vulkan.VK10.*;
  * Date: 9/7/2024
  * Project: Volkaniums <br>
  */
-public class TextureSampler
+public class TextureSampler implements Keyable
 {
     public long textureImageView;
     public long textureSampler;
     public Texture texture;
+    private final Key key;
 
-    public TextureSampler(Texture texture, VkDevice device)
+    public TextureSampler(Texture texture, VkDevice device, Key key)
     {
         this.texture = texture;
+        this.key = key;
         create(device);
     }
 
@@ -62,11 +66,18 @@ public class TextureSampler
     {
         vkDestroySampler(device, textureSampler, null);
         vkDestroyImageView(device, textureImageView, null);
+        texture.cleanup(device);
     }
 
     @Override
     public String toString()
     {
         return "TextureSampler{" + "textureImageView=" + textureImageView + ", textureSampler=" + textureSampler + ", texture=" + texture + '}';
+    }
+
+    @Override
+    public Key key()
+    {
+        return key;
     }
 }

@@ -7,7 +7,9 @@ import org.joml.Vector3f;
 import steve6472.volkaniums.Constants;
 import steve6472.volkaniums.assets.model.blockbench.Element;
 import steve6472.volkaniums.assets.model.blockbench.ElementType;
+import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
 import steve6472.volkaniums.util.ExtraCodecs;
+import steve6472.volkaniums.util.ImagePacker;
 
 import java.util.*;
 
@@ -31,6 +33,9 @@ public record LocatorElement(UUID uuid, Vector3f position, Vector3f rotation, bo
     {
         return ElementType.LOCATOR;
     }
+
+    @Override
+    public void fixUvs(LoadedModel model, ImagePacker packer) { }
 
     @Override
     public List<Vector3f> toVertices()

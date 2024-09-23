@@ -37,18 +37,17 @@ public class MasterRenderer
 
     private final List<RenderSystem> renderSystems = new ArrayList<>();
 
-    public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, long surface)
+    public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, Commands commands, long surface)
     {
         this.window = window;
         this.device = device;
         this.graphicsQueue = graphicsQueue;
         this.presentQueue = presentQueue;
+        this.commands = commands;
 
         swapChain = new SwapChain(device, window, surface, this);
-        commands = new Commands();
-        commands.createCommandPool(device, surface);
 
-//        renderSystems.add(new BackdropRenderSystem(device, new Pipeline(Pipelines.BASIC), commands, graphicsQueue));
+//        renderSystems.add(new BackdropRenderSystem(this, new Pipeline(Pipelines.BB_STATIC)));
         renderSystems.add(new BBStaticModelRenderSystem(this, new Pipeline(Pipelines.BB_STATIC)));
 //        renderSystems.add(new SBORenderSystem(device, new Pipeline(Pipelines.TEST), commands, graphicsQueue));
         debugLineRenderSystem = new DebugLineRenderSystem(this, new Pipeline(Pipelines.DEBUG_LINE));

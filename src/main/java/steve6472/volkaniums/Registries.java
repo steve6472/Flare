@@ -1,6 +1,12 @@
 package steve6472.volkaniums;
 
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkQueue;
+import steve6472.volkaniums.assets.TextureSampler;
+import steve6472.volkaniums.assets.model.Model;
 import steve6472.volkaniums.assets.model.blockbench.ElementType;
+import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
+import steve6472.volkaniums.assets.model.blockbench.BlockbenchLoader;
 import steve6472.volkaniums.assets.model.blockbench.anim.KeyframeType;
 import steve6472.volkaniums.registry.*;
 import steve6472.volkaniums.settings.Settings;
@@ -20,6 +26,7 @@ public class Registries
 {
     private static final Logger LOGGER = Log.getLogger(Registries.class);
     private static final Map<Key, Supplier<?>> LOADERS = new LinkedHashMap<>();
+    private static final Map<Key, VkContent<?>> VK_LOADERS = new LinkedHashMap<>();
 
     public static final ObjectRegistry<Settings.Setting<?, ?>> SETTINGS = createObjectRegistry("setting", () -> Settings.USERNAME);
 
@@ -27,7 +34,13 @@ public class Registries
     public static final Registry<KeyframeType<?>> KEYFRAME_TYPE = createRegistry("keyframe_type", () -> KeyframeType.ROTATION);
 
     // Models have to load after the model types registries
-//    public static final ObjectRegistry<Settings.Setting<?>> MODEL = createObjectRegistry("model", () -> Settings.USERNAME);
+    public static final ObjectRegistry<LoadedModel> STATIC_LOADED_MODEL = createObjectRegistry("static_loaded_model", BlockbenchLoader::loadStaticModels);
+    public static final ObjectRegistry<LoadedModel> ANIMATED_LOADED_MODEL = createObjectRegistry("animated_loaded_model", BlockbenchLoader::loadAnimatedModels);
+
+    // VK Objects
+    public static final ObjectRegistry<TextureSampler> SAMPLER = createVkObjectRegistry("sampler", BlockbenchLoader::packImages);
+    public static final ObjectRegistry<Model> STATIC_MODEL = createVkObjectRegistry("static_model", BlockbenchLoader::createStaticModels);
+    public static final ObjectRegistry<Model> ANIMATED_MODEL = createVkObjectRegistry("animated_model", BlockbenchLoader::createAnimatedModels);
 
     private static <T extends Keyable & Serializable<?>> Registry<T> createRegistry(String id, Supplier<T> bootstrap)
     {
@@ -43,6 +56,13 @@ public class Registries
         return new ObjectRegistry<>(key);
     }
 
+    private static <T extends Keyable> ObjectRegistry<T> createVkObjectRegistry(String id, VkContent<T> bootstrap)
+    {
+        Key key = Key.defaultNamespace(id);
+        VK_LOADERS.put(key, bootstrap);
+        return new ObjectRegistry<>(key);
+    }
+
     public static void createContents()
     {
         LOADERS.forEach((key, loader) -> {
@@ -54,10 +74,29 @@ public class Registries
                 }
             } catch (Exception ex)
             {
-                ex.printStackTrace();
-                throw new RuntimeException(ErrorCode.REGISTRY_LOADING_ERROR.format(key));
+                throw new RuntimeException(ex);
             }
             LOGGER.finest("Bootstrapped " + key);
         });
+    }
+
+    public static void createVkContents(VkDevice device, Commands commands, VkQueue graphicsQueue)
+    {
+        VK_LOADERS.forEach((key, loader) -> {
+            try
+            {
+                loader.apply(device, commands, graphicsQueue);
+            } catch (Exception ex)
+            {
+                throw new RuntimeException(ex);
+            }
+            LOGGER.finest("Bootstrapped " + key);
+        });
+    }
+
+    @FunctionalInterface
+    private interface VkContent<T>
+    {
+        T apply(VkDevice device, Commands commands, VkQueue graphicsQueue);
     }
 }
