@@ -12,10 +12,9 @@ import static steve6472.volkaniums.struct.Struct.builder;
  */
 public interface UBO
 {
-    StructDef GLOBAL_UBO = builder()
+    StructDef STATIC_BB_MODEL_UBO = builder()
         .addMember(MAT_4F) // projection
         .addMember(MAT_4F) // view
-        .addMemberArray(MAT_4F, 4)
         .build();
 
     StructDef DEBUG_LINE = builder()

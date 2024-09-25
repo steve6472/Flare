@@ -13,6 +13,10 @@ import static steve6472.volkaniums.struct.def.MemberType.MAT_4F;
 public interface SBO
 {
     StructDef BONES = builder()
-        .addMemberArray(MAT_4F, 32000) // transformations
+        .addMemberArray(MAT_4F, 32768) // transformations
+        .build();
+
+    StructDef TRANSFORMATIONS = builder()
+        .addMemberArray(MAT_4F, 32768) // transformations
         .build();
 }

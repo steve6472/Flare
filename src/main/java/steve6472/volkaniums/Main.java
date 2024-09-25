@@ -2,6 +2,10 @@ package steve6472.volkaniums;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.jme3.bullet.PhysicsSpace;
+import com.jme3.bullet.objects.PhysicsRigidBody;
+import com.jme3.bullet.util.NativeLibrary;
+import com.jme3.system.NativeLibraryLoader;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
@@ -16,10 +20,12 @@ import steve6472.volkaniums.settings.Settings;
 import steve6472.volkaniums.util.Log;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -76,9 +82,17 @@ public class Main
 
     private void initContent()
     {
+        NativeLibraryLoader.loadLibbulletjme(true, new File("dep"), "Debug", "Sp");
+        NativeLibrary.setStartupMessageEnabled(false);
+        PhysicsSpace.logger.setLevel(Level.SEVERE);
+        PhysicsRigidBody.logger2.setLevel(Level.SEVERE);
+
+
         Registries.createContents();
         //TODO: SettingsLoader.loadSettings(...);
     }
+
+    float Y = 0;
 
     private void mainLoop()
     {
@@ -113,7 +127,7 @@ public class Main
                     Vector2i mousePos = userInput.getMousePositionRelativeToTopLeftOfTheWindow();
                     if (window.isFocused())
                     {
-                        frameInfo.camera.center.set(0, 0f, 0);
+                        frameInfo.camera.center.set(0, 0f + Y, 0);
                         frameInfo.camera.headOrbit(mousePos.x, mousePos.y, 0.4f, 2.5f);
                     }
 
@@ -122,6 +136,19 @@ public class Main
                     renderer.render(frameInfo, stack);
                     renderer.endSwapChainRenderPass(commandBuffer);
                     renderer.endFrame(stack, pImageIndex);
+
+                    System.out.printf("Frame time: %.4fms, FPS: %.4f%n", frameTime * 1e3f, 1000f / (frameTime * 1e3f));
+
+                    float speed = 4f;
+
+                    if (userInput.isKeyPressed(Settings.KEY_MOVE_LEFT))
+                        speed *= 10f;
+
+                    if (userInput.isKeyPressed(Settings.KEY_MOVE_FORWARD))
+                        Y += frameTime * speed;
+
+                    if (userInput.isKeyPressed(Settings.KEY_MOVE_BACKWARD))
+                        Y -= frameTime * speed;
                 }
             }
         }

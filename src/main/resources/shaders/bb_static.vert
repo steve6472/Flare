@@ -11,18 +11,21 @@ layout (location = 1) out vec3 normal;
 layout(set = 0, binding = 0) uniform GlobalUbo {
     mat4 projection;
     mat4 view;
-    mat4 transformation[4];
 } ubo;
 
+layout(std140, set = 0, binding = 2) readonly buffer SSBO {
+    mat4 transformation[];
+} ssbo;
+
 layout(push_constant) uniform Push {
-    mat4 transformation;
-    vec4 color;
     int arrayIndex;
 } push;
 
 void main() {
-    gl_Position = ubo.projection * ubo.view * ubo.transformation[push.arrayIndex] * vec4(inPosition, 1.0);
+    mat4 transform = ssbo.transformation[gl_InstanceIndex];
+
+    gl_Position = ubo.projection * ubo.view * transform * vec4(inPosition, 1.0);
+
     uv = inUv;
-    normal = normalize(mat3(transpose(inverse(ubo.transformation[push.arrayIndex]))) * inNormal);
-//    normal = inNormal;
+    normal = normalize(mat3(transpose(inverse(transform))) * inNormal);
 }

@@ -75,7 +75,7 @@ public class BackdropRenderSystem extends RenderSystem
 
             VkBuffer global = new VkBuffer(
                 device,
-                UBO.GLOBAL_UBO.sizeof(),
+                UBO.STATIC_BB_MODEL_UBO.sizeof(),
                 1,
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
@@ -125,11 +125,11 @@ public class BackdropRenderSystem extends RenderSystem
         FlightFrame flightFrame = frame.get(frameInfo.frameIndex);
         // Update
 
-        var globalUBO = UBO.GLOBAL_UBO.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix(), new Matrix4f[] {
+        var globalUBO = UBO.STATIC_BB_MODEL_UBO.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix(), new Matrix4f[] {
             new Matrix4f().translate(0, 0, 0).rotateY(0)
         });
 
-        flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_UBO::memcpy, globalUBO);
+        flightFrame.uboBuffer.writeToBuffer(UBO.STATIC_BB_MODEL_UBO::memcpy, globalUBO);
         flightFrame.uboBuffer.flush();
 
         pipeline.bind(frameInfo.commandBuffer);

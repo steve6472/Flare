@@ -56,6 +56,11 @@
             <artifactId>datafixerupper</artifactId>
             <version>7.1.15</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.stephengold</groupId>
+            <artifactId>Libbulletjme</artifactId>
+            <version>21.2.1</version>
+        </dependency>
 
         <!-- LWJGL (Vulkan) -->
         <dependency>

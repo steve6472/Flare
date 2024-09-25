@@ -48,7 +48,7 @@ public interface Pipelines
             .attachment(VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT, false)
             .done()
         .pushConstants()
-            .constant(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, Push.PUSH.sizeof())
+            .constant(VK_SHADER_STAGE_VERTEX_BIT, 0, Push.STATIC.sizeof())
             .done()
         .build(swapChain.renderPass, setLayouts);
 
