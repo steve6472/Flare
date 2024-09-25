@@ -5,7 +5,7 @@ import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 import steve6472.volkaniums.*;
 import steve6472.volkaniums.assets.model.Model;
-import steve6472.volkaniums.assets.model.VkModel;
+import steve6472.volkaniums.assets.model.blockbench.ErrorModel;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
@@ -121,7 +121,7 @@ public class BBStaticModelRenderSystem extends RenderSystem
 
             Push.PUSH.push(push, frameInfo.commandBuffer, pipeline.pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0);
 
-            Model model = Registries.STATIC_MODEL.get(Key.defaultNamespace("mesh_pebble"));
+            Model model = Registries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/mesh_pebble"));
 
             model.bind(frameInfo.commandBuffer);
             model.draw(frameInfo.commandBuffer);

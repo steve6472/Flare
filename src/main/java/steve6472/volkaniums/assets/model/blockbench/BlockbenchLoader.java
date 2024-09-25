@@ -24,10 +24,7 @@ import steve6472.volkaniums.util.ResourceListing;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -57,6 +54,8 @@ public class BlockbenchLoader
         int size = STARTING_IMAGE_SIZE;
         ImagePacker packer;
 
+        boolean triedError = false;
+
         l: while (true)
         {
             packer = new ImagePacker(size, size, 1, true);
@@ -66,8 +65,15 @@ public class BlockbenchLoader
                 try
                 {
                     packer.insertImage(imgKey, bufferedImage);
+
+                    if (!triedError)
+                    {
+                        packer.insertImage(Constants.ERROR_TEXTURE, ErrorModel.IMAGE);
+                        triedError = true;
+                    }
                 } catch (RuntimeException ignored)
                 {
+                    triedError = false;
                     size *= 2;
                     continue l;
                 }
@@ -75,13 +81,27 @@ public class BlockbenchLoader
             break;
         }
 
+        IMAGES.clear();
+
         BufferedImage image = packer.getImage();
+        saveDebugAtlas(image);
         Texture texture = new Texture();
         texture.createTextureImageFromBufferedImage(device, image, commands.commandPool, graphicsQueue);
         TextureSampler sampler = new TextureSampler(texture, device, Constants.BLOCKBENCH_TEXTURE);
         Registries.SAMPLER.register(sampler);
         fixModelUvs(packer);
         return sampler;
+    }
+
+    private static void saveDebugAtlas(BufferedImage image)
+    {
+        try
+        {
+            ImageIO.write(image, "PNG", new File("atlas.png"));
+        } catch (IOException e)
+        {
+            LOGGER.warning("Failed to save debug atlas.png, exception: " + e.getMessage());
+        }
     }
 
     private static void fixModelUvs(ImagePacker imagePacker)
@@ -97,6 +117,8 @@ public class BlockbenchLoader
             LoadedModel model = Registries.STATIC_LOADED_MODEL.get(key);
             model.elements().forEach(el -> el.fixUvs(model, imagePacker));
         });
+
+        ErrorModel.INSTANCE.elements().forEach(el -> el.fixUvs(ErrorModel.INSTANCE, imagePacker));
     }
 
     public static LoadedModel loadStaticModels()
@@ -111,11 +133,17 @@ public class BlockbenchLoader
 
     public static Model createStaticModels(VkDevice device, Commands commands, VkQueue graphicsQueue)
     {
+        ErrorModel.VK_STATIC_INSTANCE.createVertexBuffer(device, commands, graphicsQueue, ErrorModel.INSTANCE.toPrimitiveModel());
+        Registries.STATIC_MODEL.register(ErrorModel.VK_STATIC_INSTANCE);
+
         return createModels(device, commands, graphicsQueue, Registries.STATIC_LOADED_MODEL, Registries.STATIC_MODEL, LoadedModel::toPrimitiveModel);
     }
 
     public static Model createAnimatedModels(VkDevice device, Commands commands, VkQueue graphicsQueue)
     {
+        ErrorModel.VK_ANIMATED_INSTANCE.createVertexBuffer(device, commands, graphicsQueue, ErrorModel.INSTANCE.toPrimitiveSkinModel());
+        Registries.ANIMATED_MODEL.register(ErrorModel.VK_ANIMATED_INSTANCE);
+
         return createModels(device, commands, graphicsQueue, Registries.ANIMATED_LOADED_MODEL, Registries.ANIMATED_MODEL, LoadedModel::toPrimitiveSkinModel);
     }
 
@@ -156,7 +184,7 @@ public class BlockbenchLoader
         if (models.length > 0)
             return models[0];
 
-        return new LoadedModel(null, null, null, null, null, null, null);
+        return ErrorModel.INSTANCE;
     }
 
     private static void loadTextures(LoadedModel model)
@@ -165,8 +193,8 @@ public class BlockbenchLoader
         try
         {
             List<TextureData> textures = model.textures();
-            if (textures.size() > 1) throw new RuntimeException("Multiple textures not supported yet.");
-            if (textures.isEmpty()) throw new RuntimeException("Model has no texture.");
+            if (textures.size() > 1) LOGGER.warning("Multiple textures per model functionality not confirmed yet! (" + model.key() + ")");
+            if (textures.isEmpty()) LOGGER.warning("Model has no texture, weirdness may happen! (" + model.key() + ")");
 
             String pathId = textures.getFirst().relativePath();
             IMAGES.computeIfAbsent(pathId, _ -> {
@@ -227,7 +255,7 @@ public class BlockbenchLoader
         } else
         {
             LOGGER.severe("ExtraPath does not end with .bbmodel");
-            return null;
+            return ErrorModel.INSTANCE;
         }
 
         LOGGER.finest("Loading model: " + pathUrl + " (" + extraPath + ")");
@@ -236,7 +264,7 @@ public class BlockbenchLoader
         if (inputStream == null)
         {
             LOGGER.severe("Failed to load resource '" + pathUrl + "'");
-            return null;
+            return ErrorModel.INSTANCE;
         }
 
         InputStreamReader streamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
@@ -248,10 +276,16 @@ public class BlockbenchLoader
         {
             LOGGER.severe("Resource loading error '" + pathUrl + "'");
             decode.error().ifPresent(err -> LOGGER.severe(err.message()));
-            return null;
+            return ErrorModel.INSTANCE;
         }
 
         Pair<LoadedModel, JsonElement> decoded = decode.getOrThrow();
-        return decoded.getFirst();
+        LoadedModel loadedModel = decoded.getFirst();
+        return overrideKey(loadedModel, Key.defaultNamespace(pathUrl.substring("/models/".length(), pathUrl.length() - ".bbmodel".length())));
+    }
+
+    private static LoadedModel overrideKey(LoadedModel model, Key newKey)
+    {
+        return new LoadedModel(model.meta(), newKey, model.resolution(), model.elements(), model.outliner(), model.textures(), model.animations());
     }
 }

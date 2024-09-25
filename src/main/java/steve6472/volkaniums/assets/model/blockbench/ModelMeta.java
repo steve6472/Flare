@@ -24,7 +24,7 @@ public record ModelMeta(String formatVersion, ModelFormat modelFormat, boolean b
 
     public ModelMeta
     {
-        if (!formatVersion.equals(LAST_TESTED_VERSION))
+        if (!formatVersion.equals(ErrorModel.VERSION) && !formatVersion.equals(LAST_TESTED_VERSION))
             LOGGER.warning("Format Version " + formatVersion + " has not been verified, errors or crashes may occur, please use last tested version: " + LAST_TESTED_VERSION);
     }
 }

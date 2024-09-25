@@ -17,10 +17,17 @@ public class ObjectRegistry<T extends Keyable>
 {
     private final Key key;
     private final Map<Key, T> map = new HashMap<>();
+    private final T defaultValue;
+
+    public ObjectRegistry(Key key, T defaultValue)
+    {
+        this.key = key;
+        this.defaultValue = defaultValue;
+    }
 
     public ObjectRegistry(Key key)
     {
-        this.key = key;
+        this(key, null);
     }
 
     public Key getRegistryKey()
@@ -41,10 +48,7 @@ public class ObjectRegistry<T extends Keyable>
                 return DataResult.error(() -> "No entry in registry '" + getRegistryKey() + "' for key '" + key + "'");
             else
                 return DataResult.success(t);
-        }, t ->
-        {
-            return DataResult.success(t.key());
-        });
+        }, t -> DataResult.success(t.key()));
     }
 
     public void register(Key key, T obj)
@@ -60,7 +64,7 @@ public class ObjectRegistry<T extends Keyable>
 
     public T get(Key key)
     {
-        return map.get(key);
+        return map.getOrDefault(key, defaultValue);
     }
 
     public Collection<Key> keys()

@@ -12,7 +12,7 @@ public class Constants
 {
     public static final Vector3f CAMERA_UP = new Vector3f(0, 1, 0);
 
-    /// This makes models be unable to be saved unless they are scaled in opposite direction before saving
+    /// Note: This makes models be unable to be saved unless they are scaled in opposite direction before saving
     public static final float BB_MODEL_SCALE = 1f / 16f;
 
     /// Constant stolen from Math.DEGREES_TO_RADIANS
@@ -20,4 +20,10 @@ public class Constants
 
     /// Blockbench texture atlas
     public static final Key BLOCKBENCH_TEXTURE = Key.defaultNamespace("blockbench_main");
+
+    /// Used for code-generated resources
+    public static final String ENGINE_NAMESPACE = "builtin_engine";
+
+    /// Error texture id
+    public static final String ERROR_TEXTURE = "*error_texture*";
 }

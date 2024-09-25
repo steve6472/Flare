@@ -5,6 +5,7 @@ import org.lwjgl.vulkan.VkQueue;
 import steve6472.volkaniums.assets.TextureSampler;
 import steve6472.volkaniums.assets.model.Model;
 import steve6472.volkaniums.assets.model.blockbench.ElementType;
+import steve6472.volkaniums.assets.model.blockbench.ErrorModel;
 import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
 import steve6472.volkaniums.assets.model.blockbench.BlockbenchLoader;
 import steve6472.volkaniums.assets.model.blockbench.anim.KeyframeType;
@@ -34,13 +35,13 @@ public class Registries
     public static final Registry<KeyframeType<?>> KEYFRAME_TYPE = createRegistry("keyframe_type", () -> KeyframeType.ROTATION);
 
     // Models have to load after the model types registries
-    public static final ObjectRegistry<LoadedModel> STATIC_LOADED_MODEL = createObjectRegistry("static_loaded_model", BlockbenchLoader::loadStaticModels);
-    public static final ObjectRegistry<LoadedModel> ANIMATED_LOADED_MODEL = createObjectRegistry("animated_loaded_model", BlockbenchLoader::loadAnimatedModels);
+    public static final ObjectRegistry<LoadedModel> STATIC_LOADED_MODEL = createObjectRegistry("static_loaded_model", ErrorModel.INSTANCE, BlockbenchLoader::loadStaticModels);
+    public static final ObjectRegistry<LoadedModel> ANIMATED_LOADED_MODEL = createObjectRegistry("animated_loaded_model", ErrorModel.INSTANCE, BlockbenchLoader::loadAnimatedModels);
 
     // VK Objects
     public static final ObjectRegistry<TextureSampler> SAMPLER = createVkObjectRegistry("sampler", BlockbenchLoader::packImages);
-    public static final ObjectRegistry<Model> STATIC_MODEL = createVkObjectRegistry("static_model", BlockbenchLoader::createStaticModels);
-    public static final ObjectRegistry<Model> ANIMATED_MODEL = createVkObjectRegistry("animated_model", BlockbenchLoader::createAnimatedModels);
+    public static final ObjectRegistry<Model> STATIC_MODEL = createVkObjectRegistry("static_model", ErrorModel.VK_STATIC_INSTANCE, BlockbenchLoader::createStaticModels);
+    public static final ObjectRegistry<Model> ANIMATED_MODEL = createVkObjectRegistry("animated_model", ErrorModel.VK_ANIMATED_INSTANCE, BlockbenchLoader::createAnimatedModels);
 
     private static <T extends Keyable & Serializable<?>> Registry<T> createRegistry(String id, Supplier<T> bootstrap)
     {
@@ -56,11 +57,25 @@ public class Registries
         return new ObjectRegistry<>(key);
     }
 
+    private static <T extends Keyable> ObjectRegistry<T> createObjectRegistry(String id, T defaultValue, Supplier<T> bootstrap)
+    {
+        Key key = Key.defaultNamespace(id);
+        LOADERS.put(key, bootstrap);
+        return new ObjectRegistry<>(key, defaultValue);
+    }
+
     private static <T extends Keyable> ObjectRegistry<T> createVkObjectRegistry(String id, VkContent<T> bootstrap)
     {
         Key key = Key.defaultNamespace(id);
         VK_LOADERS.put(key, bootstrap);
         return new ObjectRegistry<>(key);
+    }
+
+    private static <T extends Keyable> ObjectRegistry<T> createVkObjectRegistry(String id, T defaultValue, VkContent<T> bootstrap)
+    {
+        Key key = Key.defaultNamespace(id);
+        VK_LOADERS.put(key, bootstrap);
+        return new ObjectRegistry<>(key, defaultValue);
     }
 
     public static void createContents()

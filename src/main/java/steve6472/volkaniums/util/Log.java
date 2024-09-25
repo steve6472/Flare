@@ -28,7 +28,7 @@ public class Log
         }
     }
 
-    public static void exception(Logger logger, Throwable throwable)
+    public static void exceptionSevere(Logger logger, Throwable throwable)
     {
         logger.log(Level.SEVERE, throwable, throwable::getMessage);
     }

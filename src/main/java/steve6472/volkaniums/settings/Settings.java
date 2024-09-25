@@ -17,7 +17,7 @@ import static org.lwjgl.glfw.GLFW.*;
  */
 public class Settings
 {
-    // Dummy value mainly for bootstrap
+    /// Dummy value mainly for bootstrap
     public static StringSetting USERNAME = registerString("username", "Steve");
     public static EnumSetting<ValidationLevel> VALIDATION_LEVEL = registerEnum("validation_level", ValidationLevel.VERBOSE);
 

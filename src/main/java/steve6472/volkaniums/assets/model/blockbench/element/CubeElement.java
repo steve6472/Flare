@@ -9,6 +9,7 @@ import steve6472.volkaniums.Constants;
 import steve6472.volkaniums.assets.model.blockbench.*;
 import steve6472.volkaniums.util.ExtraCodecs;
 import steve6472.volkaniums.util.ImagePacker;
+import steve6472.volkaniums.util.Preconditions;
 
 import java.awt.*;
 import java.util.*;
@@ -58,6 +59,7 @@ public record CubeElement(UUID uuid, Vector3f from, Vector3f to, Vector3f origin
             TextureData textureData = model.textures().get(face.texture());
             String textureId = textureData.relativePath();
             Rectangle rectangle = packer.getRects().get(textureId);
+            Preconditions.checkNotNull(rectangle, "Texture data not found in ImagePacker, for " + textureId);
             Vector4f uv = face.uv();
             uv.set(
                 (rectangle.x + rectangle.width * uv.x * resX) * texel,
