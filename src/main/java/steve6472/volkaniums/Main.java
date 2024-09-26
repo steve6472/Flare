@@ -1,30 +1,21 @@
 package steve6472.volkaniums;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.objects.PhysicsRigidBody;
 import com.jme3.bullet.util.NativeLibrary;
 import com.jme3.system.NativeLibraryLoader;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JsonOps;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
-import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
 import steve6472.volkaniums.settings.Settings;
 import steve6472.volkaniums.util.Log;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -82,10 +73,11 @@ public class Main
 
     private void initContent()
     {
+        PhysicsSpace.logger.setLevel(Level.WARNING);
+        PhysicsRigidBody.logger2.setLevel(Level.WARNING);
+        NativeLibraryLoader.logger.setLevel(Level.WARNING);
         NativeLibraryLoader.loadLibbulletjme(true, new File("dep"), "Debug", "Sp");
         NativeLibrary.setStartupMessageEnabled(false);
-        PhysicsSpace.logger.setLevel(Level.SEVERE);
-        PhysicsRigidBody.logger2.setLevel(Level.SEVERE);
 
 
         Registries.createContents();
@@ -97,6 +89,8 @@ public class Main
     private void mainLoop()
     {
         long currentTime = System.nanoTime();
+        long secondCounter = currentTime;
+        float lastFps = 0;
         while (!window.shouldWindowClose())
         {
             glfwPollEvents();
@@ -137,7 +131,13 @@ public class Main
                     renderer.endSwapChainRenderPass(commandBuffer);
                     renderer.endFrame(stack, pImageIndex);
 
-                    System.out.printf("Frame time: %.4fms, FPS: %.4f%n", frameTime * 1e3f, 1000f / (frameTime * 1e3f));
+                    if (System.nanoTime() - secondCounter > 1e9)
+                    {
+                        lastFps = 1000f / (frameTime * 1e3f);
+                        secondCounter = System.nanoTime();
+                    }
+
+                    window.setWindowTitle("FPS: %.4f,  Frame time: %.4fms %n".formatted(lastFps, frameTime * 1e3f));
 
                     float speed = 4f;
 

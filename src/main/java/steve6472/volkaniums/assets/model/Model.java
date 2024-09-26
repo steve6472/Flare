@@ -22,4 +22,10 @@ public class Model extends VkModel implements Keyable
     {
         return key;
     }
+
+    @Override
+    public String toString()
+    {
+        return "Model{" + "key=" + key + '}';
+    }
 }

@@ -22,7 +22,7 @@ layout(push_constant) uniform Push {
 } push;
 
 void main() {
-    mat4 transform = ssbo.transformation[gl_InstanceIndex];
+    mat4 transform = ssbo.transformation[gl_InstanceIndex + push.arrayIndex];
 
     gl_Position = ubo.projection * ubo.view * transform * vec4(inPosition, 1.0);
 

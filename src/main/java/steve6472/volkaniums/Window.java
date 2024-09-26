@@ -43,6 +43,11 @@ public class Window
         glfwSetFramebufferSizeCallback(window, this::framebufferResizeCallback);
     }
 
+    public void setWindowTitle(String title)
+    {
+        glfwSetWindowTitle(window, title);
+    }
+
     private void framebufferResizeCallback(long window, int width, int height)
     {
         framebufferResize = true;

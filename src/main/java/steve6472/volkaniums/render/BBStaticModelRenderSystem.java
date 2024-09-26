@@ -1,6 +1,7 @@
 package steve6472.volkaniums.render;
 
 import com.jme3.bullet.PhysicsSpace;
+import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.PlaneCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
@@ -10,15 +11,16 @@ import com.jme3.math.Plane;
 import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
 import org.joml.Matrix4f;
-import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 import steve6472.volkaniums.*;
 import steve6472.volkaniums.assets.model.Model;
+import steve6472.volkaniums.assets.model.blockbench.ErrorModel;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.pipeline.Pipeline;
 import steve6472.volkaniums.registry.Key;
+import steve6472.volkaniums.render.debug.DebugRender;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.Push;
 import steve6472.volkaniums.struct.def.SBO;
@@ -39,9 +41,10 @@ import static steve6472.volkaniums.SwapChain.MAX_FRAMES_IN_FLIGHT;
  */
 public class BBStaticModelRenderSystem extends RenderSystem
 {
-    private DescriptorPool globalPool;
-    private DescriptorSetLayout globalSetLayout;
+    private final DescriptorPool globalPool;
+    private final DescriptorSetLayout globalSetLayout;
     List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
+    private final SBOTransfromArray<Model> transfromArray = new SBOTransfromArray<>(ErrorModel.VK_STATIC_INSTANCE);
 
     public BBStaticModelRenderSystem(MasterRenderer masterRenderer, Pipeline pipeline)
     {
@@ -97,32 +100,54 @@ public class BBStaticModelRenderSystem extends RenderSystem
     }
 
     PhysicsSpace physicsSpace;
-    private static List<PhysicsRigidBody> balls = new ArrayList<>();
+    private static List<PhysicsRigidBody> objects = new ArrayList<>();
 
     private void createPhysics()
     {
         physicsSpace = new PhysicsSpace(PhysicsSpace.BroadphaseType.DBVT);
 
+        float scaleX = 8;
+
         // Add a static horizontal plane at y=-1.
-        float mass;
+        float mass = 1f;
         addPlane(Vector3f.UNIT_Y, -1f);
         addPlane(Vector3f.UNIT_Y.mult(-1), -64f);
-        addPlane(Vector3f.UNIT_X, -160f);
-        addPlane(Vector3f.UNIT_Z, -160f);
-        addPlane(Vector3f.UNIT_X.mult(-1), -160f);
-        addPlane(Vector3f.UNIT_Z.mult(-1), -160f);
+        addPlane(Vector3f.UNIT_X, -scaleX);
+        addPlane(Vector3f.UNIT_Z, -scaleX);
+        addPlane(Vector3f.UNIT_X.mult(-1), -scaleX);
+        addPlane(Vector3f.UNIT_Z.mult(-1), -scaleX);
 
-        for (int i = 0; i < 1000; i++)
+        Model ballModel = Registries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/ball"));
+        Model cubeModel = Registries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/cube"));
+
+        transfromArray.addArea(ballModel);
+        transfromArray.addArea(cubeModel);
+
+        var ballArea = transfromArray.getAreaByType(ballModel);
+        var cubeArea = transfromArray.getAreaByType(cubeModel);
+
+        for (int i = 0; i < 256; i++)
         {
             // Add a sphere-shaped, dynamic, rigid body at the origin.
             float radius = RandomUtil.randomFloat(0.25f, 0.75f);
-            CollisionShape ballShape = new SphereCollisionShape(radius);
-            mass = 1f;
-            PhysicsRigidBody ball = new PhysicsRigidBody(ballShape, mass);
-            ball.setRestitution(2f);
-            physicsSpace.add(ball);
-            ball.setPhysicsLocation(new Vector3f(RandomUtil.randomFloat(-160, 160), RandomUtil.randomFloat(4, 16), RandomUtil.randomFloat(-160, 160)));
-            balls.add(ball);
+            CollisionShape shape = new SphereCollisionShape(radius);
+            PhysicsRigidBody body = new PhysicsRigidBody(shape, mass);
+            physicsSpace.add(body);
+            body.setPhysicsLocation(new Vector3f(RandomUtil.randomFloat(-scaleX, scaleX), RandomUtil.randomFloat(4, 16), RandomUtil.randomFloat(-scaleX, scaleX)));
+            body.setUserObject(new UserObj(ballArea.index));
+            objects.add(body);
+        }
+
+        for (int i = 0; i < 256; i++)
+        {
+            // Add a sphere-shaped, dynamic, rigid body at the origin.
+            float radius = RandomUtil.randomFloat(0.25f, 0.75f);
+            CollisionShape shape = new BoxCollisionShape(radius);
+            PhysicsRigidBody body = new PhysicsRigidBody(shape, mass);
+            physicsSpace.add(body);
+            body.setPhysicsLocation(new Vector3f(RandomUtil.randomFloat(-scaleX, scaleX), RandomUtil.randomFloat(4, 16), RandomUtil.randomFloat(-scaleX, scaleX)));
+            body.setUserObject(new UserObj(cubeArea.index));
+            objects.add(body);
         }
     }
 
@@ -145,7 +170,6 @@ public class BBStaticModelRenderSystem extends RenderSystem
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
         FlightFrame flightFrame = frames.get(frameInfo.frameIndex);
-        // Update
 
         physicsSpace.update(frameInfo.frameTime);
 
@@ -166,49 +190,66 @@ public class BBStaticModelRenderSystem extends RenderSystem
             stack.longs(flightFrame.descriptorSet),
             null);
 
-        Struct push = Push.STATIC.create(0);
+        int totalIndex = 0;
+        for (var area : transfromArray.getAreas())
+        {
+            if (area.toRender == 0)
+                continue;
 
-        Push.STATIC.push(push, frameInfo.commandBuffer, pipeline.pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0);
-
-        Model model = Registries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/ball"));
-
-        model.bind(frameInfo.commandBuffer);
-        model.draw(frameInfo.commandBuffer, 32768);
+            Struct push = Push.STATIC.create(totalIndex);
+            Push.STATIC.push(push, frameInfo.commandBuffer, pipeline.pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0);
+            area.modelType.bind(frameInfo.commandBuffer);
+            area.modelType.draw(frameInfo.commandBuffer, area.toRender);
+            totalIndex += area.toRender;
+        }
     }
 
     private void updateSbo(VkBuffer sboBuffer)
     {
-        List<Matrix4f> transforms = new ArrayList<>();
-        for (PhysicsRigidBody ball : balls)
+        transfromArray.start();
+        transfromArray.sort(objects, a -> ((UserObj) a.getUserObject()).modelIndex);
+        var lastArea = transfromArray.getAreaByIndex(0);
+        for (PhysicsRigidBody body : objects)
         {
-            Transform transform = new Transform();
-            ball.getTransform(transform);
-            com.jme3.math.Matrix4f t = transform.toTransformMatrix();
-            Matrix4f mat = new Matrix4f(
-                t.m00, t.m10, t.m20, t.m30,   // First row
-                t.m01, t.m11, t.m21, t.m31,   // Second row
-                t.m02, t.m12, t.m22, t.m32,   // Third row
-                t.m03, t.m13, t.m23, t.m33    // Fourth row
-            );
-            mat.scale(((SphereCollisionShape) ball.getCollisionShape()).getRadius() * 2f);
-            transforms.add(mat);
+            UserObj userObject = (UserObj) body.getUserObject();
+            // Because the list is sorted, we can do this
+            if (lastArea == null || lastArea.index != userObject.modelIndex)
+                lastArea = transfromArray.getAreaByIndex(userObject.modelIndex);
+
+            Matrix4f jomlMat = toJomlMat(body);
+            lastArea.updateTransform(jomlMat);
         }
 
-//        for (int i = 0; i < 32; i++)
-//        {
-//            for (int j = 0; j < 32; j++)
-//            {
-//                for (int k = 0; k < 32; k++)
-//                {
-//                    transforms.add(new Matrix4f().translate(i - 16, j - 16, k - 16));
-//                }
-//            }
-//        }
-
-        var sbo = SBO.TRANSFORMATIONS.create((Object) transforms.toArray(Matrix4f[]::new));
+        var sbo = SBO.TRANSFORMATIONS.create(transfromArray.getTransformsArray());
 
         sboBuffer.writeToBuffer(SBO.TRANSFORMATIONS::memcpy, sbo);
-        sboBuffer.flush();
+    }
+
+    private final Matrix4f TO_RET = new Matrix4f();
+    private final Vector3f STORE_VEC3F = new Vector3f();
+    private Matrix4f toJomlMat(PhysicsRigidBody body)
+    {
+        Transform transform = new Transform();
+        body.getTransform(transform);
+        com.jme3.math.Matrix4f t = transform.toTransformMatrix();
+        TO_RET.set(
+            t.m00, t.m10, t.m20, t.m30,   // First row
+            t.m01, t.m11, t.m21, t.m31,   // Second row
+            t.m02, t.m12, t.m22, t.m32,   // Third row
+            t.m03, t.m13, t.m23, t.m33    // Fourth row
+        );
+
+        if (body.getCollisionShape() instanceof SphereCollisionShape coll)
+        {
+            body.getPhysicsLocation(STORE_VEC3F);
+            TO_RET.scale(coll.getRadius() * 2f);
+        } else if (body.getCollisionShape() instanceof BoxCollisionShape coll)
+        {
+            coll.getHalfExtents(STORE_VEC3F);
+            TO_RET.scale(STORE_VEC3F.x * 2f, STORE_VEC3F.y * 2f, STORE_VEC3F.z * 2f);
+        }
+
+        return TO_RET;
     }
 
     @Override
@@ -221,6 +262,16 @@ public class BBStaticModelRenderSystem extends RenderSystem
         {
             flightFrame.uboBuffer.cleanup();
             flightFrame.sboBuffer.cleanup();
+        }
+    }
+
+    static final class UserObj
+    {
+        public int modelIndex;
+
+        UserObj(int modelIndex)
+        {
+            this.modelIndex = modelIndex;
         }
     }
 
