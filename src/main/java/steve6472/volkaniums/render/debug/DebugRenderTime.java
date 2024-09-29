@@ -8,6 +8,6 @@ import steve6472.volkaniums.render.debug.objects.DebugObject;
  * Date: 9/21/2024
  * Project: Volkaniums <br>
  */
-record DebugRenderTime(DebugObject object, long untilTime, Matrix4f transform)
+record DebugRenderTime(DebugObject object, long startTime, long endTime, Matrix4f transformFrom, Matrix4f transformTo)
 {
 }

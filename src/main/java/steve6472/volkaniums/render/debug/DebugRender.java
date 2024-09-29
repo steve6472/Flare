@@ -1,6 +1,7 @@
 package steve6472.volkaniums.render.debug;
 
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import steve6472.volkaniums.render.debug.objects.*;
@@ -21,8 +22,6 @@ public class DebugRender
     private static DebugRender instance;
     private final List<DebugRenderTime> debugLines;
 
-    // TODO: maybe some primitive scale/position interpolation ? (like slowly scaling down cube)
-    // TODO: maybe just simple start, end transformation and time
     private DebugRender()
     {
         debugLines = new ArrayList<>();
@@ -43,16 +42,53 @@ public class DebugRender
     {
         List<Struct> vertices = new ArrayList<>();
         long currentTime = System.currentTimeMillis();
-        getInstance().debugLines.forEach(ren -> ren.object().addVerticies(vertices, ren.transform()));
+        getInstance().debugLines.forEach(ren ->
+        {
+            // TODO: fix scale of 0 not showing anything & fix scaling moving objects towards/from origin
+            float t = Math.min(1.0f, (float)(currentTime - ren.startTime()) / (ren.endTime() - ren.startTime()));
+            ren.object().addVerticies(vertices, interpolate(ren.transformFrom(), ren.transformTo(), t));
+        });
         if (!VisualSettings.DEBUG_LINE_SINGLE_BUFFER.get())
             clearOldVerticies();
         return vertices;
     }
 
+    private static void decompose(Matrix4f mat, Vector3f translation, Quaternionf rotation, Vector3f scale)
+    {
+        mat.getTranslation(translation);
+        mat.getUnnormalizedRotation(rotation);
+        mat.getScale(scale);
+    }
+
+    private static Matrix4f interpolate(Matrix4f matA, Matrix4f matB, float t)
+    {
+        Vector3f translationA = new Vector3f(), translationB = new Vector3f();
+        Quaternionf rotationA = new Quaternionf(), rotationB = new Quaternionf();
+        Vector3f scaleA = new Vector3f(), scaleB = new Vector3f();
+
+        decompose(matA, translationA, rotationA, scaleA);
+        decompose(matB, translationB, rotationB, scaleB);
+
+        Vector3f interpolatedTranslation = new Vector3f();
+        translationA.lerp(translationB, t, interpolatedTranslation);
+
+        Quaternionf interpolatedRotation = new Quaternionf();
+        rotationA.slerp(rotationB, t, interpolatedRotation);
+
+        Vector3f interpolatedScale = new Vector3f();
+        scaleA.lerp(scaleB, t, interpolatedScale);
+
+        return new Matrix4f()
+            .translate(interpolatedTranslation)
+            .rotate(interpolatedRotation)
+            .scale(interpolatedScale)
+            ;
+    }
+
     public void clearOldVerticies()
     {
         long currentTime = System.currentTimeMillis();
-        getInstance().debugLines.removeIf(ren -> ren.untilTime() >= currentTime || ren.untilTime() == 0);
+        getInstance().debugLines.removeIf(ren -> ren.endTime() <= currentTime || ren.endTime() == 0);
     }
 
     /*
@@ -61,24 +97,48 @@ public class DebugRender
 
     public static void addDebugObjectForFrame(DebugObject debugObject)
     {
-        getInstance().debugLines.add(new DebugRenderTime(debugObject, 0, new Matrix4f()));
+        getInstance().debugLines.add(new DebugRenderTime(debugObject, 0, 0, new Matrix4f(), new Matrix4f()));
     }
 
     public static void addDebugObjectForFrame(DebugObject debugObject, Matrix4f transform)
     {
-        getInstance().debugLines.add(new DebugRenderTime(debugObject, 0, transform));
+        getInstance().debugLines.add(new DebugRenderTime(debugObject, 0, 0, transform, transform));
     }
 
     public static void addDebugObjectForMs(DebugObject debugObject, long ms)
     {
         if (ms <= 0) throw new RuntimeException("time has to be above 0");
-        getInstance().debugLines.add(new DebugRenderTime(debugObject, System.currentTimeMillis() + ms, new Matrix4f()));
+        getInstance().debugLines.add(new DebugRenderTime(debugObject, System.currentTimeMillis(), System.currentTimeMillis() + ms, new Matrix4f(), new Matrix4f()));
+    }
+
+    public static void addDebugObjectForMs(DebugObject debugObject, long ms, Matrix4f transform)
+    {
+        if (ms <= 0) throw new RuntimeException("time has to be above 0");
+        getInstance().debugLines.add(new DebugRenderTime(debugObject, System.currentTimeMillis(), System.currentTimeMillis() + ms, transform, transform));
+    }
+
+    public static void addDebugObjectForMs(DebugObject debugObject, long ms, Matrix4f transformFrom, Matrix4f transformTo)
+    {
+        if (ms <= 0) throw new RuntimeException("time has to be above 0");
+        getInstance().debugLines.add(new DebugRenderTime(debugObject, System.currentTimeMillis(), System.currentTimeMillis() + ms, transformFrom, transformTo));
     }
 
     public static void addDebugObjectForS(DebugObject debugObject, long s)
     {
         if (s <= 0) throw new RuntimeException("time has to be above 0");
-        getInstance().debugLines.add(new DebugRenderTime(debugObject, System.currentTimeMillis() + s * 1000, new Matrix4f()));
+        getInstance().debugLines.add(new DebugRenderTime(debugObject, System.currentTimeMillis(), System.currentTimeMillis() + s * 1000, new Matrix4f(), new Matrix4f()));
+    }
+
+    public static void addDebugObjectForS(DebugObject debugObject, long s, Matrix4f transform)
+    {
+        if (s <= 0) throw new RuntimeException("time has to be above 0");
+        getInstance().debugLines.add(new DebugRenderTime(debugObject, System.currentTimeMillis(), System.currentTimeMillis() + s * 1000, transform, transform));
+    }
+
+    public static void addDebugObjectForS(DebugObject debugObject, long s, Matrix4f transformFrom, Matrix4f transformTo)
+    {
+        if (s <= 0) throw new RuntimeException("time has to be above 0");
+        getInstance().debugLines.add(new DebugRenderTime(debugObject, System.currentTimeMillis(), System.currentTimeMillis() + s * 1000, transformFrom, transformTo));
     }
 
     /*

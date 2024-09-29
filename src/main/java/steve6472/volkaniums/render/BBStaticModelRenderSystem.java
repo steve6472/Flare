@@ -172,7 +172,7 @@ public class BBStaticModelRenderSystem extends RenderSystem
     {
         FlightFrame flightFrame = frames.get(frameInfo.frameIndex());
 
-        physicsSpace.update(frameInfo.frameTime());
+        physicsSpace.update(frameInfo.frameTime(), 8);
 
         Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(frameInfo.camera().getProjectionMatrix(), frameInfo.camera().getViewMatrix());
         int singleInstanceSize = UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT;
