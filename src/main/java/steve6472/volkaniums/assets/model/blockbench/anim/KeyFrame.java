@@ -1,8 +1,8 @@
 package steve6472.volkaniums.assets.model.blockbench.anim;
 
 import com.mojang.serialization.Codec;
+import steve6472.core.registry.Typed;
 import steve6472.volkaniums.Registries;
-import steve6472.volkaniums.registry.Typed;
 
 /**
  * Created by steve6472

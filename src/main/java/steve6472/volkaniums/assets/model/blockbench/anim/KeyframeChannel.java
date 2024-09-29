@@ -3,9 +3,9 @@ package steve6472.volkaniums.assets.model.blockbench.anim;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Matrix4f;
+import steve6472.core.util.MathUtil;
 import steve6472.volkaniums.Constants;
 import steve6472.volkaniums.assets.model.blockbench.anim.datapoint.*;
-import steve6472.volkaniums.util.MathUtil;
 
 import java.util.List;
 import java.util.Objects;

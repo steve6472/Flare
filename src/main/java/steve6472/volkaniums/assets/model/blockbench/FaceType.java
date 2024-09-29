@@ -1,7 +1,7 @@
 package steve6472.volkaniums.assets.model.blockbench;
 
 import com.mojang.serialization.Codec;
-import steve6472.volkaniums.registry.StringValue;
+import steve6472.core.registry.StringValue;
 
 /**
  * Created by steve6472

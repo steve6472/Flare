@@ -2,9 +2,9 @@ package steve6472.volkaniums.assets.model.blockbench.anim;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import steve6472.core.registry.Key;
+import steve6472.core.registry.Type;
 import steve6472.volkaniums.Registries;
-import steve6472.volkaniums.registry.Key;
-import steve6472.volkaniums.registry.Type;
 
 /**
  * Created by steve6472

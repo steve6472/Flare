@@ -1,7 +1,7 @@
 package steve6472.volkaniums.assets.model;
 
-import steve6472.volkaniums.registry.Key;
-import steve6472.volkaniums.registry.Keyable;
+import steve6472.core.registry.Key;
+import steve6472.core.registry.Keyable;
 
 /**
  * Created by steve6472

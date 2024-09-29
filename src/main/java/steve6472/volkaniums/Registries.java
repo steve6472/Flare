@@ -2,6 +2,9 @@ package steve6472.volkaniums;
 
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
+import steve6472.core.log.Log;
+import steve6472.core.registry.*;
+import steve6472.core.setting.Setting;
 import steve6472.volkaniums.assets.TextureSampler;
 import steve6472.volkaniums.assets.model.Model;
 import steve6472.volkaniums.assets.model.blockbench.ElementType;
@@ -9,9 +12,7 @@ import steve6472.volkaniums.assets.model.blockbench.ErrorModel;
 import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
 import steve6472.volkaniums.assets.model.blockbench.BlockbenchLoader;
 import steve6472.volkaniums.assets.model.blockbench.anim.KeyframeType;
-import steve6472.volkaniums.registry.*;
 import steve6472.volkaniums.settings.Settings;
-import steve6472.volkaniums.util.Log;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class Registries
     private static final Map<Key, Supplier<?>> LOADERS = new LinkedHashMap<>();
     private static final Map<Key, VkContent<?>> VK_LOADERS = new LinkedHashMap<>();
 
-    public static final ObjectRegistry<Settings.Setting<?, ?>> SETTINGS = createObjectRegistry("setting", () -> Settings.USERNAME);
+    public static final ObjectRegistry<Setting<?, ?>> SETTINGS = createObjectRegistry("setting", () -> Settings.USERNAME);
 
     public static final Registry<ElementType<?>> MODEL_ELEMENT = createRegistry("model_element", () -> ElementType.CUBE);
     public static final Registry<KeyframeType<?>> KEYFRAME_TYPE = createRegistry("keyframe_type", () -> KeyframeType.ROTATION);

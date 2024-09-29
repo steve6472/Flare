@@ -1,6 +1,6 @@
 package steve6472.volkaniums.settings;
 
-import steve6472.volkaniums.registry.StringValue;
+import steve6472.core.registry.StringValue;
 
 /**
  * Created by steve6472

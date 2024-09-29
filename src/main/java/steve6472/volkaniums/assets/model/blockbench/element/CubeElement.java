@@ -5,11 +5,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import steve6472.core.util.ExtraCodecs;
+import steve6472.core.util.ImagePacker;
+import steve6472.core.util.Preconditions;
 import steve6472.volkaniums.Constants;
 import steve6472.volkaniums.assets.model.blockbench.*;
-import steve6472.volkaniums.util.ExtraCodecs;
-import steve6472.volkaniums.util.ImagePacker;
-import steve6472.volkaniums.util.Preconditions;
 
 import java.awt.*;
 import java.util.*;

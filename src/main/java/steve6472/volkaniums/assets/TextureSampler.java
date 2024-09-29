@@ -3,9 +3,9 @@ package steve6472.volkaniums.assets;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkSamplerCreateInfo;
+import steve6472.core.registry.Key;
+import steve6472.core.registry.Keyable;
 import steve6472.volkaniums.VulkanUtil;
-import steve6472.volkaniums.registry.Key;
-import steve6472.volkaniums.registry.Keyable;
 
 import java.nio.LongBuffer;
 

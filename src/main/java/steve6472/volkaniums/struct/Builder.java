@@ -1,7 +1,7 @@
 package steve6472.volkaniums.struct;
 
+import steve6472.core.util.Preconditions;
 import steve6472.volkaniums.AlignmentUtils;
-import steve6472.volkaniums.util.Preconditions;
 
 import java.util.ArrayList;
 import java.util.List;

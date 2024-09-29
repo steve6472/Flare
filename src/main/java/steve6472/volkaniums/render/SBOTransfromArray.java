@@ -1,8 +1,8 @@
 package steve6472.volkaniums.render;
 
 import org.joml.Matrix4f;
+import steve6472.core.util.Preconditions;
 import steve6472.volkaniums.assets.model.VkModel;
-import steve6472.volkaniums.util.Preconditions;
 
 import java.util.*;
 import java.util.function.ToIntFunction;

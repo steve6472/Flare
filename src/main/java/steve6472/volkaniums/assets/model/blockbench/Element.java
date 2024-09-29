@@ -3,9 +3,9 @@ package steve6472.volkaniums.assets.model.blockbench;
 import com.mojang.serialization.Codec;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import steve6472.core.registry.Typed;
+import steve6472.core.util.ImagePacker;
 import steve6472.volkaniums.Registries;
-import steve6472.volkaniums.registry.Typed;
-import steve6472.volkaniums.util.ImagePacker;
 
 import java.util.List;
 import java.util.UUID;

@@ -1,16 +1,13 @@
 package steve6472.volkaniums.descriptors;
 
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.VkDescriptorSetLayoutBinding;
 import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo;
 import org.lwjgl.vulkan.VkDevice;
-import steve6472.volkaniums.util.Log;
 
 import java.nio.LongBuffer;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import static org.lwjgl.vulkan.VK10.*;
 

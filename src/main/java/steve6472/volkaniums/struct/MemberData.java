@@ -1,12 +1,10 @@
 package steve6472.volkaniums.struct;
 
 import org.lwjgl.vulkan.VK13;
+import steve6472.core.util.Preconditions;
 import steve6472.volkaniums.AlignmentUtils;
-import steve6472.volkaniums.util.Preconditions;
 
 import java.lang.reflect.Array;
-import java.nio.ByteBuffer;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 /**

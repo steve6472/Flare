@@ -2,7 +2,7 @@ package steve6472.volkaniums.assets.model.blockbench.anim;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import steve6472.volkaniums.util.ExtraCodecs;
+import steve6472.core.util.ExtraCodecs;
 
 import java.util.Map;
 import java.util.UUID;

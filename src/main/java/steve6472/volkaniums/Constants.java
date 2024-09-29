@@ -2,7 +2,7 @@ package steve6472.volkaniums;
 
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import steve6472.volkaniums.registry.Key;
+import steve6472.core.registry.Key;
 
 /**
  * Created by steve6472

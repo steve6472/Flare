@@ -1,7 +1,7 @@
 package steve6472.volkaniums;
 
 import org.joml.Vector2i;
-import steve6472.volkaniums.settings.Settings;
+import steve6472.core.setting.IntSetting;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -19,7 +19,7 @@ public class UserInput
         this.window = window;
     }
 
-    public boolean isKeyPressed(Settings.IntSetting keybind)
+    public boolean isKeyPressed(IntSetting keybind)
     {
         return glfwGetKey(window.window(), keybind.get()) == GLFW_PRESS;
     }

@@ -5,9 +5,8 @@ import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.*;
-import steve6472.volkaniums.registry.StringValue;
+import steve6472.core.log.Log;
 import steve6472.volkaniums.settings.Settings;
-import steve6472.volkaniums.util.Log;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;

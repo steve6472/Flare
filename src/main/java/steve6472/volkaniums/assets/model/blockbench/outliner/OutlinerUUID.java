@@ -1,7 +1,7 @@
 package steve6472.volkaniums.assets.model.blockbench.outliner;
 
 import com.mojang.serialization.Codec;
-import steve6472.volkaniums.util.ExtraCodecs;
+import steve6472.core.util.ExtraCodecs;
 
 import java.util.UUID;
 

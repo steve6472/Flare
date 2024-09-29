@@ -3,8 +3,8 @@ package steve6472.volkaniums.assets.model.blockbench.outliner;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Vector3f;
+import steve6472.core.util.ExtraCodecs;
 import steve6472.volkaniums.Constants;
-import steve6472.volkaniums.util.ExtraCodecs;
 
 import java.util.List;
 import java.util.UUID;

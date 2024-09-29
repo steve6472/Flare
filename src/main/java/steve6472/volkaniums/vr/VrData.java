@@ -5,10 +5,10 @@ import org.joml.Vector3f;
 import org.lwjgl.openvr.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
+import steve6472.core.log.Log;
 import steve6472.volkaniums.*;
 import steve6472.volkaniums.render.debug.DebugRender;
 import steve6472.volkaniums.settings.Settings;
-import steve6472.volkaniums.util.Log;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;

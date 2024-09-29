@@ -3,8 +3,7 @@ package steve6472.volkaniums;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
-import steve6472.volkaniums.util.Log;
-import steve6472.volkaniums.vr.HelloOpenVR;
+import steve6472.core.log.Log;
 import steve6472.volkaniums.vr.VrData;
 import steve6472.volkaniums.vr.VrUtil;
 

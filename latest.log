@@ -1,24 +1,24 @@
-09.29 13:55:23 [Registries] FINEST: Bootstrapped base:setting
-09.29 13:55:23 [Registries] FINEST: Bootstrapped base:model_element
-09.29 13:55:23 [Registries] FINEST: Bootstrapped base:keyframe_type
-09.29 13:55:23 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/backdrop.bbmodel (backdrop)
-09.29 13:55:23 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/ball.bbmodel (ball)
-09.29 13:55:23 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/cube.bbmodel (cube)
-09.29 13:55:23 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/mesh_pebble.bbmodel (mesh_pebble)
-09.29 13:55:23 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/small_rock.bbmodel (small_rock)
-09.29 13:55:23 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/static/backdrop
-09.29 13:55:23 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/static/ball
-09.29 13:55:23 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/static/cube
-09.29 13:55:23 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/static/mesh_pebble
-09.29 13:55:23 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/static/small_rock
-09.29 13:55:23 [Registries] FINEST: Bootstrapped base:static_loaded_model
-09.29 13:55:23 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/animated/model.bbmodel (model)
-09.29 13:55:23 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/animated/small_chain.bbmodel (small_chain)
-09.29 13:55:23 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/animated/model
-09.29 13:55:23 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/animated/small_chain
-09.29 13:55:23 [Registries] FINEST: Bootstrapped base:animated_loaded_model
-09.29 13:55:23 [PhysicalDevicePicker] FINER: Selected GPU: NVIDIA GeForce RTX 4070 Ti SUPER
-09.29 13:55:24 [Registries] FINEST: Bootstrapped base:sampler
-09.29 13:55:24 [Registries] FINEST: Bootstrapped base:static_model
-09.29 13:55:24 [Registries] FINEST: Bootstrapped base:animated_model
-09.29 13:55:33 [Main] FINE: Cleanup
+09.29 15:34:00 [Registries] FINEST: Bootstrapped core:setting
+09.29 15:34:00 [Registries] FINEST: Bootstrapped core:model_element
+09.29 15:34:00 [Registries] FINEST: Bootstrapped core:keyframe_type
+09.29 15:34:00 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/backdrop.bbmodel (backdrop)
+09.29 15:34:00 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/ball.bbmodel (ball)
+09.29 15:34:00 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/cube.bbmodel (cube)
+09.29 15:34:00 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/mesh_pebble.bbmodel (mesh_pebble)
+09.29 15:34:00 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/small_rock.bbmodel (small_rock)
+09.29 15:34:00 [BlockbenchLoader] FINEST: Loading textures for model core:blockbench/static/backdrop
+09.29 15:34:00 [BlockbenchLoader] FINEST: Loading textures for model core:blockbench/static/ball
+09.29 15:34:00 [BlockbenchLoader] FINEST: Loading textures for model core:blockbench/static/cube
+09.29 15:34:00 [BlockbenchLoader] FINEST: Loading textures for model core:blockbench/static/mesh_pebble
+09.29 15:34:00 [BlockbenchLoader] FINEST: Loading textures for model core:blockbench/static/small_rock
+09.29 15:34:00 [Registries] FINEST: Bootstrapped core:static_loaded_model
+09.29 15:34:00 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/animated/model.bbmodel (model)
+09.29 15:34:00 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/animated/small_chain.bbmodel (small_chain)
+09.29 15:34:00 [BlockbenchLoader] FINEST: Loading textures for model core:blockbench/animated/model
+09.29 15:34:00 [BlockbenchLoader] FINEST: Loading textures for model core:blockbench/animated/small_chain
+09.29 15:34:00 [Registries] FINEST: Bootstrapped core:animated_loaded_model
+09.29 15:34:00 [PhysicalDevicePicker] FINER: Selected GPU: NVIDIA GeForce RTX 4070 Ti SUPER
+09.29 15:34:00 [Registries] FINEST: Bootstrapped core:sampler
+09.29 15:34:00 [Registries] FINEST: Bootstrapped core:static_model
+09.29 15:34:00 [Registries] FINEST: Bootstrapped core:animated_model
+09.29 15:34:04 [Main] FINE: Cleanup

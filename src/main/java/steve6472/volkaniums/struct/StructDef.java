@@ -1,6 +1,6 @@
 package steve6472.volkaniums.struct;
 
-import steve6472.volkaniums.util.Preconditions;
+import steve6472.core.util.Preconditions;
 
 import java.nio.ByteBuffer;
 import java.util.Collection;

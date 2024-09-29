@@ -2,11 +2,11 @@ package steve6472.volkaniums.assets.model.blockbench;
 
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import steve6472.core.registry.Key;
 import steve6472.volkaniums.Constants;
 import steve6472.volkaniums.assets.model.Model;
 import steve6472.volkaniums.assets.model.blockbench.element.CubeElement;
 import steve6472.volkaniums.assets.model.blockbench.outliner.OutlinerUUID;
-import steve6472.volkaniums.registry.Key;
 
 import java.awt.image.BufferedImage;
 import java.util.List;

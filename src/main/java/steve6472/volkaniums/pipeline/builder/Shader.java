@@ -4,9 +4,9 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkPipelineShaderStageCreateInfo;
 import org.lwjgl.vulkan.VkShaderModuleCreateInfo;
+import steve6472.core.util.Preconditions;
 import steve6472.volkaniums.ErrorCode;
 import steve6472.volkaniums.ShaderSPIRVUtils;
-import steve6472.volkaniums.util.Preconditions;
 
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;

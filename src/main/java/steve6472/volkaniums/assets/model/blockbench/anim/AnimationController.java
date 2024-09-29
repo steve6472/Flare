@@ -4,6 +4,8 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
+import steve6472.core.log.Log;
+import steve6472.core.util.Preconditions;
 import steve6472.volkaniums.Commands;
 import steve6472.volkaniums.assets.model.VkModel;
 import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
@@ -13,8 +15,6 @@ import steve6472.volkaniums.assets.model.blockbench.outliner.OutlinerElement;
 import steve6472.volkaniums.assets.model.blockbench.outliner.OutlinerUUID;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.Vertex;
-import steve6472.volkaniums.util.Log;
-import steve6472.volkaniums.util.Preconditions;
 
 import java.util.*;
 import java.util.logging.Logger;

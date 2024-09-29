@@ -2,9 +2,9 @@ package steve6472.volkaniums.descriptors;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
+import steve6472.core.util.Preconditions;
 import steve6472.volkaniums.VkBuffer;
 import steve6472.volkaniums.assets.TextureSampler;
-import steve6472.volkaniums.util.Preconditions;
 
 import java.nio.LongBuffer;
 import java.util.ArrayList;

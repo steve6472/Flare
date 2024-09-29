@@ -2,7 +2,7 @@ package steve6472.volkaniums.assets.model.blockbench;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import steve6472.volkaniums.util.Log;
+import steve6472.core.log.Log;
 
 import java.util.logging.Logger;
 

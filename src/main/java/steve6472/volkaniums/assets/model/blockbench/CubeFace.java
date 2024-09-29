@@ -3,7 +3,7 @@ package steve6472.volkaniums.assets.model.blockbench;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Vector4f;
-import steve6472.volkaniums.util.ExtraCodecs;
+import steve6472.core.util.ExtraCodecs;
 
 /**
  * Created by steve6472

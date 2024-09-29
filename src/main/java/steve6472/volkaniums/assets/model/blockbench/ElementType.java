@@ -2,13 +2,13 @@ package steve6472.volkaniums.assets.model.blockbench;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import steve6472.core.registry.Key;
+import steve6472.core.registry.Type;
 import steve6472.volkaniums.Registries;
 import steve6472.volkaniums.assets.model.blockbench.element.CubeElement;
 import steve6472.volkaniums.assets.model.blockbench.element.LocatorElement;
 import steve6472.volkaniums.assets.model.blockbench.element.MeshElement;
 import steve6472.volkaniums.assets.model.blockbench.element.NullObjectElement;
-import steve6472.volkaniums.registry.Key;
-import steve6472.volkaniums.registry.Type;
 
 /**
  * Created by steve6472

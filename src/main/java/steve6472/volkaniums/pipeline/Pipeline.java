@@ -3,9 +3,9 @@ package steve6472.volkaniums.pipeline;
 import org.lwjgl.vulkan.VkCommandBuffer;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkExtent2D;
+import steve6472.core.util.Preconditions;
 import steve6472.volkaniums.SwapChain;
 import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
-import steve6472.volkaniums.util.Preconditions;
 
 import static org.lwjgl.vulkan.VK10.*;
 

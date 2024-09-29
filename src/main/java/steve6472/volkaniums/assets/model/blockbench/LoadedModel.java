@@ -5,15 +5,13 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import steve6472.core.registry.Key;
+import steve6472.core.registry.Keyable;
 import steve6472.volkaniums.assets.model.blockbench.anim.Animation;
-import steve6472.volkaniums.assets.model.blockbench.element.CubeElement;
-import steve6472.volkaniums.assets.model.blockbench.element.MeshElement;
 import steve6472.volkaniums.assets.model.blockbench.outliner.OutlinerElement;
 import steve6472.volkaniums.assets.model.blockbench.outliner.OutlinerUUID;
 import steve6472.volkaniums.assets.model.primitive.PrimitiveStaticModel;
 import steve6472.volkaniums.assets.model.primitive.PrimitiveSkinModel;
-import steve6472.volkaniums.registry.Key;
-import steve6472.volkaniums.registry.Keyable;
 import steve6472.volkaniums.struct.def.Vertex;
 
 import java.util.*;

@@ -1,7 +1,7 @@
 package steve6472.volkaniums.assets.model.blockbench.anim;
 
 import com.mojang.serialization.Codec;
-import steve6472.volkaniums.util.MathUtil;
+import steve6472.core.util.MathUtil;
 
 /**
  * Created by steve6472
