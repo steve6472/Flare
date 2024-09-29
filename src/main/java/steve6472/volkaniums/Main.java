@@ -12,10 +12,13 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 import steve6472.volkaniums.settings.Settings;
 import steve6472.volkaniums.util.Log;
+import steve6472.volkaniums.vr.HelloOpenVR;
+import steve6472.volkaniums.vr.VrData;
 
 import java.io.File;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,6 +46,7 @@ public class Main
     private VkQueue graphicsQueue;
     private VkQueue presentQueue;
     private Camera camera;
+    private VrData vrData;
 
     // ======= METHODS ======= //
 
@@ -63,12 +67,14 @@ public class Main
         createInstance();
         debugMessenger = VulkanValidation.setupDebugMessenger(instance);
         createSurface();
-        physicalDevice = PhysicalDevicePicker.pickPhysicalDevice(instance, surface);
-        createLogicalDevice();
         Commands commands = new Commands();
+        vrData = new VrData(commands);
+        physicalDevice = PhysicalDevicePicker.pickPhysicalDevice(instance, surface, PhysicalDevicePicker.DEVICE_EXTENSIONS);
+        createLogicalDevice();
+        vrData.createVkResources(device, graphicsQueue);
         commands.createCommandPool(device, surface);
         Registries.createVkContents(device, commands, graphicsQueue);
-        renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, commands, surface);
+        renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, commands, surface, vrData);
     }
 
     private void initContent()
@@ -100,7 +106,6 @@ public class Main
             currentTime = newTime;
 
             float aspect = renderer.getAspectRation();
-            camera.setPerspectiveProjection(Settings.FOV.get(), aspect, 0.1f, 1024f);
 
             VkCommandBuffer commandBuffer;
             try (MemoryStack stack = MemoryStack.stackPush())
@@ -113,12 +118,14 @@ public class Main
                     frameInfo.camera = camera;
                     frameInfo.frameIndex = renderer.getCurrentFrameIndex();
                     frameInfo.commandBuffer = commandBuffer;
+                    frameInfo.camera.cameraIndex = 0;
 
                     addDebugObjectForFrame(cross(new Vector3f(0, 0, 0), 0.1f, DARK_GRAY));
 
 //                    frameInfo.camera.setViewTarget(new Vector3f(1f, 1f, -3), new Vector3f(0, 0, 0));
                     frameInfo.camera.setViewTarget(new Vector3f(1f, 1.5f, -1), new Vector3f(0, 0.5f, 0));
                     Vector2i mousePos = userInput.getMousePositionRelativeToTopLeftOfTheWindow();
+                    frameInfo.camera.setPerspectiveProjection(Settings.FOV.get(), aspect, 0.1f, 1024f);
                     if (window.isFocused())
                     {
                         frameInfo.camera.center.set(0, 0f + Y, 0);
@@ -126,9 +133,14 @@ public class Main
                     }
 
                     // Render
+                    renderer.totalRenderCount = 0;
                     renderer.beginSwapChainRenderPass(commandBuffer, stack);
                     renderer.render(frameInfo, stack);
-                    renderer.endSwapChainRenderPass(commandBuffer);
+                    renderer.endRenderPass(commandBuffer);
+
+                    vrData.frame(device, instance, renderer, frameInfo);
+                    renderer.maxRenderCount = renderer.totalRenderCount;
+
                     renderer.endFrame(stack, pImageIndex);
 
                     if (System.nanoTime() - secondCounter > 1e9)
@@ -149,6 +161,9 @@ public class Main
 
                     if (userInput.isKeyPressed(Settings.KEY_MOVE_BACKWARD))
                         Y -= frameTime * speed;
+
+                    vrData.updateHDMMatrixPose();
+                    vrData.updateEyes(frameInfo.camera);
                 }
             }
         }
@@ -162,6 +177,7 @@ public class Main
         LOGGER.fine("Cleanup");
 
         renderer.cleanup();
+        vrData.cleanup();
 
         Registries.STATIC_MODEL.keys().forEach(key -> Registries.STATIC_MODEL.get(key).destroy());
         Registries.ANIMATED_MODEL.keys().forEach(key -> Registries.ANIMATED_MODEL.get(key).destroy());
@@ -257,7 +273,15 @@ public class Main
 
             createInfo.pEnabledFeatures(deviceFeatures);
 
-            createInfo.ppEnabledExtensionNames(VulkanUtil.asPointerBuffer(stack, PhysicalDevicePicker.DEVICE_EXTENSIONS));
+            Collection<String> extensions = new HashSet<>(PhysicalDevicePicker.DEVICE_EXTENSIONS);
+
+            if (VrData.VR_ON)
+            {
+                String requiredExtensions = HelloOpenVR.getRequiredExtensions(physicalDevice.address());
+                Collections.addAll(extensions, requiredExtensions.split(" "));
+            }
+
+            createInfo.ppEnabledExtensionNames(VulkanUtil.asPointerBuffer(stack, extensions));
 
             if (VulkanValidation.ENABLE_VALIDATION_LAYERS)
             {

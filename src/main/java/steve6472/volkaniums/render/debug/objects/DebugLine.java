@@ -1,5 +1,6 @@
 package steve6472.volkaniums.render.debug.objects;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import steve6472.volkaniums.struct.Struct;
@@ -19,7 +20,7 @@ public record DebugLine(Vector3f start, Vector3f end, Vector4f startColor, Vecto
     }
 
     @Override
-    public void addVerticies(List<Struct> vertices)
+    public void addVerticies(List<Struct> vertices, Matrix4f transform)
     {
         vertices.add(vertex(start, startColor));
         vertices.add(vertex(end, endColor));

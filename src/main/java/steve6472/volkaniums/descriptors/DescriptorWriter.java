@@ -45,6 +45,16 @@ public class DescriptorWriter
         return writeBuffer(binding, bufferInfo);
     }
 
+    public DescriptorWriter writeBuffer(int binding, VkBuffer buffer, MemoryStack stack, int rangeOverride)
+    {
+        VkDescriptorBufferInfo.Buffer bufferInfo = VkDescriptorBufferInfo.calloc(1, stack);
+        bufferInfo.offset(0);
+        bufferInfo.range(rangeOverride);
+        bufferInfo.buffer(buffer.getBuffer());
+
+        return writeBuffer(binding, bufferInfo);
+    }
+
     public DescriptorWriter writeImage(int binding, VkDescriptorImageInfo.Buffer bufferInfo)
     {
         writes.add(new Write(getDescriptorType(binding), binding, null, bufferInfo));

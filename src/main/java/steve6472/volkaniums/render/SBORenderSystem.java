@@ -15,6 +15,7 @@ import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
 import steve6472.volkaniums.pipeline.Pipeline;
+import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
 import steve6472.volkaniums.struct.def.SBO;
 import steve6472.volkaniums.struct.def.UBO;
 import steve6472.volkaniums.struct.def.Vertex;
@@ -44,7 +45,7 @@ public class SBORenderSystem extends RenderSystem
     private DescriptorSetLayout globalSetLayout;
     List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
 
-    public SBORenderSystem(MasterRenderer masterRenderer, Pipeline pipeline)
+    public SBORenderSystem(MasterRenderer masterRenderer, PipelineConstructor pipeline)
     {
         super(masterRenderer, pipeline);
 
@@ -153,12 +154,12 @@ public class SBORenderSystem extends RenderSystem
         flightFrame.sboBuffer.writeToBuffer(SBO.BONES::memcpy, List.of(smallSbo), 64, 64);
 //        flightFrame.sboBuffer.flush(64, 64);
 
-        pipeline.bind(frameInfo.commandBuffer);
+        pipeline().bind(frameInfo.commandBuffer);
 
         vkCmdBindDescriptorSets(
             frameInfo.commandBuffer,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
-            pipeline.pipelineLayout(),
+            pipeline().pipelineLayout(),
             0,
             stack.longs(flightFrame.descriptorSet),
             null);

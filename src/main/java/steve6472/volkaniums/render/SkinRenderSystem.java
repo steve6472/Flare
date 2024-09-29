@@ -18,6 +18,7 @@ import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
 import steve6472.volkaniums.assets.model.primitive.PrimitiveSkinModel;
 import steve6472.volkaniums.assets.model.blockbench.anim.AnimationController;
 import steve6472.volkaniums.pipeline.Pipeline;
+import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.Push;
 import steve6472.volkaniums.struct.def.SBO;
@@ -51,7 +52,7 @@ public class SkinRenderSystem extends RenderSystem
     PrimitiveSkinModel primitiveSkinModel;
     AnimationController animationController;
 
-    public SkinRenderSystem(MasterRenderer masterRenderer, Pipeline pipeline)
+    public SkinRenderSystem(MasterRenderer masterRenderer, PipelineConstructor pipeline)
     {
         super(masterRenderer, pipeline);
 
@@ -169,18 +170,18 @@ public class SkinRenderSystem extends RenderSystem
         flightFrame.sboBuffer.writeToBuffer(SBO.BONES::memcpy, sbo);
         flightFrame.sboBuffer.flush();
 
-        pipeline.bind(frameInfo.commandBuffer);
+        pipeline().bind(frameInfo.commandBuffer);
 
         vkCmdBindDescriptorSets(
             frameInfo.commandBuffer,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
-            pipeline.pipelineLayout(),
+            pipeline().pipelineLayout(),
             0,
             stack.longs(flightFrame.descriptorSet),
             null);
 
         Struct struct = Push.SKIN.create(primitiveSkinModel.skinData.transformations.size());
-        Push.SKIN.push(struct, frameInfo.commandBuffer, pipeline.pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0);
+        Push.SKIN.push(struct, frameInfo.commandBuffer, pipeline().pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0);
 
         model3d.bind(frameInfo.commandBuffer);
         model3d.draw(frameInfo.commandBuffer);

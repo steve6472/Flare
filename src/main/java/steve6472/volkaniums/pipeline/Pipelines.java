@@ -16,7 +16,7 @@ import static org.lwjgl.vulkan.VK10.*;
  */
 public interface Pipelines
 {
-    PipelineConstructor BB_STATIC = (device, swapChain, setLayouts) -> PipelineBuilder
+    PipelineConstructor BB_STATIC = (device, extent, renderPass, setLayouts) -> PipelineBuilder
         .create(device)
         .shaders()
             .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "shaders/bb_static.vert", VK_SHADER_STAGE_VERTEX_BIT)
@@ -25,10 +25,10 @@ public interface Pipelines
         .vertexInputInfo(Vertex.POS3F_NORMAL_UV)
         .inputAssembly(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, false)
         .viewport()
-            .viewportBounds(0.0f, swapChain.swapChainExtent.height(), swapChain.swapChainExtent.width(), -swapChain.swapChainExtent.height())
+            .viewportBounds(0.0f, extent.height(), extent.width(), -extent.height())
             .viewportDepths(0.0f, 1.0f)
             .scissorOffset(0, 0)
-            .scissorExtent(swapChain.swapChainExtent)
+            .scissorExtent(extent)
             .done()
         .rasterization()
             .flags(false, false, false)
@@ -50,9 +50,9 @@ public interface Pipelines
         .pushConstants()
             .constant(VK_SHADER_STAGE_VERTEX_BIT, 0, Push.STATIC.sizeof())
             .done()
-        .build(swapChain.renderPass, setLayouts);
+        .build(renderPass, setLayouts);
 
-    PipelineConstructor DEBUG_LINE = (device, swapChain, setLayouts) -> PipelineBuilder
+    PipelineConstructor DEBUG_LINE = (device, extent, renderPass, setLayouts) -> PipelineBuilder
         .create(device)
         .shaders()
             .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "shaders/debug_line.vert", VK_SHADER_STAGE_VERTEX_BIT)
@@ -61,10 +61,10 @@ public interface Pipelines
         .vertexInputInfo(Vertex.POS3F_COL4F)
         .inputAssembly(VK_PRIMITIVE_TOPOLOGY_LINE_LIST, false)
         .viewport()
-            .viewportBounds(0.0f, swapChain.swapChainExtent.height(), swapChain.swapChainExtent.width(), -swapChain.swapChainExtent.height())
+            .viewportBounds(0.0f, extent.height(), extent.width(), -extent.height())
             .viewportDepths(0.0f, 1.0f)
             .scissorOffset(0, 0)
-            .scissorExtent(swapChain.swapChainExtent)
+            .scissorExtent(extent)
             .done()
         .rasterization()
             .flags(false, false, false)
@@ -86,9 +86,9 @@ public interface Pipelines
             .done()
         .pushConstants()
             .done()
-        .build(swapChain.renderPass, setLayouts);
+        .build(renderPass, setLayouts);
 
-    PipelineConstructor SKIN = (device, swapChain, setLayouts) -> PipelineBuilder
+    PipelineConstructor SKIN = (device, extent, renderPass, setLayouts) -> PipelineBuilder
         .create(device)
         .shaders()
             .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "shaders/skin.vert", VK_SHADER_STAGE_VERTEX_BIT)
@@ -97,10 +97,10 @@ public interface Pipelines
         .vertexInputInfo(Vertex.SKIN)
         .inputAssembly(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, false)
         .viewport()
-            .viewportBounds(0.0f, swapChain.swapChainExtent.height(), swapChain.swapChainExtent.width(), -swapChain.swapChainExtent.height())
+            .viewportBounds(0.0f, extent.height(), extent.width(), -extent.height())
             .viewportDepths(0.0f, 1.0f)
             .scissorOffset(0, 0)
-            .scissorExtent(swapChain.swapChainExtent)
+            .scissorExtent(extent)
             .done()
         .rasterization()
             .flags(false, false, false)
@@ -122,5 +122,5 @@ public interface Pipelines
         .pushConstants()
             .constant(VK_SHADER_STAGE_VERTEX_BIT, 0, Push.SKIN)
             .done()
-        .build(swapChain.renderPass, setLayouts);
+        .build(renderPass, setLayouts);
 }

@@ -1,5 +1,6 @@
 package steve6472.volkaniums.render.debug.objects;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import steve6472.volkaniums.struct.Struct;
@@ -20,7 +21,7 @@ public record DebugCuboid(Vector3f start, Vector3f end, Vector4f color) implemen
     }
 
     @Override
-    public void addVerticies(List<Struct> vertices)
+    public void addVerticies(List<Struct> vertices, Matrix4f transform)
     {
         // The 8 corners of the cube are calculated from the start and end vectors
         Vector3f p0 = new Vector3f(start.x, start.y, start.z);
@@ -32,6 +33,15 @@ public record DebugCuboid(Vector3f start, Vector3f end, Vector4f color) implemen
         Vector3f p5 = new Vector3f(end.x, start.y, end.z);
         Vector3f p6 = new Vector3f(end.x, end.y, end.z);
         Vector3f p7 = new Vector3f(start.x, end.y, end.z);
+
+        p0.mulPosition(transform);
+        p1.mulPosition(transform);
+        p2.mulPosition(transform);
+        p3.mulPosition(transform);
+        p4.mulPosition(transform);
+        p5.mulPosition(transform);
+        p6.mulPosition(transform);
+        p7.mulPosition(transform);
 
         // Front face (p0, p1, p2, p3)
         vertices.add(Vertex.POS3F_COL4F.create(p0, color));

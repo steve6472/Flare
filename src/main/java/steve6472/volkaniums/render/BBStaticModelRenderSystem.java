@@ -19,14 +19,15 @@ import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.pipeline.Pipeline;
+import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
 import steve6472.volkaniums.registry.Key;
-import steve6472.volkaniums.render.debug.DebugRender;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.Push;
 import steve6472.volkaniums.struct.def.SBO;
 import steve6472.volkaniums.struct.def.UBO;
 import steve6472.volkaniums.util.RandomUtil;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,19 +47,19 @@ public class BBStaticModelRenderSystem extends RenderSystem
     List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
     private final SBOTransfromArray<Model> transfromArray = new SBOTransfromArray<>(ErrorModel.VK_STATIC_INSTANCE);
 
-    public BBStaticModelRenderSystem(MasterRenderer masterRenderer, Pipeline pipeline)
+    public BBStaticModelRenderSystem(MasterRenderer masterRenderer, PipelineConstructor pipeline)
     {
         super(masterRenderer, pipeline);
 
         globalSetLayout = DescriptorSetLayout
             .builder(device)
-            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT)
             .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
             .addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
             .build();
         globalPool = DescriptorPool.builder(device)
             .setMaxSets(MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, MAX_FRAMES_IN_FLIGHT)
             .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT)
             .build();
 
@@ -69,7 +70,7 @@ public class BBStaticModelRenderSystem extends RenderSystem
 
             VkBuffer global = new VkBuffer(
                 device,
-                UBO.STATIC_BB_MODEL_UBO.sizeof(),
+                UBO.GLOBAL_CAMERA_UBO.sizeof(),
                 1,
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
@@ -89,7 +90,7 @@ public class BBStaticModelRenderSystem extends RenderSystem
             {
                 DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
                 frame.descriptorSet = descriptorWriter
-                    .writeBuffer(0, frame.uboBuffer, stack)
+                    .writeBuffer(0, frame.uboBuffer, stack, UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT)
                     .writeImage(1, Registries.SAMPLER.get(Constants.BLOCKBENCH_TEXTURE), stack)
                     .writeBuffer(2, frame.sboBuffer, stack)
                     .build();
@@ -106,11 +107,11 @@ public class BBStaticModelRenderSystem extends RenderSystem
     {
         physicsSpace = new PhysicsSpace(PhysicsSpace.BroadphaseType.DBVT);
 
-        float scaleX = 8;
+        float scaleX = 4;
 
         // Add a static horizontal plane at y=-1.
         float mass = 1f;
-        addPlane(Vector3f.UNIT_Y, -1f);
+        addPlane(Vector3f.UNIT_Y, -0f);
         addPlane(Vector3f.UNIT_Y.mult(-1), -64f);
         addPlane(Vector3f.UNIT_X, -scaleX);
         addPlane(Vector3f.UNIT_Z, -scaleX);
@@ -126,7 +127,7 @@ public class BBStaticModelRenderSystem extends RenderSystem
         var ballArea = transfromArray.getAreaByType(ballModel);
         var cubeArea = transfromArray.getAreaByType(cubeModel);
 
-        for (int i = 0; i < 256; i++)
+        for (int i = 0; i < 8; i++)
         {
             // Add a sphere-shaped, dynamic, rigid body at the origin.
             float radius = RandomUtil.randomFloat(0.25f, 0.75f);
@@ -138,7 +139,7 @@ public class BBStaticModelRenderSystem extends RenderSystem
             objects.add(body);
         }
 
-        for (int i = 0; i < 256; i++)
+        for (int i = 0; i < 8; i++)
         {
             // Add a sphere-shaped, dynamic, rigid body at the origin.
             float radius = RandomUtil.randomFloat(0.25f, 0.75f);
@@ -173,22 +174,23 @@ public class BBStaticModelRenderSystem extends RenderSystem
 
         physicsSpace.update(frameInfo.frameTime);
 
-        var globalUBO = UBO.STATIC_BB_MODEL_UBO.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix());
+        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix());
+        int singleInstanceSize = UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT;
 
-        flightFrame.uboBuffer.writeToBuffer(UBO.STATIC_BB_MODEL_UBO::memcpy, globalUBO);
-        flightFrame.uboBuffer.flush();
+        flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_CAMERA_UBO::memcpy, List.of(globalUBO), singleInstanceSize, singleInstanceSize * frameInfo.camera.cameraIndex);
+        flightFrame.uboBuffer.flush(singleInstanceSize, (long) singleInstanceSize * frameInfo.camera.cameraIndex);
 
         updateSbo(flightFrame.sboBuffer);
 
-        pipeline.bind(frameInfo.commandBuffer);
+        pipeline().bind(frameInfo.commandBuffer);
 
         vkCmdBindDescriptorSets(
             frameInfo.commandBuffer,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
-            pipeline.pipelineLayout(),
+            pipeline().pipelineLayout(),
             0,
             stack.longs(flightFrame.descriptorSet),
-            null);
+            stack.ints(singleInstanceSize * frameInfo.camera.cameraIndex));
 
         int totalIndex = 0;
         for (var area : transfromArray.getAreas())
@@ -197,7 +199,7 @@ public class BBStaticModelRenderSystem extends RenderSystem
                 continue;
 
             Struct push = Push.STATIC.create(totalIndex);
-            Push.STATIC.push(push, frameInfo.commandBuffer, pipeline.pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0);
+            Push.STATIC.push(push, frameInfo.commandBuffer, pipeline().pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0);
             area.modelType.bind(frameInfo.commandBuffer);
             area.modelType.draw(frameInfo.commandBuffer, area.toRender);
             totalIndex += area.toRender;
@@ -225,14 +227,14 @@ public class BBStaticModelRenderSystem extends RenderSystem
         sboBuffer.writeToBuffer(SBO.TRANSFORMATIONS::memcpy, sbo);
     }
 
-    private final Matrix4f TO_RET = new Matrix4f();
+    private final Matrix4f STORE_MAT4F = new Matrix4f();
     private final Vector3f STORE_VEC3F = new Vector3f();
     private Matrix4f toJomlMat(PhysicsRigidBody body)
     {
         Transform transform = new Transform();
         body.getTransform(transform);
         com.jme3.math.Matrix4f t = transform.toTransformMatrix();
-        TO_RET.set(
+        STORE_MAT4F.set(
             t.m00, t.m10, t.m20, t.m30,   // First row
             t.m01, t.m11, t.m21, t.m31,   // Second row
             t.m02, t.m12, t.m22, t.m32,   // Third row
@@ -242,14 +244,14 @@ public class BBStaticModelRenderSystem extends RenderSystem
         if (body.getCollisionShape() instanceof SphereCollisionShape coll)
         {
             body.getPhysicsLocation(STORE_VEC3F);
-            TO_RET.scale(coll.getRadius() * 2f);
+            STORE_MAT4F.scale(coll.getRadius() * 2f);
         } else if (body.getCollisionShape() instanceof BoxCollisionShape coll)
         {
             coll.getHalfExtents(STORE_VEC3F);
-            TO_RET.scale(STORE_VEC3F.x * 2f, STORE_VEC3F.y * 2f, STORE_VEC3F.z * 2f);
+            STORE_MAT4F.scale(STORE_VEC3F.x * 2f, STORE_VEC3F.y * 2f, STORE_VEC3F.z * 2f);
         }
 
-        return TO_RET;
+        return STORE_MAT4F;
     }
 
     @Override

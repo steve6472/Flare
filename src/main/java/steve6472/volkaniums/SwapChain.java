@@ -3,6 +3,7 @@ package steve6472.volkaniums;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 import steve6472.volkaniums.settings.Settings;
+import steve6472.volkaniums.vr.VrData;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
@@ -121,7 +122,7 @@ public class SwapChain
 
             VkSwapchainCreateInfoKHR createInfo = VkSwapchainCreateInfoKHR.calloc(stack);
 
-            createInfo.sType(KHRSwapchain.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR);
+            createInfo.sType(VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR);
             createInfo.surface(surface);
 
             // Image settings
@@ -152,18 +153,18 @@ public class SwapChain
 
             LongBuffer pSwapChain = stack.longs(VK_NULL_HANDLE);
 
-            if (KHRSwapchain.vkCreateSwapchainKHR(device, createInfo, null, pSwapChain) != VK_SUCCESS)
+            if (vkCreateSwapchainKHR(device, createInfo, null, pSwapChain) != VK_SUCCESS)
             {
                 throw new RuntimeException(ErrorCode.SWAP_CHAIN_CREATION.format());
             }
 
             swapChain = pSwapChain.get(0);
 
-            KHRSwapchain.vkGetSwapchainImagesKHR(device, swapChain, imageCount, null);
+            vkGetSwapchainImagesKHR(device, swapChain, imageCount, null);
 
             LongBuffer pSwapchainImages = stack.mallocLong(imageCount.get(0));
 
-            KHRSwapchain.vkGetSwapchainImagesKHR(device, swapChain, imageCount, pSwapchainImages);
+            vkGetSwapchainImagesKHR(device, swapChain, imageCount, pSwapchainImages);
 
             swapChainImages = new ArrayList<>(imageCount.get(0));
 
@@ -194,7 +195,7 @@ public class SwapChain
             colorAttachment.stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE);
             colorAttachment.stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE);
             colorAttachment.initialLayout(VK_IMAGE_LAYOUT_UNDEFINED);
-            colorAttachment.finalLayout(KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+            colorAttachment.finalLayout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
             VkAttachmentReference colorAttachmentRef = refs.get(0);
             colorAttachmentRef.attachment(0);
@@ -265,7 +266,6 @@ public class SwapChain
 
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-//            LongBuffer attachments = stack.mallocLong(1);
             LongBuffer attachments = stack.longs(VK_NULL_HANDLE, depthImageView);
             LongBuffer pFramebuffer = stack.mallocLong(1);
 
@@ -359,7 +359,8 @@ public class SwapChain
     {
         return availableFormats
             .stream()
-            .filter(availableFormat -> availableFormat.format() == /*VK13.VK_FORMAT_B8G8R8_UNORM*/ VK_FORMAT_B8G8R8A8_SRGB)
+//            .filter(availableFormat -> availableFormat.format() == (VrData.VR_ON ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB))
+            .filter(availableFormat -> availableFormat.format() == VK_FORMAT_B8G8R8A8_UNORM)
             .filter(availableFormat -> availableFormat.colorSpace() == KHRSurface.VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
             .findAny()
             .orElse(availableFormats.get(0));

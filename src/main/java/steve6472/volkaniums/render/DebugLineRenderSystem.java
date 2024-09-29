@@ -6,7 +6,9 @@ import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.pipeline.Pipeline;
+import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
 import steve6472.volkaniums.render.debug.DebugRender;
+import steve6472.volkaniums.settings.Settings;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.UBO;
 import steve6472.volkaniums.struct.def.Vertex;
@@ -29,17 +31,19 @@ public class DebugLineRenderSystem extends RenderSystem
     private final DescriptorSetLayout globalSetLayout;
     List<FlightFrame> frame = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
 
-    public DebugLineRenderSystem(MasterRenderer masterRenderer, Pipeline pipeline)
+    private VkBuffer buffer;
+
+    public DebugLineRenderSystem(MasterRenderer masterRenderer, PipelineConstructor pipeline)
     {
         super(masterRenderer, pipeline);
 
         globalSetLayout = DescriptorSetLayout
             .builder(device)
-            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT)
             .build();
         globalPool = DescriptorPool.builder(device)
             .setMaxSets(MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, MAX_FRAMES_IN_FLIGHT)
             .build();
 
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -48,7 +52,7 @@ public class DebugLineRenderSystem extends RenderSystem
 
             VkBuffer global = new VkBuffer(
                 device,
-                UBO.DEBUG_LINE.sizeof(),
+                UBO.GLOBAL_CAMERA_UBO.sizeof(),
                 1,
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
@@ -59,9 +63,21 @@ public class DebugLineRenderSystem extends RenderSystem
             {
                 DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
                 frame.get(i).descriptorSet = descriptorWriter
-                    .writeBuffer(0, frame.get(i).uboBuffer, stack)
+                    .writeBuffer(0, frame.get(i).uboBuffer, stack, UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT)
                     .build();
             }
+        }
+
+        if (Settings.DEBUG_LINE_SINGLE_BUFFER.get())
+        {
+            buffer = new VkBuffer(
+                masterRenderer.getDevice(),
+                Vertex.POS3F_COL4F.sizeof(),
+                262144,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+            );
+            buffer.map();
         }
     }
 
@@ -74,31 +90,72 @@ public class DebugLineRenderSystem extends RenderSystem
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
+        if (Settings.DEBUG_LINE_SINGLE_BUFFER.get())
+            renderSingleBuffer(frameInfo, stack);
+        else
+            renderRotatingBuffer(frameInfo, stack);
+    }
+
+    private void renderSingleBuffer(FrameInfo frameInfo, MemoryStack stack)
+    {
         List<Struct> verticies = DebugRender.getInstance().createVerticies();
         if (verticies.isEmpty())
             return;
 
         FlightFrame flightFrame = frame.get(frameInfo.frameIndex);
 
-        var globalUBO = UBO.DEBUG_LINE.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix());
+        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix());
+        int singleInstanceSize = UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT;
 
-        flightFrame.uboBuffer.writeToBuffer(UBO.DEBUG_LINE::memcpy, globalUBO);
-        flightFrame.uboBuffer.flush();
+        flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_CAMERA_UBO::memcpy, List.of(globalUBO), singleInstanceSize, singleInstanceSize * frameInfo.camera.cameraIndex);
+        flightFrame.uboBuffer.flush(singleInstanceSize, (long) singleInstanceSize * frameInfo.camera.cameraIndex);
+
+        pipeline().bind(frameInfo.commandBuffer);
+
+        vkCmdBindDescriptorSets(
+            frameInfo.commandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            pipeline().pipelineLayout(),
+            0,
+            stack.longs(flightFrame.descriptorSet),
+            stack.ints(singleInstanceSize * frameInfo.camera.cameraIndex));
+
+        buffer.writeToBuffer(Vertex.POS3F_COL4F::memcpy, verticies);
+
+        LongBuffer vertexBuffers = stack.longs(buffer.getBuffer());
+        LongBuffer offsets = stack.longs(0);
+        vkCmdBindVertexBuffers(frameInfo.commandBuffer, 0, vertexBuffers, offsets);
+        vkCmdDraw(frameInfo.commandBuffer, verticies.size(), 1, 0, 0);
+    }
+
+    public void renderRotatingBuffer(FrameInfo frameInfo, MemoryStack stack)
+    {
+        List<Struct> verticies = DebugRender.getInstance().createVerticies();
+        if (verticies.isEmpty())
+            return;
+
+        FlightFrame flightFrame = frame.get(frameInfo.frameIndex);
+
+        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix());
+        int singleInstanceSize = UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT;
+
+        flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_CAMERA_UBO::memcpy, List.of(globalUBO), singleInstanceSize, singleInstanceSize * frameInfo.camera.cameraIndex);
+        flightFrame.uboBuffer.flush(singleInstanceSize, (long) singleInstanceSize * frameInfo.camera.cameraIndex);
 
         if (flightFrame.vertexBuffer != null)
         {
             flightFrame.vertexBuffer.cleanup();
         }
 
-        pipeline.bind(frameInfo.commandBuffer);
+        pipeline().bind(frameInfo.commandBuffer);
 
         vkCmdBindDescriptorSets(
             frameInfo.commandBuffer,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
-            pipeline.pipelineLayout(),
+            pipeline().pipelineLayout(),
             0,
             stack.longs(flightFrame.descriptorSet),
-            null);
+            stack.ints(singleInstanceSize * frameInfo.camera.cameraIndex));
 
         VkBuffer stagingBuffer = new VkBuffer(
             device,
@@ -134,6 +191,9 @@ public class DebugLineRenderSystem extends RenderSystem
     {
         globalSetLayout.cleanup();
         globalPool.cleanup();
+
+        if (buffer != null)
+            buffer.cleanup();
 
         for (FlightFrame flightFrame : frame)
         {

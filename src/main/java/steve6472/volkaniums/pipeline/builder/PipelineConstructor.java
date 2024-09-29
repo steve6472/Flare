@@ -1,6 +1,7 @@
 package steve6472.volkaniums.pipeline.builder;
 
 import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkExtent2D;
 import steve6472.volkaniums.SwapChain;
 import steve6472.volkaniums.pipeline.Pipeline;
 
@@ -12,5 +13,5 @@ import steve6472.volkaniums.pipeline.Pipeline;
 @FunctionalInterface
 public interface PipelineConstructor
 {
-    Pipeline build(VkDevice device, SwapChain swapChain, long... setLayouts);
+    Pipeline build(VkDevice device, VkExtent2D extent, long renderPass, long... setLayouts);
 }

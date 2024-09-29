@@ -1,5 +1,6 @@
 package steve6472.volkaniums.render.debug.objects;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import steve6472.volkaniums.struct.Struct;
@@ -14,7 +15,7 @@ import java.util.List;
  */
 public interface DebugObject
 {
-    void addVerticies(List<Struct> vertices);
+    void addVerticies(List<Struct> vertices, Matrix4f transform);
     int vertexCount();
 
     default Struct vertex(Vector3f vec, Vector4f col)

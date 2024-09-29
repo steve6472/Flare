@@ -69,17 +69,17 @@ public class Commands
         }
     }
 
-    public static VkRenderPassBeginInfo createRenderPass(MemoryStack stack, SwapChain swapChain)
+    public static VkRenderPassBeginInfo createRenderPass(MemoryStack stack, long renderPass, VkExtent2D extent)
     {
         VkRenderPassBeginInfo renderPassInfo = VkRenderPassBeginInfo.calloc(stack);
         renderPassInfo.sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO);
-        renderPassInfo.renderPass(swapChain.renderPass);
+        renderPassInfo.renderPass(renderPass);
         VkRect2D renderArea = VkRect2D.calloc(stack);
         renderArea.offset(VkOffset2D.calloc(stack).set(0, 0));
-        renderArea.extent(swapChain.swapChainExtent);
+        renderArea.extent(extent);
         renderPassInfo.renderArea(renderArea);
         VkClearValue.Buffer clearValues = VkClearValue.calloc(2, stack);
-        clearValues.get(0).color().float32(stack.floats(0.0f, 0.0f, 0.0f, 1.0f));
+        clearValues.get(0).color().float32(stack.floats(Constants.CLEAR_COLOR.x, Constants.CLEAR_COLOR.y, Constants.CLEAR_COLOR.z, Constants.CLEAR_COLOR.w));
         clearValues.get(1).depthStencil().set(1.0f, 0);
         renderPassInfo.pClearValues(clearValues);
 

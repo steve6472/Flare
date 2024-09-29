@@ -18,6 +18,7 @@ import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
 import steve6472.volkaniums.pipeline.Pipeline;
+import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
 import steve6472.volkaniums.registry.Key;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.Push;
@@ -48,7 +49,7 @@ public class BackdropRenderSystem extends RenderSystem
     Texture texture;
     TextureSampler sampler;
 
-    public BackdropRenderSystem(MasterRenderer masterRenderer, Pipeline pipeline)
+    public BackdropRenderSystem(MasterRenderer masterRenderer, PipelineConstructor pipeline)
     {
         super(masterRenderer, pipeline);
 
@@ -132,12 +133,12 @@ public class BackdropRenderSystem extends RenderSystem
         flightFrame.uboBuffer.writeToBuffer(UBO.STATIC_BB_MODEL_UBO::memcpy, globalUBO);
         flightFrame.uboBuffer.flush();
 
-        pipeline.bind(frameInfo.commandBuffer);
+        pipeline().bind(frameInfo.commandBuffer);
 
         vkCmdBindDescriptorSets(
             frameInfo.commandBuffer,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
-            pipeline.pipelineLayout(),
+            pipeline().pipelineLayout(),
             0,
             stack.longs(flightFrame.descriptorSet),
             null);
@@ -146,7 +147,7 @@ public class BackdropRenderSystem extends RenderSystem
             new Vector4f(1, 1, 1, 1.0f),
             0);
 
-        Push.PUSH.push(push, frameInfo.commandBuffer, pipeline.pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0);
+        Push.PUSH.push(push, frameInfo.commandBuffer, pipeline().pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0);
 
         model3d.bind(frameInfo.commandBuffer);
         model3d.draw(frameInfo.commandBuffer);

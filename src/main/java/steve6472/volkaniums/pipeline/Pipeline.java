@@ -2,6 +2,7 @@ package steve6472.volkaniums.pipeline;
 
 import org.lwjgl.vulkan.VkCommandBuffer;
 import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkExtent2D;
 import steve6472.volkaniums.SwapChain;
 import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
 import steve6472.volkaniums.util.Preconditions;
@@ -50,7 +51,16 @@ public class Pipeline
     {
         Preconditions.checkNotNull(constructor, "Tried to rebuild a Pipeline from a temporary object!");
 
-        Pipeline build = constructor.build(device, swapChain, setLayouts);
+        Pipeline build = constructor.build(device, swapChain.swapChainExtent, swapChain.renderPass, setLayouts);
+        pipeline = build.pipeline;
+        pipelineLayout = build.pipelineLayout;
+    }
+
+    public void rebuild(VkDevice device, VkExtent2D extent, long renderPass, long... setLayouts)
+    {
+        Preconditions.checkNotNull(constructor, "Tried to rebuild a Pipeline from a temporary object!");
+
+        Pipeline build = constructor.build(device, extent, renderPass, setLayouts);
         pipeline = build.pipeline;
         pipelineLayout = build.pipelineLayout;
     }

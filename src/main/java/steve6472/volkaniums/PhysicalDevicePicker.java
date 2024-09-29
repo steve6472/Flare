@@ -4,9 +4,11 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 import steve6472.volkaniums.util.Log;
+import steve6472.volkaniums.vr.HelloOpenVR;
+import steve6472.volkaniums.vr.VrData;
 
 import java.nio.IntBuffer;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,7 +28,7 @@ public class PhysicalDevicePicker
     public static final Set<String> DEVICE_EXTENSIONS = Stream.of(VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME)
         .collect(Collectors.toSet());
 
-    public static VkPhysicalDevice pickPhysicalDevice(VkInstance instance, long surface)
+    public static VkPhysicalDevice pickPhysicalDevice(VkInstance instance, long surface, Collection<String> deviceExtensions)
     {
         try (MemoryStack stack = MemoryStack.stackPush())
         {
@@ -49,10 +51,12 @@ public class PhysicalDevicePicker
             {
                 VkPhysicalDevice device = new VkPhysicalDevice(ppPhysicalDevices.get(i), instance);
 
-                if (isDeviceSuitable(device, surface))
+                if (isDeviceSuitable(device, surface, deviceExtensions))
                 {
                     VkPhysicalDeviceProperties deviceProperties = VkPhysicalDeviceProperties.calloc(stack);
                     VK13.vkGetPhysicalDeviceProperties(device, deviceProperties);
+                    // TODO: actually use the value, don't hardcode stuff man...
+//                    LOGGER.warning("alignment: " + deviceProperties.limits().minUniformBufferOffsetAlignment()); // returns 64 on my device :)
                     LOGGER.finer("Selected GPU: " + deviceProperties.deviceNameString());
                     return device;
                 }
@@ -62,7 +66,7 @@ public class PhysicalDevicePicker
         }
     }
 
-    private static boolean isDeviceSuitable(VkPhysicalDevice device, long surface)
+    private static boolean isDeviceSuitable(VkPhysicalDevice device, long surface, Collection<String> deviceExtensions)
     {
         // This does nothing, just for me to check stuff lol
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -73,7 +77,7 @@ public class PhysicalDevicePicker
 
         QueueFamilyIndices indices = QueueFamilyIndices.findQueueFamilies(device, surface);
 
-        boolean extensionsSupported = checkDeviceExtensionSupport(device);
+        boolean extensionsSupported = checkDeviceExtensionSupport(device, deviceExtensions);
         boolean swapChainAdequate = false;
 
         if (extensionsSupported)
@@ -88,7 +92,7 @@ public class PhysicalDevicePicker
         return indices.isComplete() && extensionsSupported && swapChainAdequate;
     }
 
-    private static boolean checkDeviceExtensionSupport(VkPhysicalDevice device)
+    private static boolean checkDeviceExtensionSupport(VkPhysicalDevice device, Collection<String> deviceExtensions)
     {
         try (MemoryStack stack = MemoryStack.stackPush())
         {
@@ -100,11 +104,19 @@ public class PhysicalDevicePicker
 
             VK13.vkEnumerateDeviceExtensionProperties(device, (String) null, extensionCount, availableExtensions);
 
+            Collection<String> extensions = new HashSet<>(deviceExtensions);
+
+            if (VrData.VR_ON)
+            {
+                String requiredExtensions = HelloOpenVR.getRequiredExtensions(device.address());
+                Collections.addAll(extensions, requiredExtensions.split(" "));
+            }
+
             return availableExtensions
                 .stream()
                 .map(VkExtensionProperties::extensionNameString)
                 .collect(Collectors.toSet())
-                .containsAll(DEVICE_EXTENSIONS);
+                .containsAll(extensions);
         }
     }
 }

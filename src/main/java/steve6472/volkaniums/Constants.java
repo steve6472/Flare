@@ -1,6 +1,7 @@
 package steve6472.volkaniums;
 
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import steve6472.volkaniums.registry.Key;
 
 /**
@@ -11,6 +12,9 @@ import steve6472.volkaniums.registry.Key;
 public class Constants
 {
     public static final Vector3f CAMERA_UP = new Vector3f(0, 1, 0);
+
+    /// Global clear color
+    public static final Vector4f CLEAR_COLOR = new Vector4f(0.1f, 0.1f, 0.1f, 1.0f);
 
     /// Note: This makes models be unable to be saved unless they are scaled in opposite direction before saving
     public static final float BB_MODEL_SCALE = 1f / 16f;

@@ -12,12 +12,15 @@ import static steve6472.volkaniums.struct.Struct.builder;
  */
 public interface UBO
 {
-    StructDef STATIC_BB_MODEL_UBO = builder()
+    int GLOBAL_CAMERA_MAX_COUNT = 3;
+
+    StructDef GLOBAL_CAMERA_UBO = builder()
         .addMember(MAT_4F) // projection
         .addMember(MAT_4F) // view
+        .setDynamicBufferSize(GLOBAL_CAMERA_MAX_COUNT)
         .build();
 
-    StructDef DEBUG_LINE = builder()
+    StructDef STATIC_BB_MODEL_UBO = builder()
         .addMember(MAT_4F) // projection
         .addMember(MAT_4F) // view
         .build();

@@ -5,6 +5,10 @@ import org.lwjgl.vulkan.*;
 import steve6472.volkaniums.pipeline.Pipeline;
 import steve6472.volkaniums.pipeline.Pipelines;
 import steve6472.volkaniums.render.*;
+import steve6472.volkaniums.render.debug.DebugRender;
+import steve6472.volkaniums.settings.Settings;
+import steve6472.volkaniums.struct.def.UBO;
+import steve6472.volkaniums.vr.VrData;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -27,6 +31,7 @@ public class MasterRenderer
 
     private final SwapChain swapChain;
     private final Commands commands;
+    private final VrData vrData;
     private final DebugLineRenderSystem debugLineRenderSystem;
 
     private int currentFrameIndex;
@@ -37,34 +42,49 @@ public class MasterRenderer
 
     private final List<RenderSystem> renderSystems = new ArrayList<>();
 
-    public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, Commands commands, long surface)
+    public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, Commands commands, long surface, VrData vrData)
     {
         this.window = window;
         this.device = device;
         this.graphicsQueue = graphicsQueue;
         this.presentQueue = presentQueue;
         this.commands = commands;
+        this.vrData = vrData;
 
         swapChain = new SwapChain(device, window, surface, this);
 
-//        renderSystems.add(new BackdropRenderSystem(this, new Pipeline(Pipelines.BB_STATIC)));
-        renderSystems.add(new BBStaticModelRenderSystem(this, new Pipeline(Pipelines.BB_STATIC)));
-//        renderSystems.add(new SBORenderSystem(device, new Pipeline(Pipelines.TEST), commands, graphicsQueue));
-        debugLineRenderSystem = new DebugLineRenderSystem(this, new Pipeline(Pipelines.DEBUG_LINE));
+//        renderSystems.add(new BackdropRenderSystem(this, Pipelines.BB_STATIC));
+        renderSystems.add(new BBStaticModelRenderSystem(this, Pipelines.BB_STATIC));
+//        renderSystems.add(new SBORenderSystem(device, Pipelines.TEST, commands, graphicsQueue));
+//        renderSystems.add(new SkinRenderSystem(this, Pipelines.SKIN));
+
+        // Has to be last
+        debugLineRenderSystem = new DebugLineRenderSystem(this, Pipelines.DEBUG_LINE);
         renderSystems.add(debugLineRenderSystem);
-//        renderSystems.add(new SkinRenderSystem(this, new Pipeline(Pipelines.SKIN)));
 
         swapChain.createSwapChainObjects();
     }
 
     public void rebuildPipelines()
     {
-        renderSystems.forEach(renderSystem -> renderSystem.pipeline.rebuild(device, swapChain, renderSystem.setLayouts()));
+        renderSystems.forEach(renderSystem -> renderSystem._getPipeline().rebuild(device, swapChain, renderSystem.setLayouts()));
+
+        if (VrData.VR_ON)
+        {
+            try (MemoryStack stack = MemoryStack.stackPush())
+            {
+                VkExtent2D extent = VkExtent2D.calloc(stack).set(vrData.width(), vrData.height());
+                long renderPass = vrData.renderPass();
+                renderSystems.forEach(renderSystem -> renderSystem._getVrPipeline().rebuild(device, extent, renderPass, renderSystem.setLayouts()));
+            }
+        }
     }
 
     public void destroyPipelines()
     {
-        renderSystems.forEach(renderSystem -> renderSystem.pipeline.cleanup(device));
+        renderSystems.forEach(renderSystem -> renderSystem._getPipeline().cleanup(device));
+        if (VrData.VR_ON)
+            renderSystems.forEach(renderSystem -> renderSystem._getVrPipeline().cleanup(device));
     }
 
     public void cleanup()
@@ -144,28 +164,50 @@ public class MasterRenderer
 
     void beginSwapChainRenderPass(VkCommandBuffer commandBuffer, MemoryStack stack)
     {
+        beginRenderPass(commandBuffer, stack, swapChain.renderPass, swapChain.swapChainExtent, swapChain.swapChainFramebuffers.get(currentImageIndex));
+    }
+
+    public void beginRenderPass(VkCommandBuffer commandBuffer, MemoryStack stack, long renderPass, VkExtent2D extent, long frameBuffer)
+    {
         if (!isFrameStarted)
-            throw new RuntimeException("Can't call beginSwapChainRenderPass while already in progress");
+            throw new RuntimeException("Can't call beginRenderPass while already in progress");
 
         if (commandBuffer != getCurrentCommandBuffer())
             throw new RuntimeException("Can't begin render pass on command buffer from a different frame");
 
-        VkRenderPassBeginInfo renderPassInfo = Commands.createRenderPass(stack, swapChain);
+        VkRenderPassBeginInfo renderPassInfo = Commands.createRenderPass(stack, renderPass, extent);
 
-        renderPassInfo.framebuffer(swapChain.swapChainFramebuffers.get(currentImageIndex));
+        renderPassInfo.framebuffer(frameBuffer);
 
         vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     }
 
+    public int totalRenderCount = 0;
+    public int maxRenderCount = 0;
+
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
+        if (frameInfo.camera.cameraIndex >= UBO.GLOBAL_CAMERA_MAX_COUNT)
+            throw new RuntimeException("Too many scene renders within one frame!");
+
         for (RenderSystem renderSystem : renderSystems)
         {
             renderSystem.render(frameInfo, stack);
         }
+
+        if (Settings.DEBUG_LINE_SINGLE_BUFFER.get())
+        {
+            totalRenderCount++;
+            if (totalRenderCount == maxRenderCount)
+            {
+                DebugRender.getInstance().clearOldVerticies();
+            }
+        }
+
+        frameInfo.camera.cameraIndex++;
     }
 
-    void endSwapChainRenderPass(VkCommandBuffer commandBuffer)
+    public void endRenderPass(VkCommandBuffer commandBuffer)
     {
         if (!isFrameStarted)
             throw new RuntimeException("Can't call endFrame while frame is not in progress");
@@ -207,6 +249,11 @@ public class MasterRenderer
         return swapChain.renderPass;
     }
 
+    public SwapChain getSwapChain()
+    {
+        return swapChain;
+    }
+
     boolean isFrameInProgress()
     {
         return isFrameStarted;
@@ -215,6 +262,11 @@ public class MasterRenderer
     public VkDevice getDevice()
     {
         return device;
+    }
+
+    public VrData getVrData()
+    {
+        return vrData;
     }
 
     public DebugLineRenderSystem debugLines()

@@ -1,8 +1,10 @@
 package steve6472.volkaniums.render.debug;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import steve6472.volkaniums.render.debug.objects.*;
+import steve6472.volkaniums.settings.Settings;
 import steve6472.volkaniums.struct.Struct;
 
 import java.util.ArrayList;
@@ -41,11 +43,16 @@ public class DebugRender
     {
         List<Struct> vertices = new ArrayList<>();
         long currentTime = System.currentTimeMillis();
-        getInstance().debugLines.removeIf(ren -> {
-            ren.object().addVerticies(vertices);
-            return ren.untilTime() >= currentTime || ren.untilTime() == 0;
-        });
+        getInstance().debugLines.forEach(ren -> ren.object().addVerticies(vertices, ren.transform()));
+        if (!Settings.DEBUG_LINE_SINGLE_BUFFER.get())
+            clearOldVerticies();
         return vertices;
+    }
+
+    public void clearOldVerticies()
+    {
+        long currentTime = System.currentTimeMillis();
+        getInstance().debugLines.removeIf(ren -> ren.untilTime() >= currentTime || ren.untilTime() == 0);
     }
 
     /*
@@ -54,19 +61,24 @@ public class DebugRender
 
     public static void addDebugObjectForFrame(DebugObject debugObject)
     {
-        getInstance().debugLines.add(new DebugRenderTime(debugObject, 0));
+        getInstance().debugLines.add(new DebugRenderTime(debugObject, 0, new Matrix4f()));
+    }
+
+    public static void addDebugObjectForFrame(DebugObject debugObject, Matrix4f transform)
+    {
+        getInstance().debugLines.add(new DebugRenderTime(debugObject, 0, transform));
     }
 
     public static void addDebugObjectForMs(DebugObject debugObject, long ms)
     {
         if (ms <= 0) throw new RuntimeException("time has to be above 0");
-        getInstance().debugLines.add(new DebugRenderTime(debugObject, System.currentTimeMillis() + ms));
+        getInstance().debugLines.add(new DebugRenderTime(debugObject, System.currentTimeMillis() + ms, new Matrix4f()));
     }
 
     public static void addDebugObjectForS(DebugObject debugObject, long s)
     {
         if (s <= 0) throw new RuntimeException("time has to be above 0");
-        getInstance().debugLines.add(new DebugRenderTime(debugObject, System.currentTimeMillis() + s * 1000));
+        getInstance().debugLines.add(new DebugRenderTime(debugObject, System.currentTimeMillis() + s * 1000, new Matrix4f()));
     }
 
     /*

@@ -31,6 +31,11 @@ public class Settings
     public static BoolSetting ENABLE_WIDE_LINES = registerBool("enable_wide_lines", true);
     /// Only applied if [#ENABLE_WIDE_LINES] is `true`
     public static FloatSetting LINE_WIDTH = registerFloat("line_width", 4.0f);
+    /// Master toggle for... VR!?
+    public static BoolSetting VR = registerBool("vr", true);
+    /// Enable this so debug lines can render in VR
+    /// Is slower and limited to only 262144 verticies (might add setting ?)
+    public static BoolSetting DEBUG_LINE_SINGLE_BUFFER = registerBool("debug_line_single_buffer", true);
 
     /*
      * Keyboard

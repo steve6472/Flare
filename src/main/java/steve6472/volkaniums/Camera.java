@@ -12,16 +12,14 @@ public class Camera
 {
     private final Matrix4f viewMatrix;
     private final Matrix4f projectionMatrix;
+    public int cameraIndex;
+
+    private float near, far;
 
     public Camera()
     {
         this.viewMatrix = new Matrix4f();
         this.projectionMatrix = new Matrix4f();
-    }
-
-    public void updateViewMatrix()
-    {
-
     }
 
     public Matrix4f getViewMatrix()
@@ -37,6 +35,8 @@ public class Camera
     public void setOrthographicProjection(float left, float right, float top, float bottom, float near, float far)
     {
         projectionMatrix.identity().ortho(left, right, bottom, top, near, far);
+        this.near = near;
+        this.far = far;
     }
 
     public void setViewDirection(Vector3f cameraPosition, Vector3f pointInSpace)
@@ -65,11 +65,19 @@ public class Camera
     public void setPerspectiveProjection(float fov, float aspect, float near, float far)
     {
         projectionMatrix.identity().perspective((float) Math.toRadians(fov), aspect, near, far);
+        this.near = near;
+        this.far = far;
     }
 
+    public float near()
+    {
+        return near;
+    }
 
-
-
+    public float far()
+    {
+        return far;
+    }
 
     protected Vector3f viewPosition = new Vector3f(), center = new Vector3f();
     protected float yaw;
