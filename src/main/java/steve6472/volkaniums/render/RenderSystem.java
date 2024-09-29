@@ -2,14 +2,12 @@ package steve6472.volkaniums.render;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
-import steve6472.volkaniums.FrameInfo;
+import steve6472.volkaniums.core.FrameInfo;
 import steve6472.volkaniums.MasterRenderer;
 import steve6472.volkaniums.pipeline.Pipeline;
 import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
 import steve6472.volkaniums.vr.VrData;
 import steve6472.volkaniums.vr.VrRenderPass;
-
-import java.nio.channels.Pipe;
 
 /**
  * Created by steve6472

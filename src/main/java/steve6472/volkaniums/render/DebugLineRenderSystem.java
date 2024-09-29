@@ -2,13 +2,13 @@ package steve6472.volkaniums.render;
 
 import org.lwjgl.system.MemoryStack;
 import steve6472.volkaniums.*;
+import steve6472.volkaniums.core.FrameInfo;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
-import steve6472.volkaniums.pipeline.Pipeline;
 import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
 import steve6472.volkaniums.render.debug.DebugRender;
-import steve6472.volkaniums.settings.Settings;
+import steve6472.volkaniums.settings.VisualSettings;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.UBO;
 import steve6472.volkaniums.struct.def.Vertex;
@@ -68,7 +68,7 @@ public class DebugLineRenderSystem extends RenderSystem
             }
         }
 
-        if (Settings.DEBUG_LINE_SINGLE_BUFFER.get())
+        if (VisualSettings.DEBUG_LINE_SINGLE_BUFFER.get())
         {
             buffer = new VkBuffer(
                 masterRenderer.getDevice(),
@@ -90,7 +90,7 @@ public class DebugLineRenderSystem extends RenderSystem
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
-        if (Settings.DEBUG_LINE_SINGLE_BUFFER.get())
+        if (VisualSettings.DEBUG_LINE_SINGLE_BUFFER.get())
             renderSingleBuffer(frameInfo, stack);
         else
             renderRotatingBuffer(frameInfo, stack);
@@ -102,30 +102,30 @@ public class DebugLineRenderSystem extends RenderSystem
         if (verticies.isEmpty())
             return;
 
-        FlightFrame flightFrame = frame.get(frameInfo.frameIndex);
+        FlightFrame flightFrame = frame.get(frameInfo.frameIndex());
 
-        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix());
+        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(frameInfo.camera().getProjectionMatrix(), frameInfo.camera().getViewMatrix());
         int singleInstanceSize = UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT;
 
-        flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_CAMERA_UBO::memcpy, List.of(globalUBO), singleInstanceSize, singleInstanceSize * frameInfo.camera.cameraIndex);
-        flightFrame.uboBuffer.flush(singleInstanceSize, (long) singleInstanceSize * frameInfo.camera.cameraIndex);
+        flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_CAMERA_UBO::memcpy, List.of(globalUBO), singleInstanceSize, singleInstanceSize * frameInfo.camera().cameraIndex);
+        flightFrame.uboBuffer.flush(singleInstanceSize, (long) singleInstanceSize * frameInfo.camera().cameraIndex);
 
-        pipeline().bind(frameInfo.commandBuffer);
+        pipeline().bind(frameInfo.commandBuffer());
 
         vkCmdBindDescriptorSets(
-            frameInfo.commandBuffer,
+            frameInfo.commandBuffer(),
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             pipeline().pipelineLayout(),
             0,
             stack.longs(flightFrame.descriptorSet),
-            stack.ints(singleInstanceSize * frameInfo.camera.cameraIndex));
+            stack.ints(singleInstanceSize * frameInfo.camera().cameraIndex));
 
         buffer.writeToBuffer(Vertex.POS3F_COL4F::memcpy, verticies);
 
         LongBuffer vertexBuffers = stack.longs(buffer.getBuffer());
         LongBuffer offsets = stack.longs(0);
-        vkCmdBindVertexBuffers(frameInfo.commandBuffer, 0, vertexBuffers, offsets);
-        vkCmdDraw(frameInfo.commandBuffer, verticies.size(), 1, 0, 0);
+        vkCmdBindVertexBuffers(frameInfo.commandBuffer(), 0, vertexBuffers, offsets);
+        vkCmdDraw(frameInfo.commandBuffer(), verticies.size(), 1, 0, 0);
     }
 
     public void renderRotatingBuffer(FrameInfo frameInfo, MemoryStack stack)
@@ -134,28 +134,28 @@ public class DebugLineRenderSystem extends RenderSystem
         if (verticies.isEmpty())
             return;
 
-        FlightFrame flightFrame = frame.get(frameInfo.frameIndex);
+        FlightFrame flightFrame = frame.get(frameInfo.frameIndex());
 
-        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix());
+        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(frameInfo.camera().getProjectionMatrix(), frameInfo.camera().getViewMatrix());
         int singleInstanceSize = UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT;
 
-        flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_CAMERA_UBO::memcpy, List.of(globalUBO), singleInstanceSize, singleInstanceSize * frameInfo.camera.cameraIndex);
-        flightFrame.uboBuffer.flush(singleInstanceSize, (long) singleInstanceSize * frameInfo.camera.cameraIndex);
+        flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_CAMERA_UBO::memcpy, List.of(globalUBO), singleInstanceSize, singleInstanceSize * frameInfo.camera().cameraIndex);
+        flightFrame.uboBuffer.flush(singleInstanceSize, (long) singleInstanceSize * frameInfo.camera().cameraIndex);
 
         if (flightFrame.vertexBuffer != null)
         {
             flightFrame.vertexBuffer.cleanup();
         }
 
-        pipeline().bind(frameInfo.commandBuffer);
+        pipeline().bind(frameInfo.commandBuffer());
 
         vkCmdBindDescriptorSets(
-            frameInfo.commandBuffer,
+            frameInfo.commandBuffer(),
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             pipeline().pipelineLayout(),
             0,
             stack.longs(flightFrame.descriptorSet),
-            stack.ints(singleInstanceSize * frameInfo.camera.cameraIndex));
+            stack.ints(singleInstanceSize * frameInfo.camera().cameraIndex));
 
         VkBuffer stagingBuffer = new VkBuffer(
             device,
@@ -180,8 +180,8 @@ public class DebugLineRenderSystem extends RenderSystem
 
         LongBuffer vertexBuffers = stack.longs(vertexBuffer.getBuffer());
         LongBuffer offsets = stack.longs(0);
-        vkCmdBindVertexBuffers(frameInfo.commandBuffer, 0, vertexBuffers, offsets);
-        vkCmdDraw(frameInfo.commandBuffer, verticies.size(), 1, 0, 0);
+        vkCmdBindVertexBuffers(frameInfo.commandBuffer(), 0, vertexBuffers, offsets);
+        vkCmdDraw(frameInfo.commandBuffer(), verticies.size(), 1, 0, 0);
 
         flightFrame.vertexBuffer = vertexBuffer;
     }

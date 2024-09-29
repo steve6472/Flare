@@ -17,10 +17,12 @@ import steve6472.core.util.RandomUtil;
 import steve6472.volkaniums.*;
 import steve6472.volkaniums.assets.model.Model;
 import steve6472.volkaniums.assets.model.blockbench.ErrorModel;
+import steve6472.volkaniums.core.FrameInfo;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
+import steve6472.volkaniums.registry.VolkaniumsRegistries;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.Push;
 import steve6472.volkaniums.struct.def.SBO;
@@ -89,7 +91,7 @@ public class BBStaticModelRenderSystem extends RenderSystem
                 DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
                 frame.descriptorSet = descriptorWriter
                     .writeBuffer(0, frame.uboBuffer, stack, UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT)
-                    .writeImage(1, Registries.SAMPLER.get(Constants.BLOCKBENCH_TEXTURE), stack)
+                    .writeImage(1, VolkaniumsRegistries.SAMPLER.get(Constants.BLOCKBENCH_TEXTURE), stack)
                     .writeBuffer(2, frame.sboBuffer, stack)
                     .build();
             }
@@ -116,8 +118,8 @@ public class BBStaticModelRenderSystem extends RenderSystem
         addPlane(Vector3f.UNIT_X.mult(-1), -scaleX);
         addPlane(Vector3f.UNIT_Z.mult(-1), -scaleX);
 
-        Model ballModel = Registries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/ball"));
-        Model cubeModel = Registries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/cube"));
+        Model ballModel = VolkaniumsRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/ball"));
+        Model cubeModel = VolkaniumsRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/cube"));
 
         transfromArray.addArea(ballModel);
         transfromArray.addArea(cubeModel);
@@ -168,27 +170,27 @@ public class BBStaticModelRenderSystem extends RenderSystem
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
-        FlightFrame flightFrame = frames.get(frameInfo.frameIndex);
+        FlightFrame flightFrame = frames.get(frameInfo.frameIndex());
 
-        physicsSpace.update(frameInfo.frameTime);
+        physicsSpace.update(frameInfo.frameTime());
 
-        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix());
+        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(frameInfo.camera().getProjectionMatrix(), frameInfo.camera().getViewMatrix());
         int singleInstanceSize = UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT;
 
-        flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_CAMERA_UBO::memcpy, List.of(globalUBO), singleInstanceSize, singleInstanceSize * frameInfo.camera.cameraIndex);
-        flightFrame.uboBuffer.flush(singleInstanceSize, (long) singleInstanceSize * frameInfo.camera.cameraIndex);
+        flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_CAMERA_UBO::memcpy, List.of(globalUBO), singleInstanceSize, singleInstanceSize * frameInfo.camera().cameraIndex);
+        flightFrame.uboBuffer.flush(singleInstanceSize, (long) singleInstanceSize * frameInfo.camera().cameraIndex);
 
         updateSbo(flightFrame.sboBuffer);
 
-        pipeline().bind(frameInfo.commandBuffer);
+        pipeline().bind(frameInfo.commandBuffer());
 
         vkCmdBindDescriptorSets(
-            frameInfo.commandBuffer,
+            frameInfo.commandBuffer(),
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             pipeline().pipelineLayout(),
             0,
             stack.longs(flightFrame.descriptorSet),
-            stack.ints(singleInstanceSize * frameInfo.camera.cameraIndex));
+            stack.ints(singleInstanceSize * frameInfo.camera().cameraIndex));
 
         int totalIndex = 0;
         for (var area : transfromArray.getAreas())
@@ -196,10 +198,10 @@ public class BBStaticModelRenderSystem extends RenderSystem
             if (area.toRender == 0)
                 continue;
 
-            Struct push = Push.STATIC.create(totalIndex);
-            Push.STATIC.push(push, frameInfo.commandBuffer, pipeline().pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0);
-            area.modelType.bind(frameInfo.commandBuffer);
-            area.modelType.draw(frameInfo.commandBuffer, area.toRender);
+            Struct offset = Push.STATIC_TRANSFORM_OFFSET.create(totalIndex);
+            Push.STATIC_TRANSFORM_OFFSET.push(offset, frameInfo.commandBuffer(), pipeline().pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0);
+            area.modelType.bind(frameInfo.commandBuffer());
+            area.modelType.draw(frameInfo.commandBuffer(), area.toRender);
             totalIndex += area.toRender;
         }
     }

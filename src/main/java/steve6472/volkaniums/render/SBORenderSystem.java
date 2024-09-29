@@ -11,6 +11,7 @@ import org.lwjgl.vulkan.VkQueue;
 import steve6472.core.util.MathUtil;
 import steve6472.volkaniums.*;
 import steve6472.volkaniums.assets.model.VkModel;
+import steve6472.volkaniums.core.FrameInfo;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
@@ -122,10 +123,10 @@ public class SBORenderSystem extends RenderSystem
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
-        FlightFrame flightFrame = frames.get(frameInfo.frameIndex);
+        FlightFrame flightFrame = frames.get(frameInfo.frameIndex());
         // Update
 
-        var globalUBO = UBO.GLOBAL_UBO_TEST.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix());
+        var globalUBO = UBO.GLOBAL_UBO_TEST.create(frameInfo.camera().getProjectionMatrix(), frameInfo.camera().getViewMatrix());
 
         flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_UBO_TEST::memcpy, globalUBO);
         flightFrame.uboBuffer.flush();
@@ -152,18 +153,18 @@ public class SBORenderSystem extends RenderSystem
         flightFrame.sboBuffer.writeToBuffer(SBO.BONES::memcpy, List.of(smallSbo), 64, 64);
 //        flightFrame.sboBuffer.flush(64, 64);
 
-        pipeline().bind(frameInfo.commandBuffer);
+        pipeline().bind(frameInfo.commandBuffer());
 
         vkCmdBindDescriptorSets(
-            frameInfo.commandBuffer,
+            frameInfo.commandBuffer(),
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             pipeline().pipelineLayout(),
             0,
             stack.longs(flightFrame.descriptorSet),
             null);
 
-        model3d.bind(frameInfo.commandBuffer);
-        model3d.draw(frameInfo.commandBuffer, 4);
+        model3d.bind(frameInfo.commandBuffer());
+        model3d.draw(frameInfo.commandBuffer(), 4);
     }
 
     @Override

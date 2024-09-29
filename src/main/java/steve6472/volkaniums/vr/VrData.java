@@ -7,8 +7,9 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 import steve6472.core.log.Log;
 import steve6472.volkaniums.*;
+import steve6472.volkaniums.core.FrameInfo;
 import steve6472.volkaniums.render.debug.DebugRender;
-import steve6472.volkaniums.settings.Settings;
+import steve6472.volkaniums.settings.VisualSettings;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class VrData
 
     public VrData()
     {
-        if (!Settings.VR.get() || !VR.VR_IsRuntimeInstalled() || !VR.VR_IsHmdPresent())
+        if (!VisualSettings.VR.get() || !VR.VR_IsRuntimeInstalled() || !VR.VR_IsHmdPresent())
             return;
 
         initVr();
@@ -235,35 +236,35 @@ public class VrData
             viewport.height(height);
             viewport.minDepth(0f);
             viewport.maxDepth(1f);
-            vkCmdSetViewport(frameInfo.commandBuffer, 0, viewport);
+            vkCmdSetViewport(frameInfo.commandBuffer(), 0, viewport);
 
             VkRect2D.Buffer scissor = VkRect2D.calloc(1, stack);
             scissor.offset(VkOffset2D.calloc(stack).set(0, 0));
             scissor.extent(VkExtent2D.calloc(stack).set(width, height));
-            vkCmdSetScissor(frameInfo.commandBuffer, 0, scissor);
+            vkCmdSetScissor(frameInfo.commandBuffer(), 0, scissor);
 
             // Render stuff to buffers
-            frameInfo.camera.getProjectionMatrix().set(leftEyeProjection);
-            frameInfo.camera.getViewMatrix().set(leftEyePose);
-            FrameBuffer leftEyeBuffer = this.leftEyeBuffer.get(frameInfo.frameIndex);
+            frameInfo.camera().getProjectionMatrix().set(leftEyeProjection);
+            frameInfo.camera().getViewMatrix().set(leftEyePose);
+            FrameBuffer leftEyeBuffer = this.leftEyeBuffer.get(frameInfo.frameIndex());
             vrRenderPass = VrRenderPass.LEFT_EYE;
 
-            transitionImageLayout(stack, frameInfo.commandBuffer, leftEyeBuffer);
-            renderer.beginRenderPass(frameInfo.commandBuffer, stack, leftEyeBuffer.renderPass(), VkExtent2D.calloc(stack).set(width, height), leftEyeBuffer.framebuffer());
+            transitionImageLayout(stack, frameInfo.commandBuffer(), leftEyeBuffer);
+            renderer.beginRenderPass(frameInfo.commandBuffer(), stack, leftEyeBuffer.renderPass(), VkExtent2D.calloc(stack).set(width, height), leftEyeBuffer.framebuffer());
             renderer.render(frameInfo, stack);
-            renderer.endRenderPass(frameInfo.commandBuffer);
-            transitionImageLayoutBack(stack, frameInfo.commandBuffer, leftEyeBuffer);
+            renderer.endRenderPass(frameInfo.commandBuffer());
+            transitionImageLayoutBack(stack, frameInfo.commandBuffer(), leftEyeBuffer);
 
-            frameInfo.camera.getProjectionMatrix().set(rightEyeProjection);
-            frameInfo.camera.getViewMatrix().set(rightEyePose);
-            FrameBuffer rightEyeBuffer = this.rightEyeBuffer.get(frameInfo.frameIndex);
+            frameInfo.camera().getProjectionMatrix().set(rightEyeProjection);
+            frameInfo.camera().getViewMatrix().set(rightEyePose);
+            FrameBuffer rightEyeBuffer = this.rightEyeBuffer.get(frameInfo.frameIndex());
             vrRenderPass = VrRenderPass.RIGHT_EYE;
 
-            transitionImageLayout(stack, frameInfo.commandBuffer, rightEyeBuffer);
-            renderer.beginRenderPass(frameInfo.commandBuffer, stack, rightEyeBuffer.renderPass(), VkExtent2D.calloc(stack).set(width, height), rightEyeBuffer.framebuffer());
+            transitionImageLayout(stack, frameInfo.commandBuffer(), rightEyeBuffer);
+            renderer.beginRenderPass(frameInfo.commandBuffer(), stack, rightEyeBuffer.renderPass(), VkExtent2D.calloc(stack).set(width, height), rightEyeBuffer.framebuffer());
             renderer.render(frameInfo, stack);
-            renderer.endRenderPass(frameInfo.commandBuffer);
-            transitionImageLayoutBack(stack, frameInfo.commandBuffer, rightEyeBuffer);
+            renderer.endRenderPass(frameInfo.commandBuffer());
+            transitionImageLayoutBack(stack, frameInfo.commandBuffer(), rightEyeBuffer);
 
             vrRenderPass = VrRenderPass.NONE;
         }
@@ -282,15 +283,15 @@ public class VrData
             viewport.height(-renderer.getSwapChain().swapChainExtent.height());
             viewport.minDepth(0f);
             viewport.maxDepth(1f);
-            vkCmdSetViewport(frameInfo.commandBuffer, 0, viewport);
+            vkCmdSetViewport(frameInfo.commandBuffer(), 0, viewport);
 
             VkRect2D.Buffer scissor = VkRect2D.calloc(1, stack);
             scissor.offset(VkOffset2D.calloc(stack).set(0, 0));
             scissor.extent(VkExtent2D.calloc(stack).set(width, height));
-            vkCmdSetScissor(frameInfo.commandBuffer, 0, scissor);
+            vkCmdSetScissor(frameInfo.commandBuffer(), 0, scissor);
 
-            transitionImageLayoutForSubmit(stack, frameInfo.commandBuffer, leftEyeBuffer.get(frameInfo.frameIndex));
-            transitionImageLayoutForSubmit(stack, frameInfo.commandBuffer, rightEyeBuffer.get(frameInfo.frameIndex));
+            transitionImageLayoutForSubmit(stack, frameInfo.commandBuffer(), leftEyeBuffer.get(frameInfo.frameIndex()));
+            transitionImageLayoutForSubmit(stack, frameInfo.commandBuffer(), rightEyeBuffer.get(frameInfo.frameIndex()));
         }
     }
 
@@ -311,7 +312,7 @@ public class VrData
             bounds.vMax(1.0f);
 
             VRVulkanTextureData textureData = VRVulkanTextureData.calloc(stack);
-            textureData.m_nImage(leftEyeBuffer.get(frameInfo.frameIndex).image());
+            textureData.m_nImage(leftEyeBuffer.get(frameInfo.frameIndex()).image());
             textureData.m_pDevice(device.address());
             textureData.m_pPhysicalDevice(device.getPhysicalDevice().address());
             textureData.m_pInstance(instance.address());
@@ -331,7 +332,7 @@ public class VrData
                 System.out.println("Submit Error Left: " + error);
             }
 
-            textureData.m_nImage(rightEyeBuffer.get(frameInfo.frameIndex).image());
+            textureData.m_nImage(rightEyeBuffer.get(frameInfo.frameIndex()).image());
             eyeTexture.set(textureData.address(), ETextureType_TextureType_Vulkan, EColorSpace_ColorSpace_Auto);
             error = VRCompositor.VRCompositor_Submit(EVREye_Eye_Right, eyeTexture, bounds, 0);
             if (error != 0)

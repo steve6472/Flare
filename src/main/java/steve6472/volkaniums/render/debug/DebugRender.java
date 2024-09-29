@@ -4,7 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import steve6472.volkaniums.render.debug.objects.*;
-import steve6472.volkaniums.settings.Settings;
+import steve6472.volkaniums.settings.VisualSettings;
 import steve6472.volkaniums.struct.Struct;
 
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ public class DebugRender
         List<Struct> vertices = new ArrayList<>();
         long currentTime = System.currentTimeMillis();
         getInstance().debugLines.forEach(ren -> ren.object().addVerticies(vertices, ren.transform()));
-        if (!Settings.DEBUG_LINE_SINGLE_BUFFER.get())
+        if (!VisualSettings.DEBUG_LINE_SINGLE_BUFFER.get())
             clearOldVerticies();
         return vertices;
     }

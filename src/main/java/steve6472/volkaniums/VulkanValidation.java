@@ -6,7 +6,8 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.*;
 import steve6472.core.log.Log;
-import steve6472.volkaniums.settings.Settings;
+import steve6472.volkaniums.settings.ValidationLevel;
+import steve6472.volkaniums.settings.VisualSettings;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
@@ -24,6 +25,7 @@ public final class VulkanValidation
 {
     private static final Logger LOGGER = Log.getLogger("Validation");
 
+    /// TODO: Replace with [VisualSettings#VALIDATION_LEVEL] [ValidationLevel#NONE]
     public static final boolean ENABLE_VALIDATION_LAYERS = true;
 
     private static final Set<String> VALIDATION_LAYERS;
@@ -112,16 +114,16 @@ public final class VulkanValidation
         else if (messageType == EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
             type = "(Performance) ";
 
-        if (messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT && Settings.VALIDATION_LEVEL.get().ordinal() >= 1)
+        if (messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT && VisualSettings.VALIDATION_LEVEL.get().ordinal() >= 1)
         {
             LOGGER.severe(type + callbackData.pMessageString());
-        } else if (messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT && Settings.VALIDATION_LEVEL.get().ordinal() >= 2)
+        } else if (messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT && VisualSettings.VALIDATION_LEVEL.get().ordinal() >= 2)
         {
             LOGGER.warning(type + callbackData.pMessageString());
-        } else if (messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT && Settings.VALIDATION_LEVEL.get().ordinal() >= 3)
+        } else if (messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT && VisualSettings.VALIDATION_LEVEL.get().ordinal() >= 3)
         {
             LOGGER.info(type + callbackData.pMessageString());
-        } else if (messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT && Settings.VALIDATION_LEVEL.get().ordinal() >= 4)
+        } else if (messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT && VisualSettings.VALIDATION_LEVEL.get().ordinal() >= 4)
         {
             LOGGER.fine(type + callbackData.pMessageString());
         }

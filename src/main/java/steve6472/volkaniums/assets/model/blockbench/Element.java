@@ -5,7 +5,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import steve6472.core.registry.Typed;
 import steve6472.core.util.ImagePacker;
-import steve6472.volkaniums.Registries;
+import steve6472.volkaniums.registry.VolkaniumsRegistries;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +17,7 @@ import java.util.UUID;
  */
 public interface Element extends Typed<ElementType<?>>
 {
-    Codec<Element> CODEC = Registries.MODEL_ELEMENT.byKeyCodec().dispatch("type", Element::getType, ElementType::mapCodec);
+    Codec<Element> CODEC = VolkaniumsRegistries.MODEL_ELEMENT.byKeyCodec().dispatch("type", Element::getType, ElementType::mapCodec);
 
     UUID uuid();
 

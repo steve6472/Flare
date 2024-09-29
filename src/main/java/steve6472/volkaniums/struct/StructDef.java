@@ -68,6 +68,7 @@ public class StructDef
             for (int i = 0; i < members.size(); i++)
             {
                 MemberEntry memberEntry = members.get(i);
+                //noinspection unchecked
                 MemberData<Object> memberData = (MemberData<Object>) memberEntry.memberData();
                 Object member = vertex.members[i];
 
@@ -87,6 +88,7 @@ public class StructDef
             for (int i = 0; i < members.size(); i++)
             {
                 MemberEntry memberEntry = members.get(i);
+                //noinspection unchecked
                 MemberData<Object> memberData = (MemberData<Object>) memberEntry.memberData();
                 Object member = vertex.members[i];
 

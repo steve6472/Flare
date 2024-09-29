@@ -15,8 +15,8 @@ import steve6472.core.util.Preconditions;
 import steve6472.core.util.ResourceListing;
 import steve6472.volkaniums.Commands;
 import steve6472.volkaniums.Constants;
-import steve6472.volkaniums.Main;
-import steve6472.volkaniums.Registries;
+import steve6472.volkaniums.core.Volkaniums;
+import steve6472.volkaniums.registry.VolkaniumsRegistries;
 import steve6472.volkaniums.assets.Texture;
 import steve6472.volkaniums.assets.TextureSampler;
 import steve6472.volkaniums.assets.model.Model;
@@ -88,7 +88,7 @@ public class BlockbenchLoader
         Texture texture = new Texture();
         texture.createTextureImageFromBufferedImage(device, image, commands.commandPool, graphicsQueue);
         TextureSampler sampler = new TextureSampler(texture, device, Constants.BLOCKBENCH_TEXTURE);
-        Registries.SAMPLER.register(sampler);
+        VolkaniumsRegistries.SAMPLER.register(sampler);
         fixModelUvs(packer);
         return sampler;
     }
@@ -106,15 +106,15 @@ public class BlockbenchLoader
 
     private static void fixModelUvs(ImagePacker imagePacker)
     {
-        Registries.ANIMATED_LOADED_MODEL.keys().forEach(key ->
+        VolkaniumsRegistries.ANIMATED_LOADED_MODEL.keys().forEach(key ->
         {
-            LoadedModel model = Registries.ANIMATED_LOADED_MODEL.get(key);
+            LoadedModel model = VolkaniumsRegistries.ANIMATED_LOADED_MODEL.get(key);
             model.elements().forEach(el -> el.fixUvs(model, imagePacker));
         });
 
-        Registries.STATIC_LOADED_MODEL.keys().forEach(key ->
+        VolkaniumsRegistries.STATIC_LOADED_MODEL.keys().forEach(key ->
         {
-            LoadedModel model = Registries.STATIC_LOADED_MODEL.get(key);
+            LoadedModel model = VolkaniumsRegistries.STATIC_LOADED_MODEL.get(key);
             model.elements().forEach(el -> el.fixUvs(model, imagePacker));
         });
 
@@ -123,28 +123,28 @@ public class BlockbenchLoader
 
     public static LoadedModel loadStaticModels()
     {
-        return loadModels("static", Registries.STATIC_LOADED_MODEL);
+        return loadModels("static", VolkaniumsRegistries.STATIC_LOADED_MODEL);
     }
 
     public static LoadedModel loadAnimatedModels()
     {
-        return loadModels("animated", Registries.ANIMATED_LOADED_MODEL);
+        return loadModels("animated", VolkaniumsRegistries.ANIMATED_LOADED_MODEL);
     }
 
     public static Model createStaticModels(VkDevice device, Commands commands, VkQueue graphicsQueue)
     {
         ErrorModel.VK_STATIC_INSTANCE.createVertexBuffer(device, commands, graphicsQueue, ErrorModel.INSTANCE.toPrimitiveModel());
-        Registries.STATIC_MODEL.register(ErrorModel.VK_STATIC_INSTANCE);
+        VolkaniumsRegistries.STATIC_MODEL.register(ErrorModel.VK_STATIC_INSTANCE);
 
-        return createModels(device, commands, graphicsQueue, Registries.STATIC_LOADED_MODEL, Registries.STATIC_MODEL, LoadedModel::toPrimitiveModel);
+        return createModels(device, commands, graphicsQueue, VolkaniumsRegistries.STATIC_LOADED_MODEL, VolkaniumsRegistries.STATIC_MODEL, LoadedModel::toPrimitiveModel);
     }
 
     public static Model createAnimatedModels(VkDevice device, Commands commands, VkQueue graphicsQueue)
     {
         ErrorModel.VK_ANIMATED_INSTANCE.createVertexBuffer(device, commands, graphicsQueue, ErrorModel.INSTANCE.toPrimitiveSkinModel());
-        Registries.ANIMATED_MODEL.register(ErrorModel.VK_ANIMATED_INSTANCE);
+        VolkaniumsRegistries.ANIMATED_MODEL.register(ErrorModel.VK_ANIMATED_INSTANCE);
 
-        return createModels(device, commands, graphicsQueue, Registries.ANIMATED_LOADED_MODEL, Registries.ANIMATED_MODEL, LoadedModel::toPrimitiveSkinModel);
+        return createModels(device, commands, graphicsQueue, VolkaniumsRegistries.ANIMATED_LOADED_MODEL, VolkaniumsRegistries.ANIMATED_MODEL, LoadedModel::toPrimitiveSkinModel);
     }
 
     private static Model createModels(VkDevice device, Commands commands, VkQueue graphicsQueue, ObjectRegistry<LoadedModel> from, ObjectRegistry<Model> to, Function<LoadedModel, PrimitiveModel> converter)
@@ -168,7 +168,7 @@ public class BlockbenchLoader
 
         try
         {
-            String[] resourceListing = ResourceListing.getResourceListing(Main.class, MODELS_PATH + path);
+            String[] resourceListing = ResourceListing.getResourceListing(Volkaniums.class, MODELS_PATH + path);
             models = loadModels(resourceListing, MODELS_PATH + path + "/", "");
         } catch (URISyntaxException | IOException e)
         {
@@ -201,7 +201,7 @@ public class BlockbenchLoader
                 String texturePath = "/" + pathId.substring(pathId.indexOf("textures/"));
                 try
                 {
-                    InputStream resourceAsStream = Main.class.getResourceAsStream(texturePath);
+                    InputStream resourceAsStream = Volkaniums.class.getResourceAsStream(texturePath);
                     if (resourceAsStream == null)
                     {
                         throw new RuntimeException("Texture " + pathId + " (" + texturePath + ") " + "not found");
@@ -232,7 +232,7 @@ public class BlockbenchLoader
 
             if (!s.endsWith(".bbmodel"))
             {
-                Collections.addAll(models, loadModels(ResourceListing.getResourceListing(Main.class, newPath), newPath, nexExtraPath));
+                Collections.addAll(models, loadModels(ResourceListing.getResourceListing(Volkaniums.class, newPath), newPath, nexExtraPath));
             } else
             {
                 LoadedModel loadedModel = loadModel(newPath.substring(0, newPath.length() - 1), nexExtraPath);
@@ -260,7 +260,7 @@ public class BlockbenchLoader
 
         LOGGER.finest("Loading model: " + pathUrl + " (" + extraPath + ")");
 
-        InputStream inputStream = Main.class.getResourceAsStream(pathUrl);
+        InputStream inputStream = Volkaniums.class.getResourceAsStream(pathUrl);
         if (inputStream == null)
         {
             LOGGER.severe("Failed to load resource '" + pathUrl + "'");

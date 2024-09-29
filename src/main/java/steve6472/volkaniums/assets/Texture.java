@@ -5,7 +5,7 @@ import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 import steve6472.volkaniums.Commands;
-import steve6472.volkaniums.Main;
+import steve6472.volkaniums.core.Volkaniums;
 import steve6472.volkaniums.VkBuffer;
 import steve6472.volkaniums.VulkanUtil;
 
@@ -159,7 +159,7 @@ public class Texture
         ByteBuffer image;  // 4 means force RGBA
         try
         {
-            try (InputStream inputStream = Main.class.getResourceAsStream(resourcePath))
+            try (InputStream inputStream = Volkaniums.class.getResourceAsStream(resourcePath))
             {
                 if (inputStream == null)
                 {

@@ -1,15 +1,18 @@
 package steve6472.volkaniums;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
-import steve6472.volkaniums.settings.Settings;
+import steve6472.volkaniums.settings.VisualSettings;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.glfw.GLFW.glfwWaitEvents;
@@ -29,10 +32,9 @@ public class SwapChain
     private final MasterRenderer masterRenderer;
 
     public long swapChain;
-    // TODO: LongArrayList
-    public List<Long> swapChainImages;
-    public List<Long> swapChainImageViews;
-    public List<Long> swapChainFramebuffers;
+    public LongList swapChainImages;
+    public LongList swapChainImageViews;
+    public LongList swapChainFramebuffers;
     public int swapChainImageFormat;
     public VkExtent2D swapChainExtent;
 
@@ -42,7 +44,7 @@ public class SwapChain
     public long renderPass;
 
     public int currentFrame;
-    public Map<Integer, SyncFrame> imagesInFlight;
+    public Int2ObjectMap<SyncFrame> imagesInFlight;
     public List<SyncFrame> inFlightFrames;
 
     public static final int MAX_FRAMES_IN_FLIGHT = 2;
@@ -165,7 +167,7 @@ public class SwapChain
 
             vkGetSwapchainImagesKHR(device, swapChain, imageCount, pSwapchainImages);
 
-            swapChainImages = new ArrayList<>(imageCount.get(0));
+            swapChainImages = new LongArrayList(imageCount.get(0));
 
             for (int i = 0; i < pSwapchainImages.capacity(); i++)
             {
@@ -251,7 +253,7 @@ public class SwapChain
 
     public void createImageViews(VkDevice device)
     {
-        swapChainImageViews = new ArrayList<>(swapChainImages.size());
+        swapChainImageViews = new LongArrayList(swapChainImages.size());
 
         for (long swapChainImage : swapChainImages)
         {
@@ -261,7 +263,7 @@ public class SwapChain
 
     public void createFrameBuffers(VkDevice device)
     {
-        swapChainFramebuffers = new ArrayList<>(swapChainImageViews.size());
+        swapChainFramebuffers = new LongArrayList(swapChainImageViews.size());
 
         try (MemoryStack stack = MemoryStack.stackPush())
         {
@@ -369,7 +371,7 @@ public class SwapChain
     {
         for (int i = 0; i < availablePresentModes.capacity(); i++)
         {
-            if (availablePresentModes.get(i) == Settings.PRESENT_MODE.get().getVkValue())
+            if (availablePresentModes.get(i) == VisualSettings.PRESENT_MODE.get().getVkValue())
             {
                 return availablePresentModes.get(i);
             }
@@ -432,7 +434,7 @@ public class SwapChain
     public void createSyncObjects(VkDevice device)
     {
         inFlightFrames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
-        imagesInFlight = new HashMap<>(swapChainImages.size());
+        imagesInFlight = new Int2ObjectArrayMap<>(swapChainImages.size());
 
         try (MemoryStack stack = MemoryStack.stackPush())
         {

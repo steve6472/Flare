@@ -79,7 +79,7 @@ public class Camera
         return far;
     }
 
-    protected Vector3f viewPosition = new Vector3f(), center = new Vector3f();
+    public Vector3f viewPosition = new Vector3f(), center = new Vector3f();
     protected float yaw;
     protected float pitch;
 

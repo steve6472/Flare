@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.Type;
-import steve6472.volkaniums.Registries;
+import steve6472.volkaniums.registry.VolkaniumsRegistries;
 
 /**
  * Created by steve6472
@@ -30,7 +30,7 @@ public final class KeyframeType<T extends KeyFrame> extends Type<T>
     {
         var obj = new KeyframeType<>(Key.defaultNamespace(id), MapCodec.assumeMapUnsafe(codec));
 
-        Registries.KEYFRAME_TYPE.register(obj);
+        VolkaniumsRegistries.KEYFRAME_TYPE.register(obj);
         return obj;
     }
 

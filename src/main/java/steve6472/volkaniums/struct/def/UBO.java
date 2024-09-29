@@ -1,5 +1,6 @@
 package steve6472.volkaniums.struct.def;
 
+import steve6472.volkaniums.settings.VisualSettings;
 import steve6472.volkaniums.struct.StructDef;
 
 import static steve6472.volkaniums.struct.def.MemberType.*;
@@ -12,7 +13,7 @@ import static steve6472.volkaniums.struct.Struct.builder;
  */
 public interface UBO
 {
-    int GLOBAL_CAMERA_MAX_COUNT = 3;
+    int GLOBAL_CAMERA_MAX_COUNT = VisualSettings.GLOBAL_CAMERA_COUNT.get();
 
     StructDef GLOBAL_CAMERA_UBO = builder()
         .addMember(MAT_4F) // projection

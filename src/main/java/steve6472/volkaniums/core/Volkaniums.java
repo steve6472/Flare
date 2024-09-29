@@ -1,17 +1,20 @@
-package steve6472.volkaniums;
+package steve6472.volkaniums.core;
 
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.objects.PhysicsRigidBody;
 import com.jme3.bullet.util.NativeLibrary;
 import com.jme3.system.NativeLibraryLoader;
-import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
+import steve6472.core.SteveCore;
 import steve6472.core.log.Log;
-import steve6472.volkaniums.settings.Settings;
+import steve6472.volkaniums.*;
+import steve6472.volkaniums.registry.RegistryCreators;
+import steve6472.volkaniums.registry.VolkaniumsRegistries;
+import steve6472.volkaniums.settings.VisualSettings;
 import steve6472.volkaniums.vr.VrData;
 import steve6472.volkaniums.vr.VrUtil;
 
@@ -26,17 +29,16 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.vulkan.VK13.*;
 import static steve6472.volkaniums.render.debug.DebugRender.*;
 
-public class Main
+public class Volkaniums
 {
-    private static final Logger LOGGER = Log.getLogger(Main.class);
+    private static final Logger LOGGER = Log.getLogger(Volkaniums.class);
 
-    public static final String BASE_NAMESPACE = "base";
-    private static final String APP_NAME = "Volkaniums";
+    private static Volkaniums INSTANCE;
 
     // ======= FIELDS ======= //
 
+    private VolkaniumsApp app;
     private Window window;
-    private UserInput userInput;
     private MasterRenderer renderer;
     private VkInstance instance;
     private VkPhysicalDevice physicalDevice;
@@ -50,12 +52,26 @@ public class Main
 
     // ======= METHODS ======= //
 
-    private void run()
+    private Volkaniums() { }
+
+    public static void start(VolkaniumsApp app)
+    {
+        if (INSTANCE != null)
+            throw new RuntimeException("Volkaniums already started!");
+
+        Volkaniums volkaniums = new Volkaniums();
+        SteveCore.DEFAULT_KEY_NAMESPACE = app.defaultNamespace();
+        INSTANCE = volkaniums;
+        volkaniums.app = app;
+        volkaniums.start();
+    }
+
+    private void start()
     {
         camera = new Camera();
 
-        window = new Window();
-        userInput = new UserInput(window);
+        window = new Window(app.windowTitle());
+        app.userInput = new UserInput(window);
         initContent();
         initVulkan();
         mainLoop();
@@ -73,8 +89,10 @@ public class Main
         createLogicalDevice();
         vrData.createVkResources(device, graphicsQueue);
         commands.createCommandPool(device, surface);
-        Registries.createVkContents(device, commands, graphicsQueue);
+        RegistryCreators.createVkContents(device, commands, graphicsQueue);
         renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, commands, surface, vrData);
+        app.createRenderSystems(renderer);
+        renderer.getSwapChain().createSwapChainObjects();
     }
 
     private void initContent()
@@ -85,12 +103,12 @@ public class Main
         NativeLibraryLoader.loadLibbulletjme(true, new File("dep"), "Debug", "Sp");
         NativeLibrary.setStartupMessageEnabled(false);
 
+        RegistryCreators.init(VolkaniumsRegistries.VISUAL_SETTINGS);
+        app.initRegistries();
 
-        Registries.createContents();
+        RegistryCreators.createContents();
         //TODO: SettingsLoader.loadSettings(...);
     }
-
-    float Y = 0;
 
     private void mainLoop()
     {
@@ -105,8 +123,6 @@ public class Main
             float frameTime = (newTime - currentTime) * 1e-9f;
             currentTime = newTime;
 
-            float aspect = renderer.getAspectRation();
-
             VkCommandBuffer commandBuffer;
             try (MemoryStack stack = MemoryStack.stackPush())
             {
@@ -120,20 +136,14 @@ public class Main
                     frameInfo.commandBuffer = commandBuffer;
                     frameInfo.camera.cameraIndex = 0;
 
-                    addDebugObjectForFrame(cross(new Vector3f(0, 0, 0), 0.1f, DARK_GRAY));
-
-//                    frameInfo.camera.setViewTarget(new Vector3f(1f, 1f, -3), new Vector3f(0, 0, 0));
-                    frameInfo.camera.setViewTarget(new Vector3f(1f, 1.5f, -1), new Vector3f(0, 0.5f, 0));
-                    Vector2i mousePos = userInput.getMousePositionRelativeToTopLeftOfTheWindow();
-                    frameInfo.camera.setPerspectiveProjection(Settings.FOV.get(), aspect, 0.1f, 1024f);
-                    if (window.isFocused())
-                    {
-                        frameInfo.camera.center.set(0, 0f + Y, 0);
-                        frameInfo.camera.headOrbit(mousePos.x, mousePos.y, 0.4f, 2.5f);
-                    }
+                    if (VisualSettings.RENDER_CENTER_POINT.get())
+                        addDebugObjectForFrame(cross(new Vector3f(0, 0, 0), 0.1f, DARK_GRAY));
 
                     // Render
                     renderer.totalRenderCount = 0;
+
+                    app.render(frameInfo, stack);
+
                     renderer.beginSwapChainRenderPass(commandBuffer, stack);
                     renderer.render(frameInfo, stack);
                     renderer.endRenderPass(commandBuffer);
@@ -149,18 +159,8 @@ public class Main
                         secondCounter = System.nanoTime();
                     }
 
-                    window.setWindowTitle("FPS: %.4f,  Frame time: %.4fms %n".formatted(lastFps, frameTime * 1e3f));
-
-                    float speed = 4f;
-
-                    if (userInput.isKeyPressed(Settings.KEY_MOVE_LEFT))
-                        speed *= 10f;
-
-                    if (userInput.isKeyPressed(Settings.KEY_MOVE_FORWARD))
-                        Y += frameTime * speed;
-
-                    if (userInput.isKeyPressed(Settings.KEY_MOVE_BACKWARD))
-                        Y -= frameTime * speed;
+                    if (VisualSettings.TITLE_FPS.get())
+                        window.setWindowTitle("FPS: %.4f,  Frame time: %.4fms %n".formatted(lastFps, frameTime * 1e3f));
 
                     vrData.updateHDMMatrixPose();
                     vrData.updateEyes(frameInfo.camera);
@@ -178,10 +178,11 @@ public class Main
 
         renderer.cleanup();
         vrData.cleanup();
+        app.cleanup();
 
-        Registries.STATIC_MODEL.keys().forEach(key -> Registries.STATIC_MODEL.get(key).destroy());
-        Registries.ANIMATED_MODEL.keys().forEach(key -> Registries.ANIMATED_MODEL.get(key).destroy());
-        Registries.SAMPLER.keys().forEach(key -> Registries.SAMPLER.get(key).cleanup(device));
+        VolkaniumsRegistries.STATIC_MODEL.keys().forEach(key -> VolkaniumsRegistries.STATIC_MODEL.get(key).destroy());
+        VolkaniumsRegistries.ANIMATED_MODEL.keys().forEach(key -> VolkaniumsRegistries.ANIMATED_MODEL.get(key).destroy());
+        VolkaniumsRegistries.SAMPLER.keys().forEach(key -> VolkaniumsRegistries.SAMPLER.get(key).cleanup(device));
 
         vkDestroyDevice(device, null);
 
@@ -205,7 +206,7 @@ public class Main
             VkApplicationInfo appInfo = VkApplicationInfo.calloc(stack);
 
             appInfo.sType(VK_STRUCTURE_TYPE_APPLICATION_INFO);
-            appInfo.pApplicationName(stack.UTF8Safe(APP_NAME));
+            appInfo.pApplicationName(stack.UTF8Safe(app.windowTitle()));
             appInfo.applicationVersion(VK_MAKE_VERSION(1, 0, 0));
             appInfo.pEngineName(stack.UTF8Safe("No Engine"));
             appInfo.engineVersion(VK_MAKE_VERSION(1, 0, 0));
@@ -258,7 +259,7 @@ public class Main
 
             VkPhysicalDeviceFeatures deviceFeatures = VkPhysicalDeviceFeatures.calloc(stack);
             deviceFeatures.samplerAnisotropy(true);
-            deviceFeatures.wideLines(Settings.ENABLE_WIDE_LINES.get());
+            deviceFeatures.wideLines(VisualSettings.ENABLE_WIDE_LINES.get());
 
             VkPhysicalDeviceVulkan11Features vulkan11Features = VkPhysicalDeviceVulkan11Features.calloc(stack);
             vulkan11Features.sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES);
@@ -320,17 +321,5 @@ public class Main
 
             surface = pSurface.get(0);
         }
-    }
-
-    public UserInput getUserInput()
-    {
-        return userInput;
-    }
-
-    public static void main(String[] args)
-    {
-        System.setProperty("joml.format", "false");
-        Main main = new Main();
-        main.run();
     }
 }

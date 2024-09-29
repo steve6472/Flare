@@ -2,7 +2,7 @@ package steve6472.volkaniums.assets.model.blockbench.anim;
 
 import com.mojang.serialization.Codec;
 import steve6472.core.registry.Typed;
-import steve6472.volkaniums.Registries;
+import steve6472.volkaniums.registry.VolkaniumsRegistries;
 
 /**
  * Created by steve6472
@@ -11,7 +11,7 @@ import steve6472.volkaniums.Registries;
  */
 public interface KeyFrame extends Typed<KeyframeType<?>>
 {
-    Codec<KeyFrame> CODEC = Registries.KEYFRAME_TYPE.byKeyCodec().dispatch("channel", KeyFrame::getType, KeyframeType::mapCodec);
+    Codec<KeyFrame> CODEC = VolkaniumsRegistries.KEYFRAME_TYPE.byKeyCodec().dispatch("channel", KeyFrame::getType, KeyframeType::mapCodec);
 
     double time();
     Interpolation interpolation();

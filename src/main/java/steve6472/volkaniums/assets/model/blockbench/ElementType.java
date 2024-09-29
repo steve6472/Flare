@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.Type;
-import steve6472.volkaniums.Registries;
+import steve6472.volkaniums.registry.VolkaniumsRegistries;
 import steve6472.volkaniums.assets.model.blockbench.element.CubeElement;
 import steve6472.volkaniums.assets.model.blockbench.element.LocatorElement;
 import steve6472.volkaniums.assets.model.blockbench.element.MeshElement;
@@ -30,7 +30,7 @@ public final class ElementType<T extends Element> extends Type<T>
     private static <T extends Element> ElementType<T> register(String id, Codec<T> codec)
     {
         var obj = new ElementType<>(Key.defaultNamespace(id), MapCodec.assumeMapUnsafe(codec));
-        Registries.MODEL_ELEMENT.register(obj);
+        VolkaniumsRegistries.MODEL_ELEMENT.register(obj);
         return obj;
     }
 }

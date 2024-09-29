@@ -10,20 +10,18 @@ import static org.lwjgl.system.MemoryUtil.NULL;
  */
 public class Window
 {
-    private static final String WINDOW_TITLE = "Volkaniums";
-
     public static final int WIDTH = 16 * 70;
     public static final int HEIGHT = 9 * 70;
 
     private long window;
     boolean framebufferResize;
 
-    public Window()
+    public Window(String title)
     {
-        initWindow();
+        initWindow(title);
     }
 
-    private void initWindow()
+    private void initWindow(String title)
     {
         if (!glfwInit())
         {
@@ -33,7 +31,7 @@ public class Window
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-        window = glfwCreateWindow(WIDTH, HEIGHT, WINDOW_TITLE, NULL, NULL);
+        window = glfwCreateWindow(WIDTH, HEIGHT, title, NULL, NULL);
 
         if (window == NULL)
         {

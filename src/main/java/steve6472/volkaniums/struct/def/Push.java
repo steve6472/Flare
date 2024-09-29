@@ -12,17 +12,11 @@ import static steve6472.volkaniums.struct.Struct.builder;
  */
 public interface Push
 {
-    StructPush PUSH = builder()
-        .addMember(MAT_4F) // transformation
-        .addMember(VEC_4F) // color
-        .addMember(INT)    // arrayIndex
-        .build(StructPush::new);
-
     StructPush SKIN = builder()
         .addMember(INT) // stride
         .build(StructPush::new);
 
-    StructPush STATIC = builder()
+    StructPush STATIC_TRANSFORM_OFFSET = builder()
         .addMember(INT) // offset
         .build(StructPush::new);
 }

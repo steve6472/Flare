@@ -2,11 +2,11 @@ package steve6472.volkaniums;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
-import steve6472.volkaniums.pipeline.Pipeline;
+import steve6472.volkaniums.core.FrameInfo;
 import steve6472.volkaniums.pipeline.Pipelines;
 import steve6472.volkaniums.render.*;
 import steve6472.volkaniums.render.debug.DebugRender;
-import steve6472.volkaniums.settings.Settings;
+import steve6472.volkaniums.settings.VisualSettings;
 import steve6472.volkaniums.struct.def.UBO;
 import steve6472.volkaniums.vr.VrData;
 
@@ -32,7 +32,6 @@ public class MasterRenderer
     private final SwapChain swapChain;
     private final Commands commands;
     private final VrData vrData;
-    private final DebugLineRenderSystem debugLineRenderSystem;
 
     private int currentFrameIndex;
     private SyncFrame thisFrame;
@@ -54,15 +53,16 @@ public class MasterRenderer
         swapChain = new SwapChain(device, window, surface, this);
 
 //        renderSystems.add(new BackdropRenderSystem(this, Pipelines.BB_STATIC));
-        renderSystems.add(new BBStaticModelRenderSystem(this, Pipelines.BB_STATIC));
 //        renderSystems.add(new SBORenderSystem(device, Pipelines.TEST, commands, graphicsQueue));
 //        renderSystems.add(new SkinRenderSystem(this, Pipelines.SKIN));
 
         // Has to be last
-        debugLineRenderSystem = new DebugLineRenderSystem(this, Pipelines.DEBUG_LINE);
-        renderSystems.add(debugLineRenderSystem);
+        addRenderSystem(new DebugLineRenderSystem(this, Pipelines.DEBUG_LINE));
+    }
 
-        swapChain.createSwapChainObjects();
+    public void addRenderSystem(RenderSystem renderSystem)
+    {
+        renderSystems.add(renderSystem);
     }
 
     public void rebuildPipelines()
@@ -96,7 +96,7 @@ public class MasterRenderer
         vkDestroyCommandPool(device, commands.commandPool, null);
     }
 
-    VkCommandBuffer beginFrame(MemoryStack stack, IntBuffer pImageIndex)
+    public VkCommandBuffer beginFrame(MemoryStack stack, IntBuffer pImageIndex)
     {
         if (isFrameStarted)
             throw new RuntimeException("Can't call beginFrame while already in progress");
@@ -135,7 +135,7 @@ public class MasterRenderer
         return commandBuffer;
     }
 
-    void endFrame(MemoryStack stack, IntBuffer pImageIndex)
+    public void endFrame(MemoryStack stack, IntBuffer pImageIndex)
     {
         if (!isFrameStarted)
             throw new RuntimeException("Can't call endFrame while frame is not in progress");
@@ -162,7 +162,7 @@ public class MasterRenderer
         currentFrameIndex = (currentFrameIndex + 1) % SwapChain.MAX_FRAMES_IN_FLIGHT;
     }
 
-    void beginSwapChainRenderPass(VkCommandBuffer commandBuffer, MemoryStack stack)
+    public void beginSwapChainRenderPass(VkCommandBuffer commandBuffer, MemoryStack stack)
     {
         beginRenderPass(commandBuffer, stack, swapChain.renderPass, swapChain.swapChainExtent, swapChain.swapChainFramebuffers.get(currentImageIndex));
     }
@@ -187,7 +187,7 @@ public class MasterRenderer
 
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
-        if (frameInfo.camera.cameraIndex >= UBO.GLOBAL_CAMERA_MAX_COUNT)
+        if (frameInfo.camera().cameraIndex >= UBO.GLOBAL_CAMERA_MAX_COUNT)
             throw new RuntimeException("Too many scene renders within one frame!");
 
         for (RenderSystem renderSystem : renderSystems)
@@ -195,7 +195,7 @@ public class MasterRenderer
             renderSystem.render(frameInfo, stack);
         }
 
-        if (Settings.DEBUG_LINE_SINGLE_BUFFER.get())
+        if (VisualSettings.DEBUG_LINE_SINGLE_BUFFER.get())
         {
             totalRenderCount++;
             if (totalRenderCount == maxRenderCount)
@@ -204,7 +204,7 @@ public class MasterRenderer
             }
         }
 
-        frameInfo.camera.cameraIndex++;
+        frameInfo.camera().cameraIndex++;
     }
 
     public void endRenderPass(VkCommandBuffer commandBuffer)
@@ -269,12 +269,12 @@ public class MasterRenderer
         return vrData;
     }
 
-    public DebugLineRenderSystem debugLines()
+    public Window getWindow()
     {
-        return debugLineRenderSystem;
+        return window;
     }
 
-    public float getAspectRation()
+    public float getAspectRatio()
     {
         return swapChain.swapChainExtent.width() / (float) swapChain.swapChainExtent.height();
     }

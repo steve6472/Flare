@@ -11,19 +11,18 @@ import steve6472.volkaniums.*;
 import steve6472.volkaniums.assets.Texture;
 import steve6472.volkaniums.assets.TextureSampler;
 import steve6472.volkaniums.assets.model.VkModel;
+import steve6472.volkaniums.core.FrameInfo;
 import steve6472.volkaniums.descriptors.DescriptorPool;
 import steve6472.volkaniums.descriptors.DescriptorSetLayout;
 import steve6472.volkaniums.descriptors.DescriptorWriter;
 import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
 import steve6472.volkaniums.assets.model.primitive.PrimitiveSkinModel;
 import steve6472.volkaniums.assets.model.blockbench.anim.AnimationController;
-import steve6472.volkaniums.pipeline.Pipeline;
 import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.Push;
 import steve6472.volkaniums.struct.def.SBO;
 import steve6472.volkaniums.struct.def.UBO;
-import steve6472.volkaniums.struct.def.Vertex;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -155,10 +154,10 @@ public class SkinRenderSystem extends RenderSystem
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
-        FlightFrame flightFrame = frames.get(frameInfo.frameIndex);
+        FlightFrame flightFrame = frames.get(frameInfo.frameIndex());
         // Update
 
-        var globalUBO = UBO.GLOBAL_UBO_TEST.create(frameInfo.camera.getProjectionMatrix(), frameInfo.camera.getViewMatrix());
+        var globalUBO = UBO.GLOBAL_UBO_TEST.create(frameInfo.camera().getProjectionMatrix(), frameInfo.camera().getViewMatrix());
 
         flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_UBO_TEST::memcpy, globalUBO);
         flightFrame.uboBuffer.flush();
@@ -170,10 +169,10 @@ public class SkinRenderSystem extends RenderSystem
         flightFrame.sboBuffer.writeToBuffer(SBO.BONES::memcpy, sbo);
         flightFrame.sboBuffer.flush();
 
-        pipeline().bind(frameInfo.commandBuffer);
+        pipeline().bind(frameInfo.commandBuffer());
 
         vkCmdBindDescriptorSets(
-            frameInfo.commandBuffer,
+            frameInfo.commandBuffer(),
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             pipeline().pipelineLayout(),
             0,
@@ -181,10 +180,10 @@ public class SkinRenderSystem extends RenderSystem
             null);
 
         Struct struct = Push.SKIN.create(primitiveSkinModel.skinData.transformations.size());
-        Push.SKIN.push(struct, frameInfo.commandBuffer, pipeline().pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0);
+        Push.SKIN.push(struct, frameInfo.commandBuffer(), pipeline().pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0);
 
-        model3d.bind(frameInfo.commandBuffer);
-        model3d.draw(frameInfo.commandBuffer);
+        model3d.bind(frameInfo.commandBuffer());
+        model3d.draw(frameInfo.commandBuffer());
     }
 
     @Override
