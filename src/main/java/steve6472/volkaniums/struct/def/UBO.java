@@ -20,11 +20,6 @@ public interface UBO
         .setDynamicBufferSize(GLOBAL_CAMERA_MAX_COUNT)
         .build();
 
-    StructDef STATIC_BB_MODEL_UBO = builder()
-        .addMember(MAT_4F) // projection
-        .addMember(MAT_4F) // view
-        .build();
-
     StructDef GLOBAL_UBO_TEST = builder()
         .addMember(MAT_4F) // projection
         .addMember(MAT_4F) // view

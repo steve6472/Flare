@@ -37,9 +37,7 @@ public class VrData
     private int token;
     public VrRenderPass vrRenderPass = VrRenderPass.NONE;
 
-    private VkDevice device;
     private VkQueue graphicsQueue;
-    private final Commands commands;
 
     private int width, height;
     private List<FrameBuffer> leftEyeBuffer;
@@ -50,10 +48,8 @@ public class VrData
     private Matrix4f leftEyeProjection, leftEyePose;
     private Matrix4f rightEyeProjection, rightEyePose;
 
-    public VrData(Commands commands)
+    public VrData()
     {
-        this.commands = commands;
-
         if (!Settings.VR.get() || !VR.VR_IsRuntimeInstalled() || !VR.VR_IsHmdPresent())
             return;
 
@@ -98,7 +94,6 @@ public class VrData
     {
         if (!VR_ON) return;
 
-        this.device = device;
         this.graphicsQueue = graphicsQueue;
 
         leftEyeBuffer = new ArrayList<>();

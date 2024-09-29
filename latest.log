@@ -1,38 +1,24 @@
-09.29 11:45:30 [Registries] FINEST: Bootstrapped base:setting
-09.29 11:45:30 [Registries] FINEST: Bootstrapped base:model_element
-09.29 11:45:30 [Registries] FINEST: Bootstrapped base:keyframe_type
-09.29 11:45:30 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/backdrop.bbmodel (backdrop)
-09.29 11:45:30 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/ball.bbmodel (ball)
-09.29 11:45:30 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/cube.bbmodel (cube)
-09.29 11:45:30 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/mesh_pebble.bbmodel (mesh_pebble)
-09.29 11:45:30 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/small_rock.bbmodel (small_rock)
-09.29 11:45:30 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/static/backdrop
-09.29 11:45:30 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/static/ball
-09.29 11:45:30 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/static/cube
-09.29 11:45:30 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/static/mesh_pebble
-09.29 11:45:30 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/static/small_rock
-09.29 11:45:30 [Registries] FINEST: Bootstrapped base:static_loaded_model
-09.29 11:45:30 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/animated/model.bbmodel (model)
-09.29 11:45:30 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/animated/small_chain.bbmodel (small_chain)
-09.29 11:45:30 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/animated/model
-09.29 11:45:30 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/animated/small_chain
-09.29 11:45:30 [Registries] FINEST: Bootstrapped base:animated_loaded_model
-09.29 11:45:31 [VrData] FINER: Model Number : Index
-09.29 11:45:31 [VrData] FINER: Serial Number: LHR-04965D73
-09.29 11:45:31 [VrData] FINER: Recommended width : 2468
-09.29 11:45:31 [VrData] FINER: Recommended height: 2740
-09.29 11:45:31 [PhysicalDevicePicker] FINER: Selected GPU: NVIDIA GeForce RTX 4070 Ti SUPER
-09.29 11:45:31 [Registries] FINEST: Bootstrapped base:sampler
-09.29 11:45:31 [Registries] FINEST: Bootstrapped base:static_model
-09.29 11:45:31 [Registries] FINEST: Bootstrapped base:animated_model
-09.29 11:45:32 [Validation] SEVERE: (Validation) Validation Error: [ VUID-VkImageCreateInfo-pNext-01443 ] | MessageID = 0x18d987f6 | vkCreateImage(): pCreateInfo->pNext<VkExternalMemoryImageCreateInfo>.handleTypes is 16 but pCreateInfo->initialLayout is VK_IMAGE_LAYOUT_PREINITIALIZED. The Vulkan spec states: If the pNext chain includes a VkExternalMemoryImageCreateInfo or VkExternalMemoryImageCreateInfoNV structure whose handleTypes member is not 0, initialLayout must be VK_IMAGE_LAYOUT_UNDEFINED (https://vulkan.lunarg.com/doc/view/1.3.290.0/windows/1.3-extensions/vkspec.html#VUID-VkImageCreateInfo-pNext-01443)
-09.29 11:45:32 [Validation] SEVERE: (Validation) Validation Error: [ VUID-VkImageCreateInfo-pNext-01443 ] | MessageID = 0x18d987f6 | vkCreateImage(): pCreateInfo->pNext<VkExternalMemoryImageCreateInfo>.handleTypes is 16 but pCreateInfo->initialLayout is VK_IMAGE_LAYOUT_PREINITIALIZED. The Vulkan spec states: If the pNext chain includes a VkExternalMemoryImageCreateInfo or VkExternalMemoryImageCreateInfoNV structure whose handleTypes member is not 0, initialLayout must be VK_IMAGE_LAYOUT_UNDEFINED (https://vulkan.lunarg.com/doc/view/1.3.290.0/windows/1.3-extensions/vkspec.html#VUID-VkImageCreateInfo-pNext-01443)
-09.29 11:45:32 [Validation] SEVERE: (Validation) Validation Error: [ VUID-VkImageCreateInfo-pNext-01443 ] | MessageID = 0x18d987f6 | vkCreateImage(): pCreateInfo->pNext<VkExternalMemoryImageCreateInfo>.handleTypes is 16 but pCreateInfo->initialLayout is VK_IMAGE_LAYOUT_PREINITIALIZED. The Vulkan spec states: If the pNext chain includes a VkExternalMemoryImageCreateInfo or VkExternalMemoryImageCreateInfoNV structure whose handleTypes member is not 0, initialLayout must be VK_IMAGE_LAYOUT_UNDEFINED (https://vulkan.lunarg.com/doc/view/1.3.290.0/windows/1.3-extensions/vkspec.html#VUID-VkImageCreateInfo-pNext-01443)
-09.29 11:45:32 [Validation] SEVERE: (Validation) Validation Error: [ VUID-VkImageCreateInfo-pNext-01443 ] | MessageID = 0x18d987f6 | vkCreateImage(): pCreateInfo->pNext<VkExternalMemoryImageCreateInfo>.handleTypes is 16 but pCreateInfo->initialLayout is VK_IMAGE_LAYOUT_PREINITIALIZED. The Vulkan spec states: If the pNext chain includes a VkExternalMemoryImageCreateInfo or VkExternalMemoryImageCreateInfoNV structure whose handleTypes member is not 0, initialLayout must be VK_IMAGE_LAYOUT_UNDEFINED (https://vulkan.lunarg.com/doc/view/1.3.290.0/windows/1.3-extensions/vkspec.html#VUID-VkImageCreateInfo-pNext-01443)
-09.29 11:45:32 [Validation] SEVERE: (Validation) Validation Error: [ UNASSIGNED-CoreValidation-DrawState-InvalidImageLayout ] Object 0: handle = 0x27d0f56cf20, type = VK_OBJECT_TYPE_COMMAND_BUFFER; Object 1: handle = 0xd175b40000000013, type = VK_OBJECT_TYPE_IMAGE; | MessageID = 0x4dae5635 | vkQueueSubmit(): pSubmits[0].pCommandBuffers[0] command buffer VkCommandBuffer 0x27d0f56cf20[] expects VkImage 0xd175b40000000013[] (subresource: aspectMask 0x1 array layer 0, mip level 0) to be in layout VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_UNDEFINED.
-09.29 11:45:32 [Validation] SEVERE: (Validation) Validation Error: [ VUID-VkImageCreateInfo-pNext-01443 ] | MessageID = 0x18d987f6 | vkCreateImage(): pCreateInfo->pNext<VkExternalMemoryImageCreateInfo>.handleTypes is 16 but pCreateInfo->initialLayout is VK_IMAGE_LAYOUT_PREINITIALIZED. The Vulkan spec states: If the pNext chain includes a VkExternalMemoryImageCreateInfo or VkExternalMemoryImageCreateInfoNV structure whose handleTypes member is not 0, initialLayout must be VK_IMAGE_LAYOUT_UNDEFINED (https://vulkan.lunarg.com/doc/view/1.3.290.0/windows/1.3-extensions/vkspec.html#VUID-VkImageCreateInfo-pNext-01443)
-09.29 11:45:32 [Validation] SEVERE: (Validation) Validation Error: [ VUID-VkImageCreateInfo-pNext-01443 ] | MessageID = 0x18d987f6 | vkCreateImage(): pCreateInfo->pNext<VkExternalMemoryImageCreateInfo>.handleTypes is 16 but pCreateInfo->initialLayout is VK_IMAGE_LAYOUT_PREINITIALIZED. The Vulkan spec states: If the pNext chain includes a VkExternalMemoryImageCreateInfo or VkExternalMemoryImageCreateInfoNV structure whose handleTypes member is not 0, initialLayout must be VK_IMAGE_LAYOUT_UNDEFINED (https://vulkan.lunarg.com/doc/view/1.3.290.0/windows/1.3-extensions/vkspec.html#VUID-VkImageCreateInfo-pNext-01443)
-09.29 11:45:32 [Validation] SEVERE: (Validation) Validation Error: [ VUID-VkImageCreateInfo-pNext-01443 ] | MessageID = 0x18d987f6 | vkCreateImage(): pCreateInfo->pNext<VkExternalMemoryImageCreateInfo>.handleTypes is 16 but pCreateInfo->initialLayout is VK_IMAGE_LAYOUT_PREINITIALIZED. The Vulkan spec states: If the pNext chain includes a VkExternalMemoryImageCreateInfo or VkExternalMemoryImageCreateInfoNV structure whose handleTypes member is not 0, initialLayout must be VK_IMAGE_LAYOUT_UNDEFINED (https://vulkan.lunarg.com/doc/view/1.3.290.0/windows/1.3-extensions/vkspec.html#VUID-VkImageCreateInfo-pNext-01443)
-09.29 11:45:32 [Validation] SEVERE: (Validation) Validation Error: [ UNASSIGNED-CoreValidation-DrawState-InvalidImageLayout ] Object 0: handle = 0x27d0f5f11d0, type = VK_OBJECT_TYPE_COMMAND_BUFFER; Object 1: handle = 0xcb1c7c000000001b, type = VK_OBJECT_TYPE_IMAGE; | MessageID = 0x4dae5635 | vkQueueSubmit(): pSubmits[0].pCommandBuffers[0] command buffer VkCommandBuffer 0x27d0f5f11d0[] expects VkImage 0xcb1c7c000000001b[] (subresource: aspectMask 0x1 array layer 0, mip level 0) to be in layout VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_UNDEFINED.
-09.29 11:45:32 [Validation] SEVERE: (Validation) Validation Error: [ UNASSIGNED-CoreValidation-DrawState-InvalidImageLayout ] Object 0: handle = 0x27d0f5f11d0, type = VK_OBJECT_TYPE_COMMAND_BUFFER; Object 1: handle = 0xfa21a40000000003, type = VK_OBJECT_TYPE_IMAGE; | MessageID = 0x4dae5635 | vkQueueSubmit(): pSubmits[0].pCommandBuffers[0] command buffer VkCommandBuffer 0x27d0f5f11d0[] expects VkImage 0xfa21a40000000003[] (subresource: aspectMask 0x1 array layer 0, mip level 0) to be in layout VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_UNDEFINED.
-09.29 11:45:32 [Validation] SEVERE: (Validation) Validation Error: [ UNASSIGNED-CoreValidation-DrawState-InvalidImageLayout ] Object 0: handle = 0x27d0f56cf20, type = VK_OBJECT_TYPE_COMMAND_BUFFER; Object 1: handle = 0xec4bec000000000b, type = VK_OBJECT_TYPE_IMAGE; | MessageID = 0x4dae5635 | vkQueueSubmit(): pSubmits[0].pCommandBuffers[0] command buffer VkCommandBuffer 0x27d0f56cf20[] expects VkImage 0xec4bec000000000b[] (subresource: aspectMask 0x1 array layer 0, mip level 0) to be in layout VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_UNDEFINED.
+09.29 13:55:23 [Registries] FINEST: Bootstrapped base:setting
+09.29 13:55:23 [Registries] FINEST: Bootstrapped base:model_element
+09.29 13:55:23 [Registries] FINEST: Bootstrapped base:keyframe_type
+09.29 13:55:23 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/backdrop.bbmodel (backdrop)
+09.29 13:55:23 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/ball.bbmodel (ball)
+09.29 13:55:23 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/cube.bbmodel (cube)
+09.29 13:55:23 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/mesh_pebble.bbmodel (mesh_pebble)
+09.29 13:55:23 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/static/small_rock.bbmodel (small_rock)
+09.29 13:55:23 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/static/backdrop
+09.29 13:55:23 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/static/ball
+09.29 13:55:23 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/static/cube
+09.29 13:55:23 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/static/mesh_pebble
+09.29 13:55:23 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/static/small_rock
+09.29 13:55:23 [Registries] FINEST: Bootstrapped base:static_loaded_model
+09.29 13:55:23 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/animated/model.bbmodel (model)
+09.29 13:55:23 [BlockbenchLoader] FINEST: Loading model: /models/blockbench/animated/small_chain.bbmodel (small_chain)
+09.29 13:55:23 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/animated/model
+09.29 13:55:23 [BlockbenchLoader] FINEST: Loading textures for model base:blockbench/animated/small_chain
+09.29 13:55:23 [Registries] FINEST: Bootstrapped base:animated_loaded_model
+09.29 13:55:23 [PhysicalDevicePicker] FINER: Selected GPU: NVIDIA GeForce RTX 4070 Ti SUPER
+09.29 13:55:24 [Registries] FINEST: Bootstrapped base:sampler
+09.29 13:55:24 [Registries] FINEST: Bootstrapped base:static_model
+09.29 13:55:24 [Registries] FINEST: Bootstrapped base:animated_model
+09.29 13:55:33 [Main] FINE: Cleanup

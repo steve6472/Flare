@@ -3,7 +3,6 @@ package steve6472.volkaniums;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 import steve6472.volkaniums.settings.Settings;
-import steve6472.volkaniums.vr.VrData;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;

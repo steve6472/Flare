@@ -6,6 +6,7 @@ import org.lwjgl.vulkan.*;
 import steve6472.volkaniums.util.Log;
 import steve6472.volkaniums.vr.HelloOpenVR;
 import steve6472.volkaniums.vr.VrData;
+import steve6472.volkaniums.vr.VrUtil;
 
 import java.nio.IntBuffer;
 import java.util.*;
@@ -108,7 +109,7 @@ public class PhysicalDevicePicker
 
             if (VrData.VR_ON)
             {
-                String requiredExtensions = HelloOpenVR.getRequiredExtensions(device.address());
+                String requiredExtensions = VrUtil.getRequiredExtensions(device.address());
                 Collections.addAll(extensions, requiredExtensions.split(" "));
             }
 

@@ -53,17 +53,4 @@ public class HelloOpenVR {
             }
         }
     }
-
-    public static String getRequiredExtensions(long physicalDevice)
-    {
-        try (MemoryStack stack = stackPush())
-        {
-            int size = VRCompositor.VRCompositor_GetVulkanDeviceExtensionsRequired(physicalDevice, null);
-            ByteBuffer buffer = stack.malloc(size);
-            VRCompositor.VRCompositor_GetVulkanDeviceExtensionsRequired(physicalDevice, buffer);
-            String extensions = MemoryUtil.memUTF8(buffer);
-            extensions = extensions.substring(0, extensions.length() - 1);
-            return extensions;
-        }
-    }
 }

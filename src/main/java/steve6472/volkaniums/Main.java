@@ -14,6 +14,7 @@ import steve6472.volkaniums.settings.Settings;
 import steve6472.volkaniums.util.Log;
 import steve6472.volkaniums.vr.HelloOpenVR;
 import steve6472.volkaniums.vr.VrData;
+import steve6472.volkaniums.vr.VrUtil;
 
 import java.io.File;
 import java.nio.IntBuffer;
@@ -68,7 +69,7 @@ public class Main
         debugMessenger = VulkanValidation.setupDebugMessenger(instance);
         createSurface();
         Commands commands = new Commands();
-        vrData = new VrData(commands);
+        vrData = new VrData();
         physicalDevice = PhysicalDevicePicker.pickPhysicalDevice(instance, surface, PhysicalDevicePicker.DEVICE_EXTENSIONS);
         createLogicalDevice();
         vrData.createVkResources(device, graphicsQueue);
@@ -277,7 +278,7 @@ public class Main
 
             if (VrData.VR_ON)
             {
-                String requiredExtensions = HelloOpenVR.getRequiredExtensions(physicalDevice.address());
+                String requiredExtensions = VrUtil.getRequiredExtensions(physicalDevice.address());
                 Collections.addAll(extensions, requiredExtensions.split(" "));
             }
 
