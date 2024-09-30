@@ -5,7 +5,7 @@ import org.lwjgl.vulkan.VkDevice;
 import steve6472.core.registry.ObjectRegistry;
 import steve6472.core.registry.Registry;
 import steve6472.volkaniums.MasterRenderer;
-import steve6472.volkaniums.UserInput;
+import steve6472.volkaniums.input.UserInput;
 import steve6472.volkaniums.Window;
 import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
 import steve6472.volkaniums.render.RenderSystem;
@@ -24,10 +24,12 @@ public abstract class VolkaniumsApp
 
     /*
      * Abstract methods
+     * Init methods in order of execution
      */
 
     protected abstract void createRenderSystems();
     protected abstract void initRegistries();
+    public abstract void fullInit();
 
     public abstract void render(FrameInfo frameInfo, MemoryStack stack);
 
@@ -41,7 +43,7 @@ public abstract class VolkaniumsApp
     public abstract String defaultNamespace();
 
     /*
-     * Protected methods
+     * Protected methods, utils
      */
 
     protected final void addRenderSystem(BiFunction<MasterRenderer, PipelineConstructor, RenderSystem> renderSystemConstructor, PipelineConstructor pipeline)

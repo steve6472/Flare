@@ -25,10 +25,4 @@ public record DebugLine(Vector3f start, Vector3f end, Vector4f startColor, Vecto
         vertices.add(vertex(start, startColor));
         vertices.add(vertex(end, endColor));
     }
-
-    @Override
-    public int vertexCount()
-    {
-        return 2;
-    }
 }

@@ -1,5 +1,6 @@
 package steve6472.volkaniums.core;
 
+import com.google.gson.stream.JsonReader;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.objects.PhysicsRigidBody;
 import com.jme3.bullet.util.NativeLibrary;
@@ -11,7 +12,9 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 import steve6472.core.SteveCore;
 import steve6472.core.log.Log;
+import steve6472.core.setting.SettingsLoader;
 import steve6472.volkaniums.*;
+import steve6472.volkaniums.input.UserInput;
 import steve6472.volkaniums.registry.RegistryCreators;
 import steve6472.volkaniums.registry.VolkaniumsRegistries;
 import steve6472.volkaniums.settings.VisualSettings;
@@ -74,6 +77,7 @@ public class Volkaniums
         app.userInput = new UserInput(window);
         initContent();
         initVulkan();
+        app.fullInit();
         mainLoop();
         cleanup();
     }
@@ -97,17 +101,11 @@ public class Volkaniums
 
     private void initContent()
     {
-        PhysicsSpace.logger.setLevel(Level.WARNING);
-        PhysicsRigidBody.logger2.setLevel(Level.WARNING);
-        NativeLibraryLoader.logger.setLevel(Level.WARNING);
-        NativeLibraryLoader.loadLibbulletjme(true, new File("dep"), "Debug", "Sp");
-        NativeLibrary.setStartupMessageEnabled(false);
-
         RegistryCreators.init(VolkaniumsRegistries.VISUAL_SETTINGS);
         app.initRegistries();
 
         RegistryCreators.createContents();
-        //TODO: SettingsLoader.loadSettings(...);
+        SettingsLoader.loadFromJsonFile(VolkaniumsRegistries.VISUAL_SETTINGS, Constants.VISUAL_SETTINGS_FILE);
     }
 
     private void mainLoop()
@@ -174,6 +172,9 @@ public class Volkaniums
 
     private void cleanup()
     {
+        // Save settings
+        SettingsLoader.saveToJsonFile(VolkaniumsRegistries.VISUAL_SETTINGS, Constants.VISUAL_SETTINGS_FILE);
+
         LOGGER.fine("Cleanup");
 
         renderer.cleanup();

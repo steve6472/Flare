@@ -33,10 +33,4 @@ public record DebugCross(Vector3f center, float halfSize, Vector4f colorX, Vecto
         vertices.add(vertex(new Vector3f(center).add(0, 0, halfSize).mulPosition(transform), colorZ));
         vertices.add(vertex(new Vector3f(center).sub(0, 0, halfSize).mulPosition(transform), colorZ));
     }
-
-    @Override
-    public int vertexCount()
-    {
-        return 6;
-    }
 }

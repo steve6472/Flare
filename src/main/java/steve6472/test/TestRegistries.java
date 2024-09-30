@@ -3,6 +3,7 @@ package steve6472.test;
 import steve6472.core.registry.ObjectRegistry;
 import steve6472.core.registry.Registry;
 import steve6472.core.setting.Setting;
+import steve6472.volkaniums.input.Keybind;
 import steve6472.volkaniums.registry.RegistryCreators;
 
 /**
@@ -14,4 +15,5 @@ public class TestRegistries extends RegistryCreators
 {
     public static final Registry<Rarity> RARITY = createRegistry("rarity", () -> Rarities.COMMON);
     public static final ObjectRegistry<Setting<?, ?>> SETTING = createObjectRegistry("setting", () -> TestSettings.CLOSE);
+    public static final Registry<Keybind> KEYBIND = createRegistry("keybind", () -> TestKeybinds.FORWARD);
 }

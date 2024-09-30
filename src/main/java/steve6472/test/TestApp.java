@@ -1,13 +1,21 @@
 package steve6472.test;
 
+import com.jme3.bullet.PhysicsSpace;
+import com.jme3.bullet.objects.PhysicsRigidBody;
+import com.jme3.bullet.util.NativeLibrary;
+import com.jme3.system.NativeLibraryLoader;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 import steve6472.volkaniums.core.FrameInfo;
 import steve6472.volkaniums.core.VolkaniumsApp;
+import steve6472.volkaniums.input.KeybindUpdater;
 import steve6472.volkaniums.pipeline.Pipelines;
 import steve6472.volkaniums.render.BBStaticModelRenderSystem;
 import steve6472.volkaniums.settings.VisualSettings;
+
+import java.io.File;
+import java.util.logging.Level;
 
 /**
  * Created by steve6472
@@ -25,7 +33,19 @@ public class TestApp extends VolkaniumsApp
     @Override
     protected void initRegistries()
     {
+        PhysicsSpace.logger.setLevel(Level.WARNING);
+        PhysicsRigidBody.logger2.setLevel(Level.WARNING);
+        NativeLibraryLoader.logger.setLevel(Level.WARNING);
+        NativeLibraryLoader.loadLibbulletjme(true, new File("dep"), "Debug", "Sp");
+        NativeLibrary.setStartupMessageEnabled(false);
+
         initRegistry(TestRegistries.RARITY);
+    }
+
+    @Override
+    public void fullInit()
+    {
+        KeybindUpdater.updateKeybinds(TestRegistries.KEYBIND, input());
     }
 
     float Y = 0;
@@ -44,13 +64,13 @@ public class TestApp extends VolkaniumsApp
 
         float speed = 4f;
 
-        if (input().isKeyPressed(TestSettings.KEY_MOVE_LEFT))
+        if (TestKeybinds.LEFT.isActive())
             speed *= 10f;
 
-        if (input().isKeyPressed(TestSettings.KEY_MOVE_FORWARD))
+        if (TestKeybinds.FORWARD.isActive())
             Y += frameInfo.frameTime() * speed;
 
-        if (input().isKeyPressed(TestSettings.KEY_MOVE_BACKWARD))
+        if (TestKeybinds.BACK.isActive())
             Y -= frameInfo.frameTime() * speed;
     }
 

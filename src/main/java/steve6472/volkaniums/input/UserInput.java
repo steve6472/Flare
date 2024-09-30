@@ -1,7 +1,8 @@
-package steve6472.volkaniums;
+package steve6472.volkaniums.input;
 
 import org.joml.Vector2i;
 import steve6472.core.setting.IntSetting;
+import steve6472.volkaniums.Window;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -22,6 +23,11 @@ public class UserInput
     public boolean isKeyPressed(IntSetting keybind)
     {
         return glfwGetKey(window.window(), keybind.get()) == GLFW_PRESS;
+    }
+
+    public boolean isKeyPressed(int key)
+    {
+        return glfwGetKey(window.window(), key) == GLFW_PRESS;
     }
 
     public Vector2i getMousePositionRelativeToTopLeftOfTheWindow()

@@ -82,10 +82,4 @@ public record DebugCuboid(Vector3f start, Vector3f end, Vector4f color) implemen
         vertices.add(Vertex.POS3F_COL4F.create(p3, color));
         vertices.add(Vertex.POS3F_COL4F.create(p7, color));
     }
-
-    @Override
-    public int vertexCount()
-    {
-        return 24;
-    }
 }

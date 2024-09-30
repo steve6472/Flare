@@ -16,7 +16,6 @@ import java.util.List;
 public interface DebugObject
 {
     void addVerticies(List<Struct> vertices, Matrix4f transform);
-    int vertexCount();
 
     default Struct vertex(Vector3f vec, Vector4f col)
     {

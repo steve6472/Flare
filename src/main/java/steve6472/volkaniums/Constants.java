@@ -4,6 +4,8 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import steve6472.core.registry.Key;
 
+import java.io.File;
+
 /**
  * Created by steve6472
  * Date: 8/18/2024
@@ -30,4 +32,7 @@ public class Constants
 
     /// Error texture id
     public static final String ERROR_TEXTURE = "*error_texture*";
+
+    /// File to save visual settings
+    public static final File VISUAL_SETTINGS_FILE = new File("volkaniums_visual_settings.json");
 }
