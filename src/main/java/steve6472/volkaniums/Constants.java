@@ -34,5 +34,5 @@ public class Constants
     public static final String ERROR_TEXTURE = "*error_texture*";
 
     /// File to save visual settings
-    public static final File VISUAL_SETTINGS_FILE = new File("volkaniums_visual_settings.json");
+    public static final File VISUAL_SETTINGS_FILE = new File("settings" + File.separator + "volkaniums_visual_settings.json");
 }

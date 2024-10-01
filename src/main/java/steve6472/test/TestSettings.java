@@ -1,6 +1,5 @@
 package steve6472.test;
 
-import org.lwjgl.glfw.GLFW;
 import steve6472.core.setting.IntSetting;
 import steve6472.core.setting.SettingRegister;
 
@@ -13,5 +12,6 @@ public class TestSettings extends SettingRegister
 {
     static { REGISTRY = TestRegistries.SETTING; }
 
-    public static final IntSetting CLOSE = registerInt("close", GLFW.GLFW_KEY_ESCAPE);
+    public static final IntSetting CUBE_AMOUNT = registerInt("cube_amount", 8);
+    public static final IntSetting SPHERE_AMOUNT = registerInt("sphere_amount", 8);
 }

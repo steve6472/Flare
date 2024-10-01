@@ -1,5 +1,6 @@
 package steve6472.volkaniums.struct.def;
 
+import steve6472.volkaniums.render.StaticModelRenderSystem;
 import steve6472.volkaniums.struct.StructDef;
 
 import static steve6472.volkaniums.struct.Struct.builder;
@@ -16,7 +17,9 @@ public interface SBO
         .addMemberArray(MAT_4F, 32768) // transformations
         .build();
 
-    StructDef TRANSFORMATIONS = builder()
+    /// Used by [StaticModelRenderSystem] <br>
+    /// Has default size of 32768 transformations
+    StructDef BLOCKBENCH_STATIC_TRANSFORMATIONS = builder()
         .addMemberArray(MAT_4F, 32768) // transformations
         .build();
 }

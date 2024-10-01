@@ -16,6 +16,8 @@ public class Camera
 
     private float near, far;
 
+    // TODO: single Camera UBO
+
     public Camera()
     {
         this.viewMatrix = new Matrix4f();

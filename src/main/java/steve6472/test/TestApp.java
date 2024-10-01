@@ -7,11 +7,12 @@ import com.jme3.system.NativeLibraryLoader;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
+import steve6472.core.setting.SettingsLoader;
 import steve6472.volkaniums.core.FrameInfo;
 import steve6472.volkaniums.core.VolkaniumsApp;
 import steve6472.volkaniums.input.KeybindUpdater;
 import steve6472.volkaniums.pipeline.Pipelines;
-import steve6472.volkaniums.render.BBStaticModelRenderSystem;
+import steve6472.volkaniums.render.StaticModelRenderSystem;
 import steve6472.volkaniums.settings.VisualSettings;
 
 import java.io.File;
@@ -24,11 +25,7 @@ import java.util.logging.Level;
  */
 public class TestApp extends VolkaniumsApp
 {
-    @Override
-    protected void createRenderSystems()
-    {
-        addRenderSystem(BBStaticModelRenderSystem::new, Pipelines.BB_STATIC);
-    }
+    private static final File TEST_SETTINGS = new File("settings/test_settings.json");
 
     @Override
     protected void initRegistries()
@@ -40,6 +37,18 @@ public class TestApp extends VolkaniumsApp
         NativeLibrary.setStartupMessageEnabled(false);
 
         initRegistry(TestRegistries.RARITY);
+    }
+
+    @Override
+    public void loadSettings()
+    {
+        SettingsLoader.loadFromJsonFile(TestRegistries.SETTING, TEST_SETTINGS);
+    }
+
+    @Override
+    protected void createRenderSystems()
+    {
+        addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new PhysicsTestRender(), Pipelines.BLOCKBENCH_STATIC));
     }
 
     @Override
@@ -59,7 +68,7 @@ public class TestApp extends VolkaniumsApp
         if (window().isFocused())
         {
             frameInfo.camera().center.set(0, 0f + Y, 0);
-            frameInfo.camera().headOrbit(mousePos.x, mousePos.y, 0.4f, 2.5f);
+            frameInfo.camera().headOrbit(mousePos.x, mousePos.y, 0.4f, 8.5f);
         }
 
         float speed = 4f;
@@ -72,6 +81,12 @@ public class TestApp extends VolkaniumsApp
 
         if (TestKeybinds.BACK.isActive())
             Y -= frameInfo.frameTime() * speed;
+    }
+
+    @Override
+    public void saveSettings()
+    {
+        SettingsLoader.saveToJsonFile(TestRegistries.SETTING, TEST_SETTINGS);
     }
 
     @Override

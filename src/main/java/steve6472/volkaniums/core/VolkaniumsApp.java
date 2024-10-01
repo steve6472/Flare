@@ -9,6 +9,7 @@ import steve6472.volkaniums.input.UserInput;
 import steve6472.volkaniums.Window;
 import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
 import steve6472.volkaniums.render.RenderSystem;
+import steve6472.volkaniums.vr.VrData;
 
 import java.util.function.BiFunction;
 
@@ -27,12 +28,14 @@ public abstract class VolkaniumsApp
      * Init methods in order of execution
      */
 
-    protected abstract void createRenderSystems();
     protected abstract void initRegistries();
+    public abstract void loadSettings();
+    protected abstract void createRenderSystems();
     public abstract void fullInit();
 
     public abstract void render(FrameInfo frameInfo, MemoryStack stack);
 
+    public abstract void saveSettings();
     public abstract void cleanup();
 
     /*
@@ -46,9 +49,16 @@ public abstract class VolkaniumsApp
      * Protected methods, utils
      */
 
-    protected final void addRenderSystem(BiFunction<MasterRenderer, PipelineConstructor, RenderSystem> renderSystemConstructor, PipelineConstructor pipeline)
+    protected final <T extends RenderSystem> T addRenderSystem(BiFunction<MasterRenderer, PipelineConstructor, T> renderSystemConstructor, PipelineConstructor pipeline)
     {
-        masterRenderer.addRenderSystem(renderSystemConstructor.apply(masterRenderer, pipeline));
+        T renderSystem = renderSystemConstructor.apply(masterRenderer, pipeline);
+        masterRenderer.addRenderSystem(renderSystem);
+        return renderSystem;
+    }
+
+    protected final void addRenderSystem(RenderSystem renderSystem)
+    {
+        masterRenderer.addRenderSystem(renderSystem);
     }
 
     /// This method simply ensures that the fields in a static class are loaded.
@@ -61,9 +71,11 @@ public abstract class VolkaniumsApp
      */
 
     public VkDevice device()  { return masterRenderer.getDevice(); }
+    public VrData vrData() { return masterRenderer.getVrData(); }
     public UserInput input()  { return userInput; }
     public Window window()  { return masterRenderer.getWindow(); }
     public float aspectRatio()  { return masterRenderer.getAspectRatio(); }
+    public MasterRenderer masterRenderer() { return masterRenderer; }
 
     /*
      * Setup methods

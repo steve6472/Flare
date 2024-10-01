@@ -48,7 +48,7 @@ public class SBOTransfromArray<T extends VkModel>
         return areas.values();
     }
 
-    public void addArea(T type)
+    public Area addArea(T type)
     {
         Preconditions.checkTrue(isMapped(type), "Area already exists");
         Area lastArea = getLastArea(rootArea);
@@ -56,6 +56,7 @@ public class SBOTransfromArray<T extends VkModel>
         newArea.index = lastArea.index + 1;
         lastArea.rightArea = newArea;
         areas.put(type, newArea);
+        return newArea;
     }
 
     public <A> void sort(List<A> objs, ToIntFunction<A> keyExtractor)
@@ -108,6 +109,11 @@ public class SBOTransfromArray<T extends VkModel>
         private void start()
         {
             toRender = 0;
+        }
+
+        public int index()
+        {
+            return index;
         }
     }
 }
