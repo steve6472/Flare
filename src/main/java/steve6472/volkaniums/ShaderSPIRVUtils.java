@@ -2,12 +2,18 @@ package steve6472.volkaniums;
 
 import org.lwjgl.system.NativeResource;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.stream.Collectors;
 
 import static java.lang.ClassLoader.getSystemClassLoader;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -17,20 +23,21 @@ public class ShaderSPIRVUtils
 {
     public static SPIRV compileShaderFile(String shaderFile, ShaderKind shaderKind)
     {
-        return compileShaderAbsoluteFile(getSystemClassLoader().getResource(shaderFile).toExternalForm(), shaderKind);
-    }
+        InputStream inputStream = ShaderSPIRVUtils.class.getClassLoader().getResourceAsStream(shaderFile);
 
-    public static SPIRV compileShaderAbsoluteFile(String shaderFile, ShaderKind shaderKind)
-    {
-        try
+        if (inputStream == null)
         {
-            String source = new String(Files.readAllBytes(Paths.get(new URI(shaderFile))));
-            return compileShader(shaderFile, source, shaderKind);
-        } catch (IOException | URISyntaxException e)
-        {
-            e.printStackTrace();
+            throw new RuntimeException("Shader file not found: " + shaderFile);
         }
-        return null;
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)))
+        {
+            String source = reader.lines().collect(Collectors.joining("\n"));
+            return compileShader(shaderFile, source, shaderKind);
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     public static SPIRV compileShader(String filename, String source, ShaderKind shaderKind)

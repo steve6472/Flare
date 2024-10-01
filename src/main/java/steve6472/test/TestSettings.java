@@ -14,4 +14,6 @@ public class TestSettings extends SettingRegister
 
     public static final IntSetting CUBE_AMOUNT = registerInt("cube_amount", 8);
     public static final IntSetting SPHERE_AMOUNT = registerInt("sphere_amount", 8);
+
+    public static IntSetting FOV = registerInt("fov", 90);
 }

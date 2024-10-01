@@ -19,8 +19,8 @@ public interface Pipelines
     PipelineConstructor BLOCKBENCH_STATIC = (device, extent, renderPass, setLayouts) -> PipelineBuilder
         .create(device)
         .shaders()
-            .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "shaders/blockbench_static.vert", VK_SHADER_STAGE_VERTEX_BIT)
-            .addShader(ShaderSPIRVUtils.ShaderKind.FRAGMENT_SHADER, "shaders/blockbench_static.frag", VK_SHADER_STAGE_FRAGMENT_BIT)
+            .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "volkaniums/shaders/blockbench_static.vert", VK_SHADER_STAGE_VERTEX_BIT)
+            .addShader(ShaderSPIRVUtils.ShaderKind.FRAGMENT_SHADER, "volkaniums/shaders/blockbench_static.frag", VK_SHADER_STAGE_FRAGMENT_BIT)
             .done()
         .vertexInputInfo(Vertex.POS3F_NORMAL_UV)
         .inputAssembly(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, false)
@@ -55,8 +55,8 @@ public interface Pipelines
     PipelineConstructor DEBUG_LINE = (device, extent, renderPass, setLayouts) -> PipelineBuilder
         .create(device)
         .shaders()
-            .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "shaders/debug_line.vert", VK_SHADER_STAGE_VERTEX_BIT)
-            .addShader(ShaderSPIRVUtils.ShaderKind.FRAGMENT_SHADER, "shaders/debug_line.frag", VK_SHADER_STAGE_FRAGMENT_BIT)
+            .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "volkaniums/shaders/debug_line.vert", VK_SHADER_STAGE_VERTEX_BIT)
+            .addShader(ShaderSPIRVUtils.ShaderKind.FRAGMENT_SHADER, "volkaniums/shaders/debug_line.frag", VK_SHADER_STAGE_FRAGMENT_BIT)
             .done()
         .vertexInputInfo(Vertex.POS3F_COL4F)
         .inputAssembly(VK_PRIMITIVE_TOPOLOGY_LINE_LIST, false)
@@ -91,8 +91,8 @@ public interface Pipelines
     PipelineConstructor SKIN = (device, extent, renderPass, setLayouts) -> PipelineBuilder
         .create(device)
         .shaders()
-            .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "shaders/skin.vert", VK_SHADER_STAGE_VERTEX_BIT)
-            .addShader(ShaderSPIRVUtils.ShaderKind.FRAGMENT_SHADER, "shaders/skin.frag", VK_SHADER_STAGE_FRAGMENT_BIT)
+            .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "volkaniums/shaders/skin.vert", VK_SHADER_STAGE_VERTEX_BIT)
+            .addShader(ShaderSPIRVUtils.ShaderKind.FRAGMENT_SHADER, "volkaniums/shaders/skin.frag", VK_SHADER_STAGE_FRAGMENT_BIT)
             .done()
         .vertexInputInfo(Vertex.SKIN)
         .inputAssembly(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, false)

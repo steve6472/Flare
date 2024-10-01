@@ -17,12 +17,6 @@ public class VisualSettings extends SettingRegister
     public static EnumSetting<ValidationLevel> VALIDATION_LEVEL = registerEnum("validation_level", ValidationLevel.WARNING);
 
     /*
-     * Generic
-     */
-
-    public static IntSetting FOV = registerInt("fov", 90);
-
-    /*
      * Internal
      */
 

@@ -64,7 +64,7 @@ public class TestApp extends VolkaniumsApp
     {
         frameInfo.camera().setViewTarget(new Vector3f(1f, 1.5f, -1), new Vector3f(0, 0.5f, 0));
         Vector2i mousePos = input().getMousePositionRelativeToTopLeftOfTheWindow();
-        frameInfo.camera().setPerspectiveProjection(VisualSettings.FOV.get(), aspectRatio(), 0.1f, 1024f);
+        frameInfo.camera().setPerspectiveProjection(TestSettings.FOV.get(), aspectRatio(), 0.1f, 1024f);
         if (window().isFocused())
         {
             frameInfo.camera().center.set(0, 0f + Y, 0);

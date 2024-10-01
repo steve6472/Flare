@@ -105,8 +105,8 @@ public class Volkaniums
         app.initRegistries();
 
         RegistryCreators.createContents();
-        app.loadSettings();
         SettingsLoader.loadFromJsonFile(VolkaniumsRegistries.VISUAL_SETTINGS, Constants.VISUAL_SETTINGS_FILE);
+        app.loadSettings();
     }
 
     private void mainLoop()

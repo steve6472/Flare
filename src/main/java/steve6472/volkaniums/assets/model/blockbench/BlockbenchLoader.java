@@ -54,29 +54,29 @@ public class BlockbenchLoader
         int size = STARTING_IMAGE_SIZE;
         ImagePacker packer;
 
-        boolean triedError = false;
-
         l: while (true)
         {
             packer = new ImagePacker(size, size, 1, true);
+
             for (String imgKey : IMAGES.keySet())
             {
                 BufferedImage bufferedImage = IMAGES.get(imgKey);
                 try
                 {
                     packer.insertImage(imgKey, bufferedImage);
-
-                    if (!triedError)
-                    {
-                        packer.insertImage(Constants.ERROR_TEXTURE, ErrorModel.IMAGE);
-                        triedError = true;
-                    }
                 } catch (RuntimeException ignored)
                 {
-                    triedError = false;
                     size *= 2;
                     continue l;
                 }
+            }
+            try
+            {
+                packer.insertImage(Constants.ERROR_TEXTURE, ErrorModel.IMAGE);
+            } catch (RuntimeException ignored)
+            {
+                size *= 2;
+                continue;
             }
             break;
         }
