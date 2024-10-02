@@ -48,6 +48,7 @@ public class VrData
     private Matrix4f HMDPose;
     private Matrix4f leftEyeProjection, leftEyePose;
     private Matrix4f rightEyeProjection, rightEyePose;
+    private VrInput vrInput;
 
     public VrData()
     {
@@ -106,6 +107,7 @@ public class VrData
             rightEyeBuffer.add(new FrameBuffer(device, width, height, VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT));
         }
         setupCameras();
+        vrInput = new VrInput();
     }
 
     private void setupCameras()
@@ -129,6 +131,11 @@ public class VrData
     public int height()
     {
         return height;
+    }
+
+    public VrInput vrInput()
+    {
+        return vrInput;
     }
 
     /*

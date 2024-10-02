@@ -1,10 +1,5 @@
 package steve6472.volkaniums.core;
 
-import com.google.gson.stream.JsonReader;
-import com.jme3.bullet.PhysicsSpace;
-import com.jme3.bullet.objects.PhysicsRigidBody;
-import com.jme3.bullet.util.NativeLibrary;
-import com.jme3.system.NativeLibraryLoader;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
@@ -21,11 +16,9 @@ import steve6472.volkaniums.settings.VisualSettings;
 import steve6472.volkaniums.vr.VrData;
 import steve6472.volkaniums.vr.VrUtil;
 
-import java.io.File;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -50,7 +43,6 @@ public class Volkaniums
     private VkDevice device;
     private VkQueue graphicsQueue;
     private VkQueue presentQueue;
-    private Camera camera;
     private VrData vrData;
 
     // ======= METHODS ======= //
@@ -71,13 +63,13 @@ public class Volkaniums
 
     private void start()
     {
-        camera = new Camera();
-
         window = new Window(app.windowTitle());
         app.userInput = new UserInput(window);
+        app.preInit();
+        app.camera = app.setupCamera();
         initContent();
         initVulkan();
-        app.fullInit();
+        app.postInit();
         mainLoop();
         cleanup();
     }
@@ -130,7 +122,7 @@ public class Volkaniums
                 {
                     FrameInfo frameInfo = new FrameInfo();
                     frameInfo.frameTime = frameTime;
-                    frameInfo.camera = camera;
+                    frameInfo.camera = app.camera;
                     frameInfo.frameIndex = renderer.getCurrentFrameIndex();
                     frameInfo.commandBuffer = commandBuffer;
                     frameInfo.camera.cameraIndex = 0;

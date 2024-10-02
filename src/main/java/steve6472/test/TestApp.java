@@ -8,12 +8,12 @@ import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 import steve6472.core.setting.SettingsLoader;
+import steve6472.volkaniums.Camera;
 import steve6472.volkaniums.core.FrameInfo;
 import steve6472.volkaniums.core.VolkaniumsApp;
 import steve6472.volkaniums.input.KeybindUpdater;
 import steve6472.volkaniums.pipeline.Pipelines;
 import steve6472.volkaniums.render.StaticModelRenderSystem;
-import steve6472.volkaniums.settings.VisualSettings;
 
 import java.io.File;
 import java.util.logging.Level;
@@ -28,14 +28,24 @@ public class TestApp extends VolkaniumsApp
     private static final File TEST_SETTINGS = new File("settings/test_settings.json");
 
     @Override
-    protected void initRegistries()
+    protected void preInit()
     {
         PhysicsSpace.logger.setLevel(Level.WARNING);
         PhysicsRigidBody.logger2.setLevel(Level.WARNING);
         NativeLibraryLoader.logger.setLevel(Level.WARNING);
         NativeLibraryLoader.loadLibbulletjme(true, new File("dep"), "Debug", "Sp");
         NativeLibrary.setStartupMessageEnabled(false);
+    }
 
+    @Override
+    protected Camera setupCamera()
+    {
+        return new Camera();
+    }
+
+    @Override
+    protected void initRegistries()
+    {
         initRegistry(TestRegistries.RARITY);
     }
 
@@ -52,7 +62,7 @@ public class TestApp extends VolkaniumsApp
     }
 
     @Override
-    public void fullInit()
+    public void postInit()
     {
         KeybindUpdater.updateKeybinds(TestRegistries.KEYBIND, input());
     }

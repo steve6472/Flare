@@ -84,9 +84,20 @@ public class Camera
     public Vector3f viewPosition = new Vector3f(), center = new Vector3f();
     protected float yaw;
     protected float pitch;
+    public float roll;
 
     public int oldx;
     public int oldy;
+
+    public float yaw()
+    {
+        return yaw;
+    }
+
+    public float pitch()
+    {
+        return pitch;
+    }
 
     public void head(int mouseX, int mouseY, float sensitivity)
     {
@@ -110,6 +121,17 @@ public class Camera
 
         while (yaw > 6.283185307179586f) yaw -= 6.283185307179586f;
         while (yaw < 0) yaw += 6.283185307179586f;
+    }
+
+    public void updateViewMatrix()
+    {
+        viewMatrix.identity();
+
+        viewMatrix.rotate(pitch(), -1, 0, 0);
+        viewMatrix.rotate(yaw(), 0, -1, 0);
+        viewMatrix.rotate(roll, 0, 0, -1);
+
+        viewMatrix.translate(-viewPosition.x, -viewPosition.y, -viewPosition.z);
     }
 
     /**
