@@ -12,6 +12,7 @@ import steve6472.volkaniums.*;
 import steve6472.volkaniums.input.UserInput;
 import steve6472.volkaniums.registry.RegistryCreators;
 import steve6472.volkaniums.registry.VolkaniumsRegistries;
+import steve6472.volkaniums.settings.ValidationLevel;
 import steve6472.volkaniums.settings.VisualSettings;
 import steve6472.volkaniums.vr.VrData;
 import steve6472.volkaniums.vr.VrUtil;
@@ -193,8 +194,10 @@ public class Volkaniums
 
     private void createInstance()
     {
-        if (VulkanValidation.ENABLE_VALIDATION_LAYERS && !VulkanValidation.checkValidationLayerSupport())
-            throw new RuntimeException(ErrorCode.VALIDATION_NOT_SUPPORTED.format());
+        if (VisualSettings.VALIDATION_LEVEL.get() != ValidationLevel.NONE && !VulkanValidation.checkValidationLayerSupport())
+        {
+            LOGGER.warning("Validation is enabled in settings, but no Validation Layer Support exists!");
+        }
 
         try (MemoryStack stack = MemoryStack.stackPush())
         {

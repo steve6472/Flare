@@ -24,36 +24,23 @@ import java.util.stream.Collectors;
 public final class VulkanValidation
 {
     private static final Logger LOGGER = Log.getLogger("Validation");
+    private static final Set<String> VALIDATION_LAYERS = Set.of("VK_LAYER_KHRONOS_validation");
 
-    /// TODO: Replace with [VisualSettings#VALIDATION_LEVEL] [ValidationLevel#NONE]
-    public static final boolean ENABLE_VALIDATION_LAYERS = true;
-
-    private static final Set<String> VALIDATION_LAYERS;
-
-    static
-    {
-        if (ENABLE_VALIDATION_LAYERS)
-        {
-            VALIDATION_LAYERS = new HashSet<>();
-            VALIDATION_LAYERS.add("VK_LAYER_KHRONOS_validation");
-        } else
-        {
-            // We are not going to use it, so we don't create it
-            VALIDATION_LAYERS = null;
-        }
-    }
+    public static final boolean ENABLE_VALIDATION_LAYERS = VisualSettings.VALIDATION_LEVEL.get() != ValidationLevel.NONE && checkValidationLayerSupport();
 
     public static Set<String> getValidationLayers()
     {
-        if (VALIDATION_LAYERS == null)
-            throw new RuntimeException(ErrorCode.VALIDATION_NOT_ENABLED.format());
-
         return VALIDATION_LAYERS;
     }
 
     public static boolean checkValidationLayerSupport()
     {
-        if (VALIDATION_LAYERS == null)
+        return checkValidationLayerSupport(VALIDATION_LAYERS);
+    }
+
+    public static boolean checkValidationLayerSupport(Set<String> validationLayers)
+    {
+        if (validationLayers == null)
             throw new RuntimeException(ErrorCode.VALIDATION_NOT_ENABLED.format());
 
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -71,7 +58,7 @@ public final class VulkanValidation
                 .map(VkLayerProperties::layerNameString)
                 .collect(Collectors.toSet());
 
-            return availableLayerNames.containsAll(VALIDATION_LAYERS);
+            return availableLayerNames.containsAll(validationLayers);
         }
     }
 
