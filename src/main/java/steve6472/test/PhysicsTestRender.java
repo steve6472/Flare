@@ -57,7 +57,14 @@ public class PhysicsTestRender extends StaticModelRenderImpl
         Model cubeModel = VolkaniumsRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/cube"));
 
         var ballArea = transfromArray.addArea(ballModel);
-        var cubeArea = transfromArray.addArea(cubeModel);
+        var cubeArea = ballArea;
+        try
+        {
+            cubeArea = transfromArray.addArea(cubeModel);
+        } catch (Exception ignored)
+        {
+            System.err.println(ignored.getMessage());
+        }
 
         for (int i = 0; i < TestSettings.SPHERE_AMOUNT.get(); i++)
         {

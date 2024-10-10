@@ -48,6 +48,11 @@
             <artifactId>Libbulletjme</artifactId>
             <version>21.2.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.joml</groupId>
+            <artifactId>joml</artifactId>
+            <version>${joml.version}</version>
+        </dependency>
 
         <!-- LWJGL (Vulkan) -->
         <dependency>
@@ -120,11 +125,6 @@
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-stb</artifactId>
             <classifier>${lwjgl.natives}</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.joml</groupId>
-            <artifactId>joml</artifactId>
-            <version>${joml.version}</version>
         </dependency>
     </dependencies>
 

@@ -11,11 +11,8 @@ import steve6472.core.log.Log;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.ObjectRegistry;
 import steve6472.core.util.ImagePacker;
-import steve6472.core.util.Preconditions;
-import steve6472.core.util.ResourceListing;
 import steve6472.volkaniums.Commands;
 import steve6472.volkaniums.Constants;
-import steve6472.volkaniums.core.Volkaniums;
 import steve6472.volkaniums.registry.VolkaniumsRegistries;
 import steve6472.volkaniums.assets.Texture;
 import steve6472.volkaniums.assets.TextureSampler;
@@ -27,6 +24,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -39,8 +37,8 @@ import java.util.logging.Logger;
 public class BlockbenchLoader
 {
     private static final Logger LOGGER = Log.getLogger(BlockbenchLoader.class);
-    private static final String MODELS_PATH = "models/blockbench/";
-    private static final int STARTING_IMAGE_SIZE = 64;
+    private static final String MODELS_PATH = "resources" + File.separator + "models" + File.separator + "blockbench" + File.separator;
+    private static final int STARTING_IMAGE_SIZE = 4;
 
     private static final Map<String, BufferedImage> IMAGES = new HashMap<>();
 
@@ -168,8 +166,8 @@ public class BlockbenchLoader
 
         try
         {
-            String[] resourceListing = ResourceListing.getResourceListing(Volkaniums.class, MODELS_PATH + path);
-            models = loadModels(resourceListing, MODELS_PATH + path + "/", "");
+            File[] files = new File(MODELS_PATH + path).listFiles();
+            models = loadModels(files);
         } catch (URISyntaxException | IOException e)
         {
             throw new RuntimeException(e);
@@ -178,7 +176,7 @@ public class BlockbenchLoader
         for (LoadedModel model : models)
         {
             modelRegistry.register(model.key(), model);
-            loadTextures(model);
+            loadTextures(model, MODELS_PATH + path);
         }
 
         if (models.length > 0)
@@ -187,7 +185,7 @@ public class BlockbenchLoader
         return ErrorModel.INSTANCE;
     }
 
-    private static void loadTextures(LoadedModel model)
+    private static void loadTextures(LoadedModel model, String modelPath)
     {
         LOGGER.finest("Loading textures for model " + model.key());
         try
@@ -198,15 +196,16 @@ public class BlockbenchLoader
 
             String pathId = textures.getFirst().relativePath();
             IMAGES.computeIfAbsent(pathId, _ -> {
-                String texturePath = "/" + pathId.substring(pathId.indexOf("textures/"));
+                String path = Paths.get(modelPath).resolve(Paths.get(pathId)).normalize().toAbsolutePath().toString();
+
                 try
                 {
-                    InputStream resourceAsStream = Volkaniums.class.getResourceAsStream(texturePath);
-                    if (resourceAsStream == null)
+                    File input = new File(path);
+                    if (!input.exists())
                     {
-                        throw new RuntimeException("Texture " + pathId + " (" + texturePath + ") " + "not found");
+                        throw new RuntimeException("Texture " + path + "(" + pathId + ")" + " not found");
                     }
-                    return ImageIO.read(resourceAsStream);
+                    return ImageIO.read(input);
                 } catch (IOException e)
                 {
                     throw new RuntimeException(e);
@@ -219,23 +218,21 @@ public class BlockbenchLoader
         }
     }
 
-    private static LoadedModel[] loadModels(String[] resources, String totalPath, String extraPath) throws URISyntaxException, IOException
+    private static LoadedModel[] loadModels(File[] files) throws URISyntaxException, IOException
     {
-        Preconditions.checkNotNull(resources);
+        if (files == null)
+            return new LoadedModel[0];
 
         List<LoadedModel> models = new ArrayList<>();
 
-        for (String s : resources)
+        for (File file : files)
         {
-            String newPath = totalPath + s + "/";
-            String nexExtraPath = extraPath + (extraPath.isEmpty() ? "" : "/") + s;
-
-            if (!s.endsWith(".bbmodel"))
+            if (!file.getAbsolutePath().endsWith(".bbmodel"))
             {
-                Collections.addAll(models, loadModels(ResourceListing.getResourceListing(Volkaniums.class, newPath), newPath, nexExtraPath));
+                Collections.addAll(models, loadModels(file.listFiles()));
             } else
             {
-                LoadedModel loadedModel = loadModel(newPath.substring(0, newPath.length() - 1), nexExtraPath);
+                LoadedModel loadedModel = loadModel(file);
                 if (loadedModel != null)
                     models.add(loadedModel);
             }
@@ -244,44 +241,40 @@ public class BlockbenchLoader
         return models.toArray(new LoadedModel[0]);
     }
 
-    private static LoadedModel loadModel(String pathUrl, String extraPath)
+    private static LoadedModel loadModel(File file) throws FileNotFoundException
     {
-        if (!pathUrl.startsWith("/"))
-            pathUrl = "/" + pathUrl;
-
-        if (extraPath.endsWith(".bbmodel"))
-        {
-            extraPath = extraPath.substring(0, extraPath.length() - ".bbmodel".length());
-        } else
+        if (!file.getAbsolutePath().endsWith(".bbmodel"))
         {
             LOGGER.severe("ExtraPath does not end with .bbmodel");
             return ErrorModel.INSTANCE;
         }
 
-        LOGGER.finest("Loading model: " + pathUrl + " (" + extraPath + ")");
+        LOGGER.finest("Loading model: " + file);
 
-        InputStream inputStream = Volkaniums.class.getResourceAsStream(pathUrl);
-        if (inputStream == null)
-        {
-            LOGGER.severe("Failed to load resource '" + pathUrl + "'");
-            return ErrorModel.INSTANCE;
-        }
-
-        InputStreamReader streamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+        InputStreamReader streamReader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
         BufferedReader reader = new BufferedReader(streamReader);
         JsonElement jsonElement = JsonParser.parseReader(reader);
         DataResult<Pair<LoadedModel, JsonElement>> decode = LoadedModel.CODEC.decode(JsonOps.INSTANCE, jsonElement);
 
         if (decode.isError())
         {
-            LOGGER.severe("Resource loading error '" + pathUrl + "'");
+            LOGGER.severe("Resource loading error '" + file + "'");
             decode.error().ifPresent(err -> LOGGER.severe(err.message()));
             return ErrorModel.INSTANCE;
         }
 
         Pair<LoadedModel, JsonElement> decoded = decode.getOrThrow();
         LoadedModel loadedModel = decoded.getFirst();
-        return overrideKey(loadedModel, Key.defaultNamespace(pathUrl.substring("/models/".length(), pathUrl.length() - ".bbmodel".length())));
+
+        String filePath = file.getAbsolutePath();
+        int startIndex = filePath.indexOf(MODELS_PATH);
+        String extractedPath = filePath.substring(startIndex + MODELS_PATH.length() - ("blockbench" + File.separator).length());
+        extractedPath = extractedPath.substring(0, extractedPath.lastIndexOf(".bbmodel"));
+
+        // Replace windows separator \ with /
+        extractedPath = extractedPath.replace("\\", "/");
+
+        return overrideKey(loadedModel, Key.defaultNamespace(extractedPath));
     }
 
     private static LoadedModel overrideKey(LoadedModel model, Key newKey)
