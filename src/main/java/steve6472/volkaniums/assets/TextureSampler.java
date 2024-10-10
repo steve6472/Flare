@@ -32,7 +32,7 @@ public class TextureSampler implements Keyable
 
     private void create(VkDevice device)
     {
-        textureImageView = VulkanUtil.createImageView(device, texture.textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+        textureImageView = VulkanUtil.createImageView(device, texture.textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 
         try (MemoryStack stack = MemoryStack.stackPush())
         {

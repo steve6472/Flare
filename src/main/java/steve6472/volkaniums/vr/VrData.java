@@ -1,5 +1,6 @@
 package steve6472.volkaniums.vr;
 
+import com.mojang.datafixers.util.Pair;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.openvr.*;
@@ -32,7 +33,7 @@ public class VrData
 
     private static final boolean DEBUG_RENDER_EYES = false;
     private static final boolean DEBUG_RENDER_HMD = false;
-    private static final boolean DEBUG_RENDER_OTHER = false;
+    private static final boolean DEBUG_RENDER_OTHER = true;
 
     public static boolean VR_ON = false;
     private int token;
@@ -44,7 +45,7 @@ public class VrData
     private List<FrameBuffer> leftEyeBuffer;
     private List<FrameBuffer> rightEyeBuffer;
 
-    private int validPoseCount;
+    private List<Pair<DeviceType, Matrix4f>> poses = new ArrayList<>();
     private Matrix4f HMDPose;
     private Matrix4f leftEyeProjection, leftEyePose;
     private Matrix4f rightEyeProjection, rightEyePose;
@@ -107,7 +108,7 @@ public class VrData
             rightEyeBuffer.add(new FrameBuffer(device, width, height, VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT));
         }
         setupCameras();
-        vrInput = new VrInput();
+        vrInput = new VrInput(this);
     }
 
     private void setupCameras()
@@ -138,6 +139,11 @@ public class VrData
         return vrInput;
     }
 
+    public List<Pair<DeviceType, Matrix4f>> getPoses()
+    {
+        return List.copyOf(poses);
+    }
+
     /*
      * Helpers
      */
@@ -152,16 +158,16 @@ public class VrData
             TrackedDevicePose.Buffer posesBuffer = TrackedDevicePose.calloc(k_unMaxTrackedDeviceCount, stack);
             VRCompositor.VRCompositor_WaitGetPoses(posesBuffer, null);
 
-            validPoseCount = 0;
+            poses.clear();
             for (int deviceId = 0; deviceId < k_unMaxTrackedDeviceCount; deviceId++)
             {
                 TrackedDevicePose trackedDevicePose = posesBuffer.get(deviceId);
                 if (trackedDevicePose.bPoseIsValid())
                 {
-                    validPoseCount++;
-
                     Matrix4f transform = VrUtil.convertSteamVRMatrixToMatrix4f(trackedDevicePose.mDeviceToAbsoluteTracking());
                     DeviceType type = DeviceType.getDeviceType(VRSystem.VRSystem_GetTrackedDeviceClass(deviceId));
+
+                    poses.add(new Pair<>(type, transform));
 
                     if (deviceId == k_unTrackedDeviceIndex_Hmd)
                         HMDPose = transform;
