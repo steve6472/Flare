@@ -16,7 +16,7 @@ import java.util.Map;
 public record MeshFace(int texture, List<String> vertices, Map<String, Vector2f> uv)
 {
     public static final Codec<MeshFace> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-        Codec.INT.fieldOf("texture").forGetter(o -> o.texture),
+        Codec.INT.optionalFieldOf("texture", -1).forGetter(o -> o.texture),
         Codec.STRING.listOf().fieldOf("vertices").forGetter(o -> o.vertices),
         ExtraCodecs.mapListCodec(Codec.STRING, ExtraCodecs.VEC_2F).fieldOf("uv").forGetter(o -> o.uv)
         ).apply(instance, MeshFace::new)

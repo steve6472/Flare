@@ -191,26 +191,29 @@ public class BlockbenchLoader
         try
         {
             List<TextureData> textures = model.textures();
-            if (textures.size() > 1) LOGGER.warning("Multiple textures per model functionality not confirmed yet! (" + model.key() + ")");
+//            if (textures.size() > 1) LOGGER.warning("Multiple textures per model functionality not confirmed yet! (" + model.key() + ")");
             if (textures.isEmpty()) LOGGER.warning("Model has no texture, weirdness may happen! (" + model.key() + ")");
 
-            String pathId = textures.getFirst().relativePath();
-            IMAGES.computeIfAbsent(pathId, _ -> {
-                String path = Paths.get(modelPath).resolve(Paths.get(pathId)).normalize().toAbsolutePath().toString();
+            for (TextureData texture : textures)
+            {
+                String pathId = texture.relativePath();
+                IMAGES.computeIfAbsent(pathId, _ -> {
+                    String path = Paths.get(modelPath).resolve(Paths.get(pathId)).normalize().toAbsolutePath().toString();
 
-                try
-                {
-                    File input = new File(path);
-                    if (!input.exists())
+                    try
                     {
-                        throw new RuntimeException("Texture " + path + "(" + pathId + ")" + " not found");
+                        File input = new File(path);
+                        if (!input.exists())
+                        {
+                            throw new RuntimeException("Texture " + path + "(" + pathId + ")" + " not found");
+                        }
+                        return ImageIO.read(input);
+                    } catch (IOException e)
+                    {
+                        throw new RuntimeException(e);
                     }
-                    return ImageIO.read(input);
-                } catch (IOException e)
-                {
-                    throw new RuntimeException(e);
-                }
-            });
+                });
+            }
         } catch (RuntimeException e)
         {
             LOGGER.severe("Failed to load texture for model " + model.key());

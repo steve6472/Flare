@@ -54,7 +54,7 @@ public class PhysicsTestRender extends StaticModelRenderImpl
         addPlane(Vector3f.UNIT_Z.mult(-1), -scaleX);
 
         Model ballModel = VolkaniumsRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/ball"));
-        Model cubeModel = VolkaniumsRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/cube"));
+        Model cubeModel = VolkaniumsRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/rainbow_in_a_pot"));
 
         var ballArea = transfromArray.addArea(ballModel);
         var cubeArea = ballArea;
