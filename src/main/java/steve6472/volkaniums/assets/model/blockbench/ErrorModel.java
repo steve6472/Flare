@@ -37,6 +37,7 @@ public final class ErrorModel
             new Vector3f(-0.5f, -0.5f, -0.5f),
             new Vector3f(0.5f, 0.5f, 0.5f),
             new Vector3f(),
+            new Vector3f(),
             0f,
             Map.of(
                 FaceType.NORTH, new CubeFace(new Vector4f(0, 0, 2, 2), 0),

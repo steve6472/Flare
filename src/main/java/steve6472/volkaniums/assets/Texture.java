@@ -61,7 +61,7 @@ public class Texture
             LongBuffer pTextureImageMemory = stack.mallocLong(1);
             VulkanUtil.createImage(device,
                 width, height,
-                VK_FORMAT_R8G8B8A8_SRGB,
+                VK_FORMAT_R8G8B8A8_UNORM,
                 VK_IMAGE_TILING_OPTIMAL,
                 VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
@@ -71,11 +71,11 @@ public class Texture
             textureImage = pTextureImage.get(0);
             textureImageMemory = pTextureImageMemory.get(0);
 
-            transitionImageLayout(stack, device, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandPool, graphicsQueue);
+            transitionImageLayout(stack, device, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandPool, graphicsQueue);
 
             copyBufferToImage(stack, device, stagingBuffer.getBuffer(), textureImage, width, height, commandPool, graphicsQueue);
 
-            transitionImageLayout(stack, device, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandPool, graphicsQueue);
+            transitionImageLayout(stack, device, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandPool, graphicsQueue);
 
             stagingBuffer.cleanup();
         }

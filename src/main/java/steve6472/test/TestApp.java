@@ -78,7 +78,7 @@ public class TestApp extends VolkaniumsApp
         if (window().isFocused())
         {
             frameInfo.camera().center.set(0, 0f + Y, 0);
-            frameInfo.camera().headOrbit(mousePos.x, mousePos.y, 0.4f, 2.5f);
+            frameInfo.camera().headOrbit(mousePos.x, mousePos.y, 0.4f, 0.5f);
         }
 
         float speed = 4f;

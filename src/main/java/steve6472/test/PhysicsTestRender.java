@@ -12,7 +12,6 @@ import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
 import org.joml.Matrix4f;
 import steve6472.core.registry.Key;
-import steve6472.core.util.RandomUtil;
 import steve6472.volkaniums.assets.model.Model;
 import steve6472.volkaniums.core.FrameInfo;
 import steve6472.volkaniums.registry.VolkaniumsRegistries;
@@ -53,18 +52,12 @@ public class PhysicsTestRender extends StaticModelRenderImpl
         addPlane(Vector3f.UNIT_X.mult(-1), -scaleX);
         addPlane(Vector3f.UNIT_Z.mult(-1), -scaleX);
 
-        Model ballModel = VolkaniumsRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/ball"));
-        Model cubeModel = VolkaniumsRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/rainbow_in_a_pot"));
+        var ball = transfromArray.addArea(VolkaniumsRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/ball")));
+        var cube = transfromArray.addArea(VolkaniumsRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/cube")));
+        var pebble = transfromArray.addArea(VolkaniumsRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/mesh_pebble")));
+        var rainbowInAPot = transfromArray.addArea(VolkaniumsRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/rainbow_in_a_pot")));
 
-        var ballArea = transfromArray.addArea(ballModel);
-        var cubeArea = ballArea;
-        try
-        {
-            cubeArea = transfromArray.addArea(cubeModel);
-        } catch (Exception ignored)
-        {
-            System.err.println(ignored.getMessage());
-        }
+        /*
 
         for (int i = 0; i < TestSettings.SPHERE_AMOUNT.get(); i++)
         {
@@ -88,7 +81,15 @@ public class PhysicsTestRender extends StaticModelRenderImpl
             body.setPhysicsLocation(new Vector3f(RandomUtil.randomFloat(-scaleX, scaleX), RandomUtil.randomFloat(4, 16), RandomUtil.randomFloat(-scaleX, scaleX)));
             body.setUserObject(new UserObj(cubeArea.index()));
             objects.add(body);
-        }
+        }*/
+
+        float radius = 1;
+        CollisionShape shape = new BoxCollisionShape(radius);
+        PhysicsRigidBody body = new PhysicsRigidBody(shape, mass);
+        physicsSpace.add(body);
+        body.setPhysicsLocation(new Vector3f(0, 0, 0));
+        body.setUserObject(new UserObj(rainbowInAPot.index()));
+        objects.add(body);
     }
 
     private void addPlane(Vector3f normal, float constant)

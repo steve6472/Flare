@@ -2,6 +2,7 @@ package steve6472.volkaniums.assets.model.blockbench.element;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -20,16 +21,17 @@ import java.util.List;
  * Date: 8/17/2024
  * Project: Volkaniums <br>
  */
-public record CubeElement(UUID uuid, Vector3f from, Vector3f to, Vector3f origin, float inflate, Map<FaceType, CubeFace> faces) implements Element
+public record CubeElement(UUID uuid, Vector3f from, Vector3f to, Vector3f rotation, Vector3f origin, float inflate, Map<FaceType, CubeFace> faces) implements Element
 {
     public static final Codec<CubeElement> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         ExtraCodecs.UUID.fieldOf("uuid").forGetter(o -> o.uuid),
         ExtraCodecs.VEC_3F.fieldOf("from").forGetter(o -> o.from),
         ExtraCodecs.VEC_3F.fieldOf("to").forGetter(o -> o.to),
+        ExtraCodecs.VEC_3F.optionalFieldOf("rotation", new Vector3f()).forGetter(o -> o.rotation),
         ExtraCodecs.VEC_3F.fieldOf("origin").forGetter(o -> o.origin),
         Codec.FLOAT.optionalFieldOf("inflate", 0.0f).forGetter(o -> o.inflate),
         ExtraCodecs.mapListCodec(FaceType.CODEC, CubeFace.CODEC).fieldOf("faces").forGetter(o -> o.faces)
-        ).apply(instance, (uuid1, from1, to1, origin1, inflate1, faces1) ->
+        ).apply(instance, (uuid1, from1, to1, rotation1, origin1, inflate1, faces1) ->
         {
             Map<FaceType, CubeFace> newFaces = new HashMap<>();
             faces1.forEach((k, v) -> {
@@ -38,7 +40,14 @@ public record CubeElement(UUID uuid, Vector3f from, Vector3f to, Vector3f origin
                     newFaces.put(k, v);
                 }
             });
-            return new CubeElement(uuid1, from1.mul(Constants.BB_MODEL_SCALE), to1.mul(Constants.BB_MODEL_SCALE), origin1, inflate1 * Constants.BB_MODEL_SCALE, newFaces);
+            return new CubeElement(
+                uuid1,
+                from1.mul(Constants.BB_MODEL_SCALE),
+                to1.mul(Constants.BB_MODEL_SCALE),
+                rotation1.mul(Constants.DEG_TO_RAD),
+                origin1.mul(Constants.BB_MODEL_SCALE),
+                inflate1 * Constants.BB_MODEL_SCALE,
+                newFaces);
         })
     );
 
@@ -76,14 +85,21 @@ public record CubeElement(UUID uuid, Vector3f from, Vector3f to, Vector3f origin
 
         // Define the 8 vertices of the cuboid using 'from' and 'to'
 
-        Vector3f v111 = new Vector3f(from).add(-inflate, -inflate, -inflate);
-        Vector3f v110 = new Vector3f(from.x, from.y, to.z).add(-inflate, -inflate, inflate);
-        Vector3f v101 = new Vector3f(from.x, to.y, from.z).add(-inflate, inflate, -inflate);
-        Vector3f v100 = new Vector3f(from.x, to.y, to.z).add(-inflate, inflate, inflate);
-        Vector3f v011 = new Vector3f(to.x, from.y, from.z).add(inflate, -inflate, -inflate);
-        Vector3f v010 = new Vector3f(to.x, from.y, to.z).add(inflate, -inflate, inflate);
-        Vector3f v001 = new Vector3f(to.x, to.y, from.z).add(inflate, inflate, -inflate);
-        Vector3f v000 = new Vector3f(to.x, to.y, to.z).add(inflate, inflate, inflate);
+        Matrix4f modelTransform = new Matrix4f();
+        modelTransform.translate(origin);
+        modelTransform.rotateZ(rotation().z);
+        modelTransform.rotateY(rotation().y);
+        modelTransform.rotateX(rotation().x);
+        modelTransform.translate(-origin().x, -origin().y, -origin().z);
+
+        Vector3f v111 = new Vector3f(from).add(-inflate, -inflate, -inflate).mulPosition(modelTransform);
+        Vector3f v110 = new Vector3f(from.x, from.y, to.z).add(-inflate, -inflate, inflate).mulPosition(modelTransform);
+        Vector3f v101 = new Vector3f(from.x, to.y, from.z).add(-inflate, inflate, -inflate).mulPosition(modelTransform);
+        Vector3f v100 = new Vector3f(from.x, to.y, to.z).add(-inflate, inflate, inflate).mulPosition(modelTransform);
+        Vector3f v011 = new Vector3f(to.x, from.y, from.z).add(inflate, -inflate, -inflate).mulPosition(modelTransform);
+        Vector3f v010 = new Vector3f(to.x, from.y, to.z).add(inflate, -inflate, inflate).mulPosition(modelTransform);
+        Vector3f v001 = new Vector3f(to.x, to.y, from.z).add(inflate, inflate, -inflate).mulPosition(modelTransform);
+        Vector3f v000 = new Vector3f(to.x, to.y, to.z).add(inflate, inflate, inflate).mulPosition(modelTransform);
 
         // Add vertices for each face if it exists
         if (faces.containsKey(FaceType.NORTH))

@@ -2,18 +2,16 @@ package steve6472.volkaniums.assets.model.blockbench.element;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import org.joml.GeometryUtils;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.*;
 import steve6472.core.util.ExtraCodecs;
 import steve6472.core.util.ImagePacker;
 import steve6472.volkaniums.Constants;
 import steve6472.volkaniums.assets.model.blockbench.*;
 
 import java.awt.*;
+import java.lang.Math;
 import java.util.*;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * Created by steve6472
@@ -28,7 +26,7 @@ public record MeshElement(UUID uuid, Vector3f rotation, Vector3f origin, Map<Str
         ExtraCodecs.VEC_3F.fieldOf("origin").forGetter(o -> o.origin),
         ExtraCodecs.mapListCodec(Codec.STRING, ExtraCodecs.VEC_3F).fieldOf("vertices").forGetter(o -> o.vertices),
         ExtraCodecs.mapListCodec(Codec.STRING, MeshFace.CODEC).fieldOf("faces").forGetter(o ->o.faces)
-        ).apply(instance, (uuid1, rotation1, origin1, vertices1, faces1) -> new MeshElement(uuid1, rotation1, origin1, scaleVertices(vertices1), faces1))
+        ).apply(instance, (uuid1, rotation1, origin1, vertices1, faces1) -> new MeshElement(uuid1, rotation1.mul(Constants.DEG_TO_RAD), origin1.mul(Constants.BB_MODEL_SCALE), scaleVertices(vertices1), faces1))
     );
 
     private static Map<String, Vector3f> scaleVertices(Map<String, Vector3f> vertices)
@@ -66,22 +64,18 @@ public record MeshElement(UUID uuid, Vector3f rotation, Vector3f origin, Map<Str
     {
         List<Vector3f> vertexes = new ArrayList<>();
 
+        Matrix4f modelTransform = new Matrix4f();
+        modelTransform.translate(origin);
+        modelTransform.rotateZ(rotation().z);
+        modelTransform.rotateY(rotation().y);
+        modelTransform.rotateX(rotation().x);
+//        modelTransform.translate(-origin().x, -origin().y, -origin().z);
+
         faces.forEach((String _, MeshFace v) ->
         {
-            List<String> faceVert = v.vertices();
-            if (faceVert.size() == 3)
+            for (String vertex : sortedVerticies(v.vertices()))
             {
-                for (String vertex : faceVert)
-                {
-                    vertexes.add(new Vector3f(vertices.get(vertex)));
-                }
-            } else if (faceVert.size() == 4)
-            {
-                vertexes.add(new Vector3f(vertices.get(faceVert.get(0))));
-                vertexes.add(new Vector3f(vertices.get(faceVert.get(1))));
-                vertexes.add(new Vector3f(vertices.get(faceVert.get(2))));
-
-                secondTri(faceVert, vertexes, i -> new Vector3f(vertices.get(faceVert.get(i))));
+                vertexes.add(new Vector3f(vertices.get(vertex)).mulPosition(modelTransform));
             }
         });
 
@@ -95,37 +89,16 @@ public record MeshElement(UUID uuid, Vector3f rotation, Vector3f origin, Map<Str
 
         faces.forEach((String _, MeshFace v) ->
         {
-            List<String> faceVert = v.vertices();
-            if (faceVert.size() == 3)
+            List<String> faceVerts = sortedVerticies(v.vertices());
+
+            if (faceVerts.size() % 3 != 0)
+                throw new RuntimeException("Not triangles!");
+
+            for (int i = 0; i < faceVerts.size() / 3; i++)
             {
-                for (int i = 0; i < 3; i++)
-                    normals.add(getNormal(faceVert, 0, 1, 2));
-            }
-            else if (faceVert.size() == 4)
-            {
-                Vector3f originalNormal = getNormal(faceVert, 0, 1, 2);
-                for (int i = 0; i < 3; i++)
-                    normals.add(new Vector3f(originalNormal));
-
-                float d0 = getNormal(faceVert, 0, 3, 1).dot(originalNormal);
-                float d1 = getNormal(faceVert, 1, 3, 2).dot(originalNormal);
-                float d2 = getNormal(faceVert, 2, 3, 0).dot(originalNormal);
-
-                float max = Math.max(d0, Math.max(d1, d2));
-
-                if (max == d0)
+                for (int j = 0; j < 3; j++)
                 {
-                    for (int i = 0; i < 3; i++)
-                        normals.add(getNormal(faceVert, 0, 3, 1));
-                }
-                if (max == d1)
-                {
-                    for (int i = 0; i < 3; i++)
-                        normals.add(getNormal(faceVert, 1, 3, 2));
-                } else
-                {
-                    for (int i = 0; i < 3; i++)
-                        normals.add(getNormal(faceVert, 2, 3, 0));
+                    normals.add(getNormal(faceVerts, i * 3, i * 3 + 1, i * 3 + 2));
                 }
             }
         });
@@ -140,20 +113,9 @@ public record MeshElement(UUID uuid, Vector3f rotation, Vector3f origin, Map<Str
         List<Vector2f> uvs = new ArrayList<>(vertices1.size());
         faces.forEach((String _, MeshFace v) ->
         {
-            List<String> faceVert = v.vertices();
-            if (faceVert.size() == 3)
+            for (String vertex : sortedVerticies(v.vertices()))
             {
-                uvs.add(new Vector2f(v.uv().get(faceVert.get(0))));
-                uvs.add(new Vector2f(v.uv().get(faceVert.get(1))));
-                uvs.add(new Vector2f(v.uv().get(faceVert.get(2))));
-            }
-            else if (faceVert.size() == 4)
-            {
-                uvs.add(new Vector2f(v.uv().get(faceVert.get(0))));
-                uvs.add(new Vector2f(v.uv().get(faceVert.get(1))));
-                uvs.add(new Vector2f(v.uv().get(faceVert.get(2))));
-
-                secondTri(faceVert, uvs, i -> new Vector2f(v.uv().get(faceVert.get(i))));
+                uvs.add(new Vector2f(v.uv().get(vertex)));
             }
         });
         return uvs;
@@ -171,31 +133,27 @@ public record MeshElement(UUID uuid, Vector3f rotation, Vector3f origin, Map<Str
         return normal;
     }
 
-    private <T> void secondTri(List<String> faceVert, List<T> output, Function<Integer, T> transform)
+    private List<String> sortedVerticies(List<String> verts)
     {
-        Vector3f originalNormal = getNormal(faceVert, 0, 1, 2);
-        float d0 = getNormal(faceVert, 0, 3, 1).dot(originalNormal);
-        float d1 = getNormal(faceVert, 1, 3, 2).dot(originalNormal);
-        float d2 = getNormal(faceVert, 2, 3, 0).dot(originalNormal);
+        if (verts.size() < 4) return verts;
+
+        Vector3f originalNormal = getNormal(verts, 0, 1, 2);
+        float d0 = getNormal(verts, 0, 3, 1).dot(originalNormal);
+        float d1 = getNormal(verts, 1, 3, 2).dot(originalNormal);
+        float d2 = getNormal(verts, 2, 3, 0).dot(originalNormal);
 
         float max = Math.max(d0, Math.max(d1, d2));
 
         if (max == d0)
         {
-            output.add(transform.apply(0));
-            output.add(transform.apply(3));
-            output.add(transform.apply(1));
+            return List.of(verts.get(3), verts.get(0), verts.get(1), verts.get(0), verts.get(2), verts.get(1));
         }
         if (max == d1)
         {
-            output.add(transform.apply(1));
-            output.add(transform.apply(3));
-            output.add(transform.apply(2));
+            return List.of(verts.get(3), verts.get(0), verts.get(1), verts.get(3), verts.get(2), verts.get(0));
         } else
         {
-            output.add(transform.apply(2));
-            output.add(transform.apply(3));
-            output.add(transform.apply(0));
+            return List.of(verts.get(3), verts.get(0), verts.get(1), verts.get(2), verts.get(3), verts.get(1));
         }
     }
 }

@@ -50,7 +50,9 @@ public class SBOTransfromArray<T extends VkModel>
 
     public Area addArea(T type)
     {
-        Preconditions.checkTrue(isMapped(type), "Area already exists");
+        if (isMapped(type))
+            return getAreaByType(type);
+//        Preconditions.checkTrue(isMapped(type), "Area already exists");
         Area lastArea = getLastArea(rootArea);
         Area newArea = new Area(type);
         newArea.index = lastArea.index + 1;
