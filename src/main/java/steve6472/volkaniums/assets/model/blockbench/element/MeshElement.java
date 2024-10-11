@@ -18,15 +18,23 @@ import java.util.List;
  * Date: 8/17/2024
  * Project: Volkaniums <br>
  */
-public record MeshElement(UUID uuid, Vector3f rotation, Vector3f origin, Map<String, Vector3f> vertices, Map<String, MeshFace> faces) implements Element
+public record MeshElement(UUID uuid, String name, Vector3f rotation, Vector3f origin, Map<String, Vector3f> vertices, Map<String, MeshFace> faces) implements Element
 {
     public static final Codec<MeshElement> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         ExtraCodecs.UUID.fieldOf("uuid").forGetter(o -> o.uuid),
+        Codec.STRING.fieldOf("name").forGetter(o -> o.name),
         ExtraCodecs.VEC_3F.fieldOf("rotation").forGetter(o -> o.rotation),
         ExtraCodecs.VEC_3F.fieldOf("origin").forGetter(o -> o.origin),
         ExtraCodecs.mapListCodec(Codec.STRING, ExtraCodecs.VEC_3F).fieldOf("vertices").forGetter(o -> o.vertices),
         ExtraCodecs.mapListCodec(Codec.STRING, MeshFace.CODEC).fieldOf("faces").forGetter(o ->o.faces)
-        ).apply(instance, (uuid1, rotation1, origin1, vertices1, faces1) -> new MeshElement(uuid1, rotation1.mul(Constants.DEG_TO_RAD), origin1.mul(Constants.BB_MODEL_SCALE), scaleVertices(vertices1), faces1))
+        ).apply(instance, (uuid1, name1, rotation1, origin1, vertices1, faces1) ->
+        new MeshElement(
+            uuid1,
+            name1,
+            rotation1.mul(Constants.DEG_TO_RAD),
+            origin1.mul(Constants.BB_MODEL_SCALE),
+            scaleVertices(vertices1),
+            faces1))
     );
 
     private static Map<String, Vector3f> scaleVertices(Map<String, Vector3f> vertices)

@@ -21,17 +21,18 @@ import java.util.List;
  * Date: 8/17/2024
  * Project: Volkaniums <br>
  */
-public record CubeElement(UUID uuid, Vector3f from, Vector3f to, Vector3f rotation, Vector3f origin, float inflate, Map<FaceType, CubeFace> faces) implements Element
+public record CubeElement(UUID uuid, String name, Vector3f from, Vector3f to, Vector3f rotation, Vector3f origin, float inflate, Map<FaceType, CubeFace> faces) implements Element
 {
     public static final Codec<CubeElement> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         ExtraCodecs.UUID.fieldOf("uuid").forGetter(o -> o.uuid),
+        Codec.STRING.fieldOf("name").forGetter(o -> o.name),
         ExtraCodecs.VEC_3F.fieldOf("from").forGetter(o -> o.from),
         ExtraCodecs.VEC_3F.fieldOf("to").forGetter(o -> o.to),
         ExtraCodecs.VEC_3F.optionalFieldOf("rotation", new Vector3f()).forGetter(o -> o.rotation),
         ExtraCodecs.VEC_3F.fieldOf("origin").forGetter(o -> o.origin),
         Codec.FLOAT.optionalFieldOf("inflate", 0.0f).forGetter(o -> o.inflate),
         ExtraCodecs.mapListCodec(FaceType.CODEC, CubeFace.CODEC).fieldOf("faces").forGetter(o -> o.faces)
-        ).apply(instance, (uuid1, from1, to1, rotation1, origin1, inflate1, faces1) ->
+        ).apply(instance, (uuid1, name1, from1, to1, rotation1, origin1, inflate1, faces1) ->
         {
             Map<FaceType, CubeFace> newFaces = new HashMap<>();
             faces1.forEach((k, v) -> {
@@ -42,6 +43,7 @@ public record CubeElement(UUID uuid, Vector3f from, Vector3f to, Vector3f rotati
             });
             return new CubeElement(
                 uuid1,
+                name1,
                 from1.mul(Constants.BB_MODEL_SCALE),
                 to1.mul(Constants.BB_MODEL_SCALE),
                 rotation1.mul(Constants.DEG_TO_RAD),

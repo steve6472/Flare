@@ -20,6 +20,7 @@ public interface Element extends Typed<ElementType<?>>
     Codec<Element> CODEC = VolkaniumsRegistries.MODEL_ELEMENT.byKeyCodec().dispatch("type", Element::getType, ElementType::mapCodec);
 
     UUID uuid();
+    String name();
 
     void fixUvs(LoadedModel model, ImagePacker packer);
 

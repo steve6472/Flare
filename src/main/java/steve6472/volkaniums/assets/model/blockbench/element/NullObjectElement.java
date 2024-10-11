@@ -19,15 +19,23 @@ import java.util.UUID;
  * Date: 8/17/2024
  * Project: Volkaniums <br>
  */
-public record NullObjectElement(UUID uuid, Vector3f position, String ikTarget, String ikSource, boolean lockIkTargetRotation) implements Element
+public record NullObjectElement(UUID uuid, String name, Vector3f position, String ikTarget, String ikSource, boolean lockIkTargetRotation) implements Element
 {
     public static final Codec<NullObjectElement> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         ExtraCodecs.UUID.fieldOf("uuid").forGetter(o -> o.uuid),
+        Codec.STRING.fieldOf("name").forGetter(o -> o.name),
         ExtraCodecs.VEC_3F.fieldOf("position").forGetter(o -> o.position),
         Codec.STRING.fieldOf("ik_target").forGetter(o -> o.ikTarget),
         Codec.STRING.fieldOf("ik_source").forGetter(o -> o.ikTarget),
         Codec.BOOL.fieldOf("lock_ik_target_rotation").forGetter(o -> o.lockIkTargetRotation)
-        ).apply(instance, (uuid1, position1, ikTarget1, ikSource1, lockIkTargetRotation1) -> new NullObjectElement(uuid1, position1.mul(Constants.BB_MODEL_SCALE), ikTarget1, ikSource1, lockIkTargetRotation1))
+        ).apply(instance, (uuid1, name1, position1, ikTarget1, ikSource1, lockIkTargetRotation1) ->
+        new NullObjectElement(
+            uuid1,
+            name1,
+            position1.mul(Constants.BB_MODEL_SCALE),
+            ikTarget1,
+            ikSource1,
+            lockIkTargetRotation1))
     );
 
     @Override

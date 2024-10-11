@@ -20,6 +20,11 @@ public record DebugCuboid(Vector3f start, Vector3f end, Vector4f color) implemen
         this(new Vector3f(center).sub(halfSize, halfSize, halfSize), new Vector3f(center).add(halfSize, halfSize, halfSize), color);
     }
 
+    public DebugCuboid(Vector3f center, float halfWidth, float halfHeight, float halfDepth, Vector4f color)
+    {
+        this(new Vector3f(center).sub(halfWidth, halfHeight, halfDepth), new Vector3f(center).add(halfWidth, halfHeight, halfDepth), color);
+    }
+
     @Override
     public void addVerticies(List<Struct> vertices, Matrix4f transform)
     {

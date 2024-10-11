@@ -18,14 +18,21 @@ import java.util.*;
  * Date: 8/17/2024
  * Project: Volkaniums <br>
  */
-public record LocatorElement(UUID uuid, Vector3f position, Vector3f rotation, boolean ignoreInheretedScale) implements Element
+public record LocatorElement(UUID uuid, String name, Vector3f position, Vector3f rotation, boolean ignoreInheretedScale) implements Element
 {
     public static final Codec<LocatorElement> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         ExtraCodecs.UUID.fieldOf("uuid").forGetter(o -> o.uuid),
+        Codec.STRING.fieldOf("name").forGetter(o -> o.name),
         ExtraCodecs.VEC_3F.fieldOf("position").forGetter(o -> o.position),
         ExtraCodecs.VEC_3F.fieldOf("rotation").forGetter(o -> o.rotation),
         Codec.BOOL.fieldOf("ignore_inherited_scale").forGetter(o -> o.ignoreInheretedScale)
-        ).apply(instance, (uuid1, position1, rotation1, ignoreInheretedScale1) -> new LocatorElement(uuid1, position1.mul(Constants.BB_MODEL_SCALE), rotation1.mul(Constants.DEG_TO_RAD), ignoreInheretedScale1))
+        ).apply(instance, (uuid1, name1, position1, rotation1, ignoreInheretedScale1) ->
+        new LocatorElement(
+            uuid1,
+            name1,
+            position1.mul(Constants.BB_MODEL_SCALE),
+            rotation1.mul(Constants.DEG_TO_RAD),
+            ignoreInheretedScale1))
     );
 
     @Override

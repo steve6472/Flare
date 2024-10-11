@@ -155,6 +155,11 @@ public class DebugRender
         return new DebugCuboid(center, halfSize, color);
     }
 
+    public static DebugObject lineCube(Vector3f center, float halfWidth, float halfHeight, float halfDepth, Vector4f color)
+    {
+        return new DebugCuboid(center, halfWidth, halfHeight, halfDepth, color);
+    }
+
     public static DebugObject lineCube(Vector3f from, Vector3f to, Vector4f color)
     {
         return new DebugCuboid(from, to, color);

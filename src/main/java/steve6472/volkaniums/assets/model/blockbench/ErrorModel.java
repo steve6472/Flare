@@ -23,6 +23,7 @@ public final class ErrorModel
     private ErrorModel() {}
 
     private static final UUID CUBE_ELEMENT_UUID = UUID.randomUUID();
+    private static final String CUBE_ELEMENT_NAME = "*error_model*";
 
     public static final String VERSION = "null";
 
@@ -34,6 +35,7 @@ public final class ErrorModel
         new Resolution(2, 2),
         List.of(new CubeElement(
             CUBE_ELEMENT_UUID,
+            CUBE_ELEMENT_NAME,
             new Vector3f(-0.5f, -0.5f, -0.5f),
             new Vector3f(0.5f, 0.5f, 0.5f),
             new Vector3f(),
