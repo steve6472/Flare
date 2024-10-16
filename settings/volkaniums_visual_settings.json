@@ -1,5 +1,5 @@
 {
-  "base_test:debug_line_single_buffer": false,
+  "base_test:debug_line_single_buffer": true,
   "base_test:enable_wide_lines": true,
   "base_test:global_camera_count": 3,
   "base_test:line_width": 4.0,
@@ -8,5 +8,6 @@
   "base_test:title_fps": true,
   "base_test:username": "Steve",
   "base_test:validation_level": "Info",
-  "base_test:vr": false
+  "base_test:vr": false,
+  "base_test:vr_action_manifest_path": "settings/vr_actions.json"
 }

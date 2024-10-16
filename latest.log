@@ -1,42 +1,47 @@
-10.11 14:54:06 [RegistryCreators] FINEST: Creating Object Registry base_test:visual_settings
-10.11 14:54:06 [RegistryCreators] FINEST: Creating Registry base_test:model_element
-10.11 14:54:06 [RegistryCreators] FINEST: Creating Registry base_test:keyframe_type
-10.11 14:54:06 [RegistryCreators] FINEST: Creating Object Registry base_test:static_loaded_model
-10.11 14:54:06 [RegistryCreators] FINEST: Creating Object Registry base_test:animated_loaded_model
-10.11 14:54:06 [RegistryCreators] FINEST: Creating Vk Object Registry base_test:sampler
-10.11 14:54:06 [RegistryCreators] FINEST: Creating Vk Object Registry base_test:static_model
-10.11 14:54:06 [RegistryCreators] FINEST: Creating Vk Object Registry base_test:animated_model
-10.11 14:54:06 [RegistryCreators] FINEST: Creating Registry base_test:rarity
-10.11 14:54:06 [RegistryCreators] FINEST: Creating Object Registry base_test:setting
-10.11 14:54:06 [RegistryCreators] FINEST: Creating Registry base_test:keybind
-10.11 14:54:06 [RegistryCreators] FINEST: Creating content
-10.11 14:54:06 [RegistryCreators] FINEST: Bootstrapped base_test:visual_settings
-10.11 14:54:06 [RegistryCreators] FINEST: Bootstrapped base_test:model_element
-10.11 14:54:06 [RegistryCreators] FINEST: Bootstrapped base_test:keyframe_type
-10.11 14:54:06 [BlockbenchLoader] FINEST: Loading model: resources\models\blockbench\static\backdrop.bbmodel
-10.11 14:54:06 [BlockbenchLoader] FINEST: Loading model: resources\models\blockbench\static\ball.bbmodel
-10.11 14:54:06 [BlockbenchLoader] FINEST: Loading model: resources\models\blockbench\static\cube.bbmodel
-10.11 14:54:06 [BlockbenchLoader] FINEST: Loading model: resources\models\blockbench\static\mesh_pebble.bbmodel
-10.11 14:54:06 [BlockbenchLoader] FINEST: Loading model: resources\models\blockbench\static\rainbow_in_a_pot.bbmodel
-10.11 14:54:06 [BlockbenchLoader] FINEST: Loading model: resources\models\blockbench\static\small_rock.bbmodel
-10.11 14:54:06 [BlockbenchLoader] FINEST: Loading textures for model base_test:blockbench/static/backdrop
-10.11 14:54:06 [BlockbenchLoader] FINEST: Loading textures for model base_test:blockbench/static/ball
-10.11 14:54:06 [BlockbenchLoader] FINEST: Loading textures for model base_test:blockbench/static/cube
-10.11 14:54:06 [BlockbenchLoader] FINEST: Loading textures for model base_test:blockbench/static/mesh_pebble
-10.11 14:54:06 [BlockbenchLoader] FINEST: Loading textures for model base_test:blockbench/static/rainbow_in_a_pot
-10.11 14:54:06 [BlockbenchLoader] FINEST: Loading textures for model base_test:blockbench/static/small_rock
-10.11 14:54:06 [RegistryCreators] FINEST: Bootstrapped base_test:static_loaded_model
-10.11 14:54:06 [BlockbenchLoader] FINEST: Loading model: resources\models\blockbench\animated\model.bbmodel
-10.11 14:54:06 [BlockbenchLoader] FINEST: Loading model: resources\models\blockbench\animated\small_chain.bbmodel
-10.11 14:54:06 [BlockbenchLoader] FINEST: Loading textures for model base_test:blockbench/animated/model
-10.11 14:54:06 [BlockbenchLoader] FINEST: Loading textures for model base_test:blockbench/animated/small_chain
-10.11 14:54:06 [RegistryCreators] FINEST: Bootstrapped base_test:animated_loaded_model
-10.11 14:54:06 [RegistryCreators] FINEST: Bootstrapped base_test:rarity
-10.11 14:54:06 [RegistryCreators] FINEST: Bootstrapped base_test:setting
-10.11 14:54:06 [RegistryCreators] FINEST: Bootstrapped base_test:keybind
-10.11 14:54:06 [PhysicalDevicePicker] FINER: Selected GPU: NVIDIA GeForce RTX 4070 Ti SUPER
-10.11 14:54:06 [RegistryCreators] FINEST: Creating VK content
-10.11 14:54:06 [RegistryCreators] FINEST: Bootstrapped base_test:sampler
-10.11 14:54:06 [RegistryCreators] FINEST: Bootstrapped base_test:static_model
-10.11 14:54:06 [RegistryCreators] FINEST: Bootstrapped base_test:animated_model
-10.11 14:54:28 [Volkaniums] FINE: Cleanup
+10.12 15:47:39 [RegistryCreators] FINEST: Creating Object Registry base_test:visual_settings
+10.12 15:47:39 [RegistryCreators] FINEST: Creating Registry base_test:model_element
+10.12 15:47:39 [RegistryCreators] FINEST: Creating Registry base_test:keyframe_type
+10.12 15:47:39 [RegistryCreators] FINEST: Creating Object Registry base_test:static_loaded_model
+10.12 15:47:39 [RegistryCreators] FINEST: Creating Object Registry base_test:animated_loaded_model
+10.12 15:47:39 [RegistryCreators] FINEST: Creating Vk Object Registry base_test:sampler
+10.12 15:47:39 [RegistryCreators] FINEST: Creating Vk Object Registry base_test:static_model
+10.12 15:47:39 [RegistryCreators] FINEST: Creating Vk Object Registry base_test:animated_model
+10.12 15:47:39 [RegistryCreators] FINEST: Creating Registry base_test:rarity
+10.12 15:47:39 [RegistryCreators] FINEST: Creating Object Registry base_test:setting
+10.12 15:47:39 [RegistryCreators] FINEST: Creating Registry base_test:keybind
+10.12 15:47:39 [RegistryCreators] FINEST: Creating content
+10.12 15:47:39 [RegistryCreators] FINEST: Bootstrapped base_test:visual_settings
+10.12 15:47:39 [RegistryCreators] FINEST: Bootstrapped base_test:model_element
+10.12 15:47:39 [RegistryCreators] FINEST: Bootstrapped base_test:keyframe_type
+10.12 15:47:39 [BlockbenchLoader] FINEST: Loading model: resources\models\blockbench\static\backdrop.bbmodel
+10.12 15:47:39 [BlockbenchLoader] FINEST: Loading model: resources\models\blockbench\static\ball.bbmodel
+10.12 15:47:39 [BlockbenchLoader] FINEST: Loading model: resources\models\blockbench\static\cube.bbmodel
+10.12 15:47:39 [BlockbenchLoader] FINEST: Loading model: resources\models\blockbench\static\mesh_pebble.bbmodel
+10.12 15:47:39 [BlockbenchLoader] FINEST: Loading model: resources\models\blockbench\static\rainbow_in_a_pot.bbmodel
+10.12 15:47:39 [BlockbenchLoader] FINEST: Loading model: resources\models\blockbench\static\small_rock.bbmodel
+10.12 15:47:39 [BlockbenchLoader] FINEST: Loading textures for model base_test:blockbench/static/backdrop
+10.12 15:47:39 [BlockbenchLoader] FINEST: Loading textures for model base_test:blockbench/static/ball
+10.12 15:47:39 [BlockbenchLoader] FINEST: Loading textures for model base_test:blockbench/static/cube
+10.12 15:47:39 [BlockbenchLoader] FINEST: Loading textures for model base_test:blockbench/static/mesh_pebble
+10.12 15:47:39 [BlockbenchLoader] FINEST: Loading textures for model base_test:blockbench/static/rainbow_in_a_pot
+10.12 15:47:39 [BlockbenchLoader] FINEST: Loading textures for model base_test:blockbench/static/small_rock
+10.12 15:47:39 [RegistryCreators] FINEST: Bootstrapped base_test:static_loaded_model
+10.12 15:47:39 [BlockbenchLoader] FINEST: Loading model: resources\models\blockbench\animated\model.bbmodel
+10.12 15:47:39 [BlockbenchLoader] FINEST: Loading model: resources\models\blockbench\animated\small_chain.bbmodel
+10.12 15:47:39 [BlockbenchLoader] FINEST: Loading textures for model base_test:blockbench/animated/model
+10.12 15:47:39 [BlockbenchLoader] FINEST: Loading textures for model base_test:blockbench/animated/small_chain
+10.12 15:47:39 [RegistryCreators] FINEST: Bootstrapped base_test:animated_loaded_model
+10.12 15:47:39 [RegistryCreators] FINEST: Bootstrapped base_test:rarity
+10.12 15:47:39 [RegistryCreators] FINEST: Bootstrapped base_test:setting
+10.12 15:47:39 [RegistryCreators] FINEST: Bootstrapped base_test:keybind
+10.12 15:47:42 [VrData] FINER: Model Number : Index
+10.12 15:47:42 [VrData] FINER: Serial Number: LHR-04965D73
+10.12 15:47:42 [VrData] FINER: Recommended width : 2468
+10.12 15:47:42 [VrData] FINER: Recommended height: 2740
+10.12 15:47:42 [VrData] FINER: Set VR Action Manifest Path to C:\storage\Volkaniums\settings\vr_actions.json
+10.12 15:47:42 [PhysicalDevicePicker] FINER: Selected GPU: NVIDIA GeForce RTX 4070 Ti SUPER
+10.12 15:47:42 [RegistryCreators] FINEST: Creating VK content
+10.12 15:47:42 [RegistryCreators] FINEST: Bootstrapped base_test:sampler
+10.12 15:47:42 [RegistryCreators] FINEST: Bootstrapped base_test:static_model
+10.12 15:47:42 [RegistryCreators] FINEST: Bootstrapped base_test:animated_model
+10.12 15:47:47 [Volkaniums] FINE: Cleanup

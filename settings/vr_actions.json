@@ -1,0 +1,158 @@
+{
+    "actions": [
+        {
+            "name": "/actions/default/in/SkeletonLeftHand",
+            "type": "skeleton",
+            "skeleton": "/skeleton/hand/left",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/SkeletonRightHand",
+            "type": "skeleton",
+            "skeleton": "/skeleton/hand/right",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/AClick",
+            "type": "boolean",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/BClick",
+            "type": "boolean",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/TrackpadPosition",
+            "type": "vector2",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/ThumbStickPosition",
+            "type": "vector2",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/TriggerPosition",
+            "type": "vector1",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/TriggerTouch",
+            "type": "boolean",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/TriggerClick",
+            "type": "boolean",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/TrackpadTouch",
+            "type": "boolean",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/ThumbStickTouch",
+            "type": "boolean",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/ThumbStickClick",
+            "type": "boolean",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/ATouch",
+            "type": "boolean",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/BTouch",
+            "type": "boolean",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/GripForce",
+            "type": "vector1",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/GripClick",
+            "type": "boolean",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/IndexCurl",
+            "type": "vector1",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/MiddleCurl",
+            "type": "vector1",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/RingCurl",
+            "type": "vector1",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/PinkyCurl",
+            "type": "vector1",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/TrackpadForce",
+            "type": "vector1",
+            "requirement": "suggested"
+        },
+        {
+            "name": "/actions/default/in/pose",
+            "type": "pose"
+        },
+        {
+            "name": "/actions/default/out/Vibration",
+            "type": "vibration",
+            "requirement": "mandatory"
+        }
+    ],
+    "action_sets": [
+        {
+            "name": "/actions/default",
+            "usage": "leftright"
+        }
+    ],
+    "default_bindings": [
+        {
+            "controller_type": "knuckles",
+            "binding_url": "knuckles_bindings.json"
+        }
+    ],
+    "localization": [
+        {
+            "language_tag": "en_US",
+            "/actions/default/in/SkeletonLeftHand": "Skeleton (Left)",
+            "/actions/default/in/SkeletonRightHand": "Skeleton (Right)",
+            "/actions/default/in/TriggerPosition": "TriggerPosition",
+            "/actions/default/in/TriggerTouch": "TriggerTouch",
+            "/actions/default/in/TriggerClick": "TriggerClick",
+            "/actions/default/in/TrackpadTouch": "TrackpadTouch",
+            "/actions/default/in/TrackpadPosition": "TrackpadPosition",
+            "/actions/default/in/ATouch": "ATouch",
+            "/actions/default/in/AClick": "AClick",
+            "/actions/default/in/BClick": "BClick",
+            "/actions/default/in/BTouch": "BTouch",
+            "/actions/default/in/GripClick": "GripClick",
+            "/actions/default/in/ThumbStickPosition": "ThumbStickPosition",
+            "/actions/default/in/ThumbStickTouch": "ThumbStickTouch",
+            "/actions/default/in/ThumbStickClick": "ThumbStickClick",
+            "/actions/default/in/IndexCurl": "IndexCurl",
+            "/actions/default/in/MiddleCurl": "MiddleCurl",
+            "/actions/default/in/RingCurl": "RingCurl",
+            "/actions/default/in/PinkyCurl": "PinkyCurl",
+            "/actions/default/in/TrackpadForce": "TrackpadForce",
+            "/actions/default/in/GripForce": "GripForce"
+        }
+    ]
+}

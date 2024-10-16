@@ -12,6 +12,7 @@ import steve6472.volkaniums.core.FrameInfo;
 import steve6472.volkaniums.render.debug.DebugRender;
 import steve6472.volkaniums.settings.VisualSettings;
 
+import java.io.File;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,8 +54,21 @@ public class VrData
 
     public VrData()
     {
-        if (!VisualSettings.VR.get() || !VR.VR_IsRuntimeInstalled() || !VR.VR_IsHmdPresent())
+        if (VisualSettings.VR.get())
+        {
+            if (!VR.VR_IsRuntimeInstalled())
+            {
+                LOGGER.warning("VR is set to on but no runtime is installed!");
+                return;
+            } else if (!VR.VR_IsHmdPresent())
+            {
+                LOGGER.warning("VR is set to on but no HMD is present!");
+                return;
+            }
+        } else
+        {
             return;
+        }
 
         initVr();
     }
@@ -84,6 +98,16 @@ public class VrData
                 height = h.get(0);
                 LOGGER.finer("Recommended width : " + w.get(0));
                 LOGGER.finer("Recommended height: " + h.get(0));
+
+                int err = VRInput.VRInput_SetActionManifestPath(new File(VisualSettings.ACTION_MANIFEST_PATH.get()).getAbsolutePath());
+                if (err != EVRInputError_VRInputError_None)
+                {
+                    LOGGER.severe("Error when setting manifest path: " + err);
+                } else
+                {
+                    LOGGER.finer("Set VR Action Manifest Path to " + new File(VisualSettings.ACTION_MANIFEST_PATH.get()).getAbsolutePath());
+                }
+
                 VR_ON = true;
             } else
             {
@@ -217,6 +241,10 @@ public class VrData
             }
         }
     }
+
+    /*
+     * Input
+     */
 
     /*
      * Cleanup

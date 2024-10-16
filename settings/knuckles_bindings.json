@@ -1,0 +1,421 @@
+{
+
+    "bindings": {
+        "/actions/default": {
+            "chords": [],
+            "poses": [
+                {
+                    "output": "/actions/default/in/pose",
+                    "path": "/user/hand/left/pose/raw"
+                },
+                {
+                    "output": "/actions/default/in/pose",
+                    "path": "/user/hand/right/pose/raw"
+                }
+            ],
+            "haptics": [
+                {
+                    "output": "/actions/default/out/vibration",
+                    "path": "/user/hand/left/output/haptic"
+                },
+                {
+                    "output": "/actions/default/out/vibration",
+                    "path": "/user/hand/right/output/haptic"
+                }
+            ],
+            "sources": [
+                {
+                    "path": "/user/hand/left/input/trigger",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "click": {
+                            "output": "/actions/default/in/triggerclick"
+                        },
+                        "pull": {
+                            "output": "/actions/default/in/triggerposition"
+                        },
+                        "touch": {
+                            "output": "/actions/default/in/triggertouch"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/right/input/trigger",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "click": {
+                            "output": "/actions/default/in/triggerclick"
+                        },
+                        "pull": {
+                            "output": "/actions/default/in/triggerposition"
+                        },
+                        "touch": {
+                            "output": "/actions/default/in/triggertouch"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/left/input/b",
+                    "mode": "button",
+                    "parameters": {},
+                    "inputs": {
+                        "click": {
+                            "output": "/actions/default/in/bclick"
+                        },
+                        "touch": {
+                            "output": "/actions/default/in/btouch"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/right/input/b",
+                    "mode": "button",
+                    "parameters": {},
+                    "inputs": {
+                        "click": {
+                            "output": "/actions/default/in/bclick"
+                        },
+                        "touch": {
+                            "output": "/actions/default/in/btouch"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/left/input/a",
+                    "mode": "button",
+                    "parameters": {},
+                    "inputs": {
+                        "click": {
+                            "output": "/actions/default/in/aclick"
+                        },
+                        "touch": {
+                            "output": "/actions/default/in/atouch"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/right/input/a",
+                    "mode": "button",
+                    "parameters": {},
+                    "inputs": {
+                        "click": {
+                            "output": "/actions/default/in/aclick"
+                        },
+                        "touch": {
+                            "output": "/actions/default/in/atouch"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/left/input/thumbstick",
+                    "mode": "joystick",
+                    "parameters": {},
+                    "inputs": {
+                        "click": {
+                            "output": "/actions/default/in/thumbstickclick"
+                        },
+                        "position": {
+                            "output": "/actions/default/in/thumbstickposition"
+                        },
+                        "touch": {
+                            "output": "/actions/default/in/thumbsticktouch"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/right/input/thumbstick",
+                    "mode": "joystick",
+                    "parameters": {},
+                    "inputs": {
+                        "click": {
+                            "output": "/actions/default/in/thumbstickclick"
+                        },
+                        "position": {
+                            "output": "/actions/default/in/thumbstickposition"
+                        },
+                        "touch": {
+                            "output": "/actions/default/in/thumbsticktouch"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/left/input/trackpad",
+                    "mode": "trackpad",
+                    "parameters": {},
+                    "inputs": {
+                        "position": {
+                            "output": "/actions/default/in/trackpadposition"
+                        },
+                        "touch": {
+                            "output": "/actions/default/in/trackpadtouch"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/right/input/trackpad",
+                    "mode": "trackpad",
+                    "parameters": {},
+                    "inputs": {
+                        "position": {
+                            "output": "/actions/default/in/trackpadposition"
+                        },
+                        "touch": {
+                            "output": "/actions/default/in/trackpadtouch"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/left/input/grip",
+                    "mode": "force_sensor",
+                    "parameters": {},
+                    "inputs": {
+                        "force": {
+                            "output": "/actions/default/in/gripforce"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/right/input/grip",
+                    "mode": "force_sensor",
+                    "parameters": {},
+                    "inputs": {
+                        "force": {
+                            "output": "/actions/default/in/gripforce"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/right/input/grip",
+                    "mode": "button",
+                    "parameters": {},
+                    "inputs": {
+                        "click": {
+                            "output": "/actions/default/in/gripclick"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/left/input/grip",
+                    "mode": "button",
+                    "parameters": {},
+                    "inputs": {
+                        "click": {
+                            "output": "/actions/default/in/gripclick"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/left/input/finger/index",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "pull": {
+                            "output": "/actions/default/in/indexcurl"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/left/input/finger/middle",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "pull": {
+                            "output": "/actions/default/in/middlecurl"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/left/input/finger/ring",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "pull": {
+                            "output": "/actions/default/in/ringcurl"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/left/input/finger/pinky",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "pull": {
+                            "output": "/actions/default/in/pinkycurl"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/right/input/finger/index",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "pull": {
+                            "output": "/actions/default/in/indexcurl"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/right/input/finger/middle",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "pull": {
+                            "output": "/actions/default/in/middlecurl"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/right/input/finger/ring",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "pull": {
+                            "output": "/actions/default/in/ringcurl"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/right/input/finger/pinky",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "pull": {
+                            "output": "/actions/default/in/pinkycurl"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/left/input/trackpad",
+                    "mode": "force_sensor",
+                    "parameters": {},
+                    "inputs": {
+                        "force": {
+                            "output": "/actions/default/in/trackpadforce"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/right/input/trackpad",
+                    "mode": "force_sensor",
+                    "parameters": {},
+                    "inputs": {
+                        "force": {
+                            "output": "/actions/default/in/trackpadforce"
+                        }
+                    }
+                }
+            ],
+            "skeleton": [
+                {
+                    "output": "/actions/default/in/skeletonlefthand",
+                    "path": "/user/hand/left/input/skeleton/left"
+                },
+                {
+                    "output": "/actions/default/in/skeletonrighthand",
+                    "path": "/user/hand/right/input/skeleton/right"
+                },
+                {
+                    "output": "/actions/default/in/skeletonlefthand",
+                    "path": "/user/hand/right/input/skeleton/left"
+                },
+                {
+                    "output": "/actions/default/in/skeletonrighthand",
+                    "path": "/user/hand/left/input/skeleton/right"
+                }
+            ]
+        },
+        "/actions/hands": {
+            "chords": [],
+            "poses": [],
+            "haptics": [],
+            "sources": [
+                {
+                    "path": "/user/hand/left/input/finger/index",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "pull": {
+                            "output": "/actions/hands/in/indexcurl"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/left/input/finger/pinky",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "pull": {
+                            "output": "/actions/hands/in/pinkycurl"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/left/input/finger/ring",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "pull": {
+                            "output": "/actions/hands/in/ringcurl"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/left/input/finger/middle",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "pull": {
+                            "output": "/actions/hands/in/middlecurl"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/right/input/finger/pinky",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "pull": {
+                            "output": "/actions/hands/in/pinkycurl"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/right/input/finger/ring",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "pull": {
+                            "output": "/actions/hands/in/ringcurl"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/right/input/finger/middle",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "pull": {
+                            "output": "/actions/hands/in/middlecurl"
+                        }
+                    }
+                },
+                {
+                    "path": "/user/hand/right/input/finger/index",
+                    "mode": "trigger",
+                    "parameters": {},
+                    "inputs": {
+                        "pull": {
+                            "output": "/actions/hands/in/indexcurl"
+                        }
+                    }
+                }
+            ],
+            "skeleton": []
+        }
+    },
+    "controller_type": "knuckles",
+    "description": "Test Bindings but description",
+    "name": "Test Bindings"
+}

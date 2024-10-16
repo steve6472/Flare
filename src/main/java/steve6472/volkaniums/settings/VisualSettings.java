@@ -34,6 +34,8 @@ public class VisualSettings extends SettingRegister
     /// Is slower and limited to only 262144 verticies (might add setting ?)
     public static BoolSetting DEBUG_LINE_SINGLE_BUFFER = registerBool("debug_line_single_buffer", false);
 
+    public static StringSetting ACTION_MANIFEST_PATH = registerString("vr_action_manifest_path", "settings/vr_actions.json");
+
     /*
      * Debug
      */
