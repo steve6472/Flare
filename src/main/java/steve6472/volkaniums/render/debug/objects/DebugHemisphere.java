@@ -13,7 +13,7 @@ import java.util.List;
  * Date: 10/11/2024
  * Project: Volkaniums <br>
  */
-public record Hemisphere(float radius, float height, int quality, boolean isTop, Vector4f color) implements DebugObject
+public record DebugHemisphere(float radius, float heightOffset, int quality, boolean isTop, Vector4f color) implements DebugObject
 {
     @Override
     public void addVerticies(List<Struct> vertices, Matrix4f transform)
@@ -38,10 +38,9 @@ public record Hemisphere(float radius, float height, int quality, boolean isTop,
                 float lon2 = (float) (2.0 * Math.PI * (j + 1) / lonSegments);
 
                 // Convert polar coordinates to Cartesian for both latitude circles
-                Vector3f v1 = polarToCartesian(radius, lat1, lon1, isTop ? height : -height).mulPosition(transform);
-                Vector3f v2 = polarToCartesian(radius, lat1, lon2, isTop ? height : -height).mulPosition(transform);
-                Vector3f v3 = polarToCartesian(radius, lat2, lon1, isTop ? height : -height).mulPosition(transform);
-                Vector3f v4 = polarToCartesian(radius, lat2, lon2, isTop ? height : -height).mulPosition(transform);
+                Vector3f v1 = polarToCartesian(radius, lat1, lon1, isTop ? heightOffset : -heightOffset).mulPosition(transform);
+                Vector3f v2 = polarToCartesian(radius, lat1, lon2, isTop ? heightOffset : -heightOffset).mulPosition(transform);
+                Vector3f v3 = polarToCartesian(radius, lat2, lon1, isTop ? heightOffset : -heightOffset).mulPosition(transform);
 
                 // Add lines connecting latitudes and longitudes
                 vertices.add(Vertex.POS3F_COL4F.create(v1, color));

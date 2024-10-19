@@ -13,7 +13,7 @@ import java.util.List;
  * Date: 10/11/2024
  * Project: Volkaniums <br>
  */
-public record Cylinder(float radius, float height, int quality, Vector4f color) implements DebugObject
+public record DebugCylinder(float radius, float height, int quality, Vector4f color) implements DebugObject
 {
     @Override
     public void addVerticies(List<Struct> vertices, Matrix4f transform)

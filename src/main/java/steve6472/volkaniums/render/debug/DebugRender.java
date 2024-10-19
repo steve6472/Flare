@@ -42,7 +42,7 @@ public class DebugRender
     {
         List<Struct> vertices = new ArrayList<>();
         long currentTime = System.currentTimeMillis();
-        getInstance().debugLines.forEach(ren ->
+        debugLines.forEach(ren ->
         {
             // TODO: fix scale of 0 not showing anything & fix scaling moving objects towards/from origin
             float t = Math.min(1.0f, (float)(currentTime - ren.startTime()) / (ren.endTime() - ren.startTime()));
@@ -170,7 +170,20 @@ public class DebugRender
         return new DebugCross(center, halfSize, color);
     }
 
-//    public static DebugObject lineSphere(Vector3f center, float radius, int complexity /* how many lines it will be constructed from */, Vector4f color)
+    public static DebugObject lineSphere(float radius, int quality, Vector4f color)
+    {
+        return new DebugSphere(radius, quality, color);
+    }
+
+    public static DebugObject lineCylinder(float height, float radius, int quality, Vector4f color)
+    {
+        return new DebugCylinder(radius, height, quality, color);
+    }
+
+    public static DebugObject lineCapsule(float height, float radius, int quality, Vector4f color)
+    {
+        return new DebugCapsule(radius, height, quality, color);
+    }
 
     /*
      * Colors
