@@ -288,6 +288,14 @@ public final class PipelineBuilder
             ColorBlendAttachment attachment = new ColorBlendAttachment();
             attachment.writeMask = writeMask;
             attachment.blendEnable = blendEnable;
+
+            if (blendEnable)
+            {
+                attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+                attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+                attachment.colorBlendOp = VK_BLEND_OP_ADD;
+            }
+
             colorBlendInfo.blends.add(attachment);
             return this;
         }

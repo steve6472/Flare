@@ -2,6 +2,7 @@ package steve6472.volkaniums.registry;
 
 import steve6472.core.registry.*;
 import steve6472.core.setting.Setting;
+import steve6472.volkaniums.SamplerLoader;
 import steve6472.volkaniums.assets.TextureSampler;
 import steve6472.volkaniums.assets.model.Model;
 import steve6472.volkaniums.assets.model.blockbench.ElementType;
@@ -28,7 +29,7 @@ public class VolkaniumsRegistries extends RegistryCreators
     public static final ObjectRegistry<LoadedModel> ANIMATED_LOADED_MODEL = createObjectRegistry("animated_loaded_model", ErrorModel.INSTANCE, BlockbenchLoader::loadAnimatedModels);
 
     // VK Objects
-    public static final ObjectRegistry<TextureSampler> SAMPLER = createVkObjectRegistry("sampler", BlockbenchLoader::packImages);
+    public static final ObjectRegistry<TextureSampler> SAMPLER = createVkObjectRegistry("sampler", SamplerLoader::loadSamplers);
     public static final ObjectRegistry<Model> STATIC_MODEL = createVkObjectRegistry("static_model", ErrorModel.VK_STATIC_INSTANCE, BlockbenchLoader::createStaticModels);
     public static final ObjectRegistry<Model> ANIMATED_MODEL = createVkObjectRegistry("animated_model", ErrorModel.VK_ANIMATED_INSTANCE, BlockbenchLoader::createAnimatedModels);
 }

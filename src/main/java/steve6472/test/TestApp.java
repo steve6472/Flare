@@ -6,6 +6,7 @@ import com.jme3.bullet.util.NativeLibrary;
 import com.jme3.system.NativeLibraryLoader;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 import steve6472.core.setting.SettingsLoader;
 import steve6472.volkaniums.Camera;
@@ -14,6 +15,7 @@ import steve6472.volkaniums.core.VolkaniumsApp;
 import steve6472.volkaniums.input.KeybindUpdater;
 import steve6472.volkaniums.pipeline.Pipelines;
 import steve6472.volkaniums.render.StaticModelRenderSystem;
+import steve6472.volkaniums.render.debug.DebugRender;
 
 import java.io.File;
 import java.util.logging.Level;
@@ -23,7 +25,7 @@ import java.util.logging.Level;
  * Date: 9/29/2024
  * Project: Volkaniums <br>
  */
-public class TestApp extends VolkaniumsApp
+class TestApp extends VolkaniumsApp
 {
     private static final File TEST_SETTINGS = new File("settings/test_settings.json");
 
@@ -58,7 +60,7 @@ public class TestApp extends VolkaniumsApp
     @Override
     protected void createRenderSystems()
     {
-        addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new PhysicsTestRender(), Pipelines.BLOCKBENCH_STATIC));
+//        addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new PhysicsTestRender(), Pipelines.BLOCKBENCH_STATIC));
     }
 
     @Override
@@ -77,11 +79,11 @@ public class TestApp extends VolkaniumsApp
         frameInfo.camera().setPerspectiveProjection(TestSettings.FOV.get(), aspectRatio(), 0.1f, 1024f);
         if (window().isFocused())
         {
-            frameInfo.camera().center.set(0, 0f + Y, 0);
-            frameInfo.camera().headOrbit(mousePos.x, mousePos.y, 0.4f, 0.5f);
+            frameInfo.camera().center.set(0, 0, 0 - Y);
+            frameInfo.camera().headOrbit(mousePos.x, mousePos.y, 0.4f, 0.8f);
         }
 
-        float speed = 4f;
+        float speed = 1f;
 
         if (TestKeybinds.LEFT.isActive())
             speed *= 10f;
@@ -91,6 +93,8 @@ public class TestApp extends VolkaniumsApp
 
         if (TestKeybinds.BACK.isActive())
             Y -= frameInfo.frameTime() * speed;
+
+        text().centeredLine("Rainbow in a Pot", 1f, new Vector3f(0, 0.f, 0), new Vector4f(0.8f, 0.8f, 0.8f, 1.0f));
     }
 
     @Override

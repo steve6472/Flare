@@ -13,7 +13,7 @@ import steve6472.core.util.ExtraCodecs;
  * Date: 9/29/2024
  * Project: Volkaniums <br>
  */
-public record Rarity(Key key, String name, Vector4f color) implements Keyable, Serializable<Rarity>
+record Rarity(Key key, String name, Vector4f color) implements Keyable, Serializable<Rarity>
 {
     private static final Codec<Rarity> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         Key.CODEC.fieldOf("key").forGetter(o -> o.key),

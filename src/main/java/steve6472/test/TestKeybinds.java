@@ -10,7 +10,7 @@ import steve6472.volkaniums.input.KeybindType;
  * Date: 9/30/2024
  * Project: Volkaniums <br>
  */
-public class TestKeybinds
+class TestKeybinds
 {
     public static final Keybind FORWARD = register(new Keybind(Key.defaultNamespace("forward"), KeybindType.REPEAT, GLFW.GLFW_KEY_W));
     public static final Keybind LEFT = register(new Keybind(Key.defaultNamespace("left"), KeybindType.REPEAT, GLFW.GLFW_KEY_A));

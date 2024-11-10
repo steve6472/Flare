@@ -25,12 +25,17 @@ public class TextureSampler implements Keyable
 
     public TextureSampler(Texture texture, VkDevice device, Key key)
     {
-        this.texture = texture;
-        this.key = key;
-        create(device);
+        this(texture, device, key, VK_FILTER_NEAREST);
     }
 
-    private void create(VkDevice device)
+    public TextureSampler(Texture texture, VkDevice device, Key key, int filter)
+    {
+        this.texture = texture;
+        this.key = key;
+        create(device, filter);
+    }
+
+    private void create(VkDevice device, int filter)
     {
         textureImageView = VulkanUtil.createImageView(device, texture.textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 
@@ -38,8 +43,8 @@ public class TextureSampler implements Keyable
         {
             VkSamplerCreateInfo samplerInfo = VkSamplerCreateInfo.calloc(stack);
             samplerInfo.sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
-            samplerInfo.magFilter(VK_FILTER_NEAREST);
-            samplerInfo.minFilter(VK_FILTER_NEAREST);
+            samplerInfo.magFilter(filter);
+            samplerInfo.minFilter(filter);
             samplerInfo.addressModeU(VK_SAMPLER_ADDRESS_MODE_REPEAT);
             samplerInfo.addressModeV(VK_SAMPLER_ADDRESS_MODE_REPEAT);
             samplerInfo.addressModeW(VK_SAMPLER_ADDRESS_MODE_REPEAT);

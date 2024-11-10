@@ -7,7 +7,7 @@ import steve6472.volkaniums.render.debug.DebugRender;
  * Date: 9/29/2024
  * Project: Volkaniums <br>
  */
-public class Rarities
+class Rarities
 {
     public static final Rarity COMMON = register(new Rarity("common", "Common", DebugRender.WHITE));
     public static final Rarity UNCOMMON = register(new Rarity("uncommon", "Uncommon", DebugRender.LIME));

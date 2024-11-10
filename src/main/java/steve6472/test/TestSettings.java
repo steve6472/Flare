@@ -8,7 +8,7 @@ import steve6472.core.setting.SettingRegister;
  * Date: 9/29/2024
  * Project: Volkaniums <br>
  */
-public class TestSettings extends SettingRegister
+class TestSettings extends SettingRegister
 {
     static { REGISTRY = TestRegistries.SETTING; }
 

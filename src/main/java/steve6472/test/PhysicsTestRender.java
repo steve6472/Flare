@@ -26,7 +26,7 @@ import java.util.List;
  * Date: 10/1/2024
  * Project: Volkaniums <br>
  */
-public class PhysicsTestRender extends StaticModelRenderImpl
+class PhysicsTestRender extends StaticModelRenderImpl
 {
     PhysicsSpace physicsSpace;
     private final List<PhysicsRigidBody> objects = new ArrayList<>();

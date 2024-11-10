@@ -11,7 +11,7 @@ import steve6472.volkaniums.registry.RegistryCreators;
  * Date: 9/29/2024
  * Project: Volkaniums <br>
  */
-public class TestRegistries extends RegistryCreators
+class TestRegistries extends RegistryCreators
 {
     public static final Registry<Rarity> RARITY = createRegistry("rarity", () -> Rarities.COMMON);
     public static final ObjectRegistry<Setting<?, ?>> SETTING = createObjectRegistry("setting", () -> TestSettings.CUBE_AMOUNT);

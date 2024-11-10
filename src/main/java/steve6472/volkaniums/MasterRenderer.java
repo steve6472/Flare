@@ -8,6 +8,7 @@ import steve6472.volkaniums.render.*;
 import steve6472.volkaniums.render.debug.DebugRender;
 import steve6472.volkaniums.settings.VisualSettings;
 import steve6472.volkaniums.struct.def.UBO;
+import steve6472.volkaniums.ui.font.TextRender;
 import steve6472.volkaniums.vr.VrData;
 
 import java.nio.IntBuffer;
@@ -32,6 +33,7 @@ public class MasterRenderer
     private final SwapChain swapChain;
     private final Commands commands;
     private final VrData vrData;
+    private final TextRender textRender;
 
     private int currentFrameIndex;
     private SyncFrame thisFrame;
@@ -41,7 +43,7 @@ public class MasterRenderer
 
     private final List<RenderSystem> renderSystems = new ArrayList<>();
 
-    public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, Commands commands, long surface, VrData vrData)
+    public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, Commands commands, long surface, VrData vrData, TextRender textRender)
     {
         this.window = window;
         this.device = device;
@@ -49,15 +51,15 @@ public class MasterRenderer
         this.presentQueue = presentQueue;
         this.commands = commands;
         this.vrData = vrData;
+        this.textRender = textRender;
 
         swapChain = new SwapChain(device, window, surface, this);
+    }
 
-//        renderSystems.add(new BackdropRenderSystem(this, Pipelines.BB_STATIC));
-//        renderSystems.add(new SBORenderSystem(device, Pipelines.TEST, commands, graphicsQueue));
-//        renderSystems.add(new SkinRenderSystem(this, Pipelines.SKIN));
-
-        // Has to be last
+    public void builtinLast()
+    {
         addRenderSystem(new DebugLineRenderSystem(this, Pipelines.DEBUG_LINE));
+        addRenderSystem(new FontRenderSystem(this, Pipelines.FONT_SDF));
     }
 
     public void addRenderSystem(RenderSystem renderSystem)
@@ -92,6 +94,9 @@ public class MasterRenderer
         swapChain.cleanupSwapChain();
 
         renderSystems.forEach(RenderSystem::cleanup);
+
+        //noinspection deprecation
+        textRender.getFontInfo().cleanup();
 
         vkDestroyCommandPool(device, commands.commandPool, null);
     }
@@ -164,7 +169,7 @@ public class MasterRenderer
 
     public void beginSwapChainRenderPass(VkCommandBuffer commandBuffer, MemoryStack stack)
     {
-        beginRenderPass(commandBuffer, stack, swapChain.renderPass, swapChain.swapChainExtent, swapChain.swapChainFramebuffers.get(currentImageIndex));
+        beginRenderPass(commandBuffer, stack, swapChain.renderPass, swapChain.swapChainExtent, swapChain.swapChainFramebuffers.getLong(currentImageIndex));
     }
 
     public void beginRenderPass(VkCommandBuffer commandBuffer, MemoryStack stack, long renderPass, VkExtent2D extent, long frameBuffer)
@@ -272,6 +277,11 @@ public class MasterRenderer
     public Window getWindow()
     {
         return window;
+    }
+
+    public TextRender textRender()
+    {
+        return textRender;
     }
 
     public float getAspectRatio()

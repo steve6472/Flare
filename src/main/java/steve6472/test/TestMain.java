@@ -8,6 +8,7 @@ import steve6472.volkaniums.core.Volkaniums;
  * Project: Volkaniums <br>
  */
 public class TestMain
+class TestMain
 {
     public static void main(String[] args)
     {

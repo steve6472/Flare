@@ -3,7 +3,9 @@ package steve6472.volkaniums.core;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
+import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.util.freetype.FreeType;
 import org.lwjgl.vulkan.*;
 import steve6472.core.SteveCore;
 import steve6472.core.log.Log;
@@ -14,6 +16,7 @@ import steve6472.volkaniums.registry.RegistryCreators;
 import steve6472.volkaniums.registry.VolkaniumsRegistries;
 import steve6472.volkaniums.settings.ValidationLevel;
 import steve6472.volkaniums.settings.VisualSettings;
+import steve6472.volkaniums.ui.font.TextRender;
 import steve6472.volkaniums.vr.VrData;
 import steve6472.volkaniums.vr.VrUtil;
 
@@ -45,6 +48,7 @@ public class Volkaniums
     private VkQueue graphicsQueue;
     private VkQueue presentQueue;
     private VrData vrData;
+    private TextRender textRender;
 
     // ======= METHODS ======= //
 
@@ -54,6 +58,8 @@ public class Volkaniums
     {
         if (INSTANCE != null)
             throw new RuntimeException("Volkaniums already started!");
+
+        Configuration.HARFBUZZ_LIBRARY_NAME.set(FreeType.getLibrary());
 
         Volkaniums volkaniums = new Volkaniums();
         SteveCore.DEFAULT_KEY_NAMESPACE = app.defaultNamespace();
@@ -68,11 +74,21 @@ public class Volkaniums
         app.userInput = new UserInput(window);
         app.preInit();
         app.camera = app.setupCamera();
-        initContent();
-        initVulkan();
+        initContent(); // initRegistries & loadSettings
+        initVulkan(); // createRenderSystems
         app.postInit();
         mainLoop();
         cleanup();
+    }
+
+    private void initContent()
+    {
+        RegistryCreators.init(VolkaniumsRegistries.VISUAL_SETTINGS);
+        app.initRegistries();
+
+        RegistryCreators.createContents();
+        SettingsLoader.loadFromJsonFile(VolkaniumsRegistries.VISUAL_SETTINGS, Constants.VISUAL_SETTINGS_FILE);
+        app.loadSettings();
     }
 
     private void initVulkan()
@@ -86,20 +102,14 @@ public class Volkaniums
         createLogicalDevice();
         vrData.createVkResources(device, graphicsQueue);
         commands.createCommandPool(device, surface);
+        textRender = new TextRender();
+        //noinspection deprecation
+        SamplerLoader.addSamplerLoader((a, b, c) -> textRender.getFontInfo().getSamplerLoader(a, b, c));
         RegistryCreators.createVkContents(device, commands, graphicsQueue);
-        renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, commands, surface, vrData);
+        renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, commands, surface, vrData, textRender);
         app.createRenderSystems(renderer);
+        renderer.builtinLast();
         renderer.getSwapChain().createSwapChainObjects();
-    }
-
-    private void initContent()
-    {
-        RegistryCreators.init(VolkaniumsRegistries.VISUAL_SETTINGS);
-        app.initRegistries();
-
-        RegistryCreators.createContents();
-        SettingsLoader.loadFromJsonFile(VolkaniumsRegistries.VISUAL_SETTINGS, Constants.VISUAL_SETTINGS_FILE);
-        app.loadSettings();
     }
 
     private void mainLoop()

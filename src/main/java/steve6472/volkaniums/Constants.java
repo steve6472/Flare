@@ -27,6 +27,9 @@ public class Constants
     /// Blockbench texture atlas
     public static final Key BLOCKBENCH_TEXTURE = Key.defaultNamespace("blockbench_main");
 
+    /// Font texture atlas
+    public static final Key FONT_TEXTURE = Key.defaultNamespace("font_main");
+
     /// Used for code-generated resources
     public static final String ENGINE_NAMESPACE = "builtin_engine";
 

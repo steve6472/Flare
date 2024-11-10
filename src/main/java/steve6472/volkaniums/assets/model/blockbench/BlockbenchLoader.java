@@ -18,6 +18,7 @@ import steve6472.volkaniums.assets.Texture;
 import steve6472.volkaniums.assets.TextureSampler;
 import steve6472.volkaniums.assets.model.Model;
 import steve6472.volkaniums.assets.model.primitive.PrimitiveModel;
+import steve6472.volkaniums.util.PackerUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -49,35 +50,7 @@ public class BlockbenchLoader
 
     private static TextureSampler createMainBlockbenchTexture(VkDevice device, Commands commands, VkQueue graphicsQueue)
     {
-        int size = STARTING_IMAGE_SIZE;
-        ImagePacker packer;
-
-        l: while (true)
-        {
-            packer = new ImagePacker(size, size, 1, true);
-
-            for (String imgKey : IMAGES.keySet())
-            {
-                BufferedImage bufferedImage = IMAGES.get(imgKey);
-                try
-                {
-                    packer.insertImage(imgKey, bufferedImage);
-                } catch (RuntimeException ignored)
-                {
-                    size *= 2;
-                    continue l;
-                }
-            }
-            try
-            {
-                packer.insertImage(Constants.ERROR_TEXTURE, ErrorModel.IMAGE);
-            } catch (RuntimeException ignored)
-            {
-                size *= 2;
-                continue;
-            }
-            break;
-        }
+        ImagePacker packer = PackerUtil.pack(STARTING_IMAGE_SIZE, IMAGES, true);
 
         IMAGES.clear();
 
