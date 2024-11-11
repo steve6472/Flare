@@ -19,7 +19,7 @@ public record MemberData<T>(Class<T> clazz, Supplier<T> constructor, int format,
         return new Builder<>(clazz);
     }
 
-    public MemberData<T[]> makeArray(final int arraySize)
+    public MemberData<T[]> makeArray(final int arraySize, int sizeof)
     {
         Preconditions.checkTrue(clazz.isArray(), "Can not make an array type from array!");
 
@@ -33,8 +33,6 @@ public record MemberData<T>(Class<T> clazz, Supplier<T> constructor, int format,
             }
             return array;
         };
-
-        int sizeof = AlignmentUtils.sizeof(clazz);
 
         Memcpy<T[]> memcpyArr = (buff, offset, obj) -> {
             int arrayOffset = 0;

@@ -1,8 +1,10 @@
 {
   "base_test:debug_line_single_buffer": true,
   "base_test:enable_wide_lines": true,
+  "base_test:font_gen_logs": false,
+  "base_test:font_generate_timeout": 15,
   "base_test:font_path": "%SystemRoot%/Fonts/arial.ttf",
-  "base_test:font_quality": 256,
+  "base_test:generate_font": false,
   "base_test:global_camera_count": 3,
   "base_test:line_width": 4.0,
   "base_test:present_mode": "Mailbox",

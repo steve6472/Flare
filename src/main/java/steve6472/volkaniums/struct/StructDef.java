@@ -19,6 +19,7 @@ public class StructDef
      */
     int size;
     protected List<MemberEntry> members;
+    private MemberData<Struct> memberData;
 
     public StructDef() {}
 
@@ -53,6 +54,29 @@ public class StructDef
         }
 
         return vertex;
+    }
+
+    void createMemberData()
+    {
+        if (memberData != null)
+            throw new RuntimeException("Tried to create member data again! Bad!!!");
+
+        memberData = new MemberData<>(Struct.class, this::create, -1, (buff, offset, obj) ->
+        {
+            int arrayOffset = 0;
+            for (int i = 0; i < members.size(); i++)
+            {
+                MemberEntry member = members.get(i);
+                //noinspection unchecked
+                ((Memcpy<Object>) member.memberData().memcpy()).accept(buff, offset + arrayOffset, obj.members[i]);
+                arrayOffset += member.size();
+            }
+        });
+    }
+
+    public MemberData<Struct> memberData()
+    {
+        return memberData;
     }
 
     /*

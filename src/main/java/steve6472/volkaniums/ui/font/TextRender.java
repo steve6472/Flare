@@ -1,8 +1,11 @@
 package steve6472.volkaniums.ui.font;
 
+import it.unimi.dsi.fastutil.longs.Long2FloatMap;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import steve6472.volkaniums.settings.VisualSettings;
+import steve6472.core.registry.Key;
+import steve6472.volkaniums.ui.font.layout.GlyphInfo;
+import steve6472.volkaniums.ui.font.layout.Kerning;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,12 +31,17 @@ public class TextRender
 
     public void line(String text, float size, Vector3f position, Vector4f color)
     {
-        lines.add(TextLine.fromText(text, size, position, color));
+        lines.add(TextLine.fromText(text, size, position));
     }
 
     public void centeredLine(String text, float size, Vector3f center, Vector4f color)
     {
-        lines.add(TextLine.fromText(text, size, new Vector3f(center).sub(getWidth(text, size) / 2f, 0, 0), color));
+        lines.add(TextLine.fromText(text, size, new Vector3f(center).sub(getWidth(text, size) / 2f, 0, 0)));
+    }
+
+    public void centeredLine(String text, float size, Vector3f center, Vector4f color, Key style)
+    {
+        lines.add(TextLine.fromText(text, size, new Vector3f(center).sub(getWidth(text, size) / 2f, 0, 0), style));
     }
 
     /*
@@ -48,6 +56,15 @@ public class TextRender
         return glyphInfo;
     }
 
+    public float kerningAdvance(char left, char right)
+    {
+        Long2FloatMap leftKern = fontInfo.kerning.get(left);
+        if (leftKern == null)
+            return 0f;
+
+        return leftKern.get(right);
+    }
+
     public GlyphInfo errorGlyph()
     {
         return fontInfo.ERROR;
@@ -56,11 +73,11 @@ public class TextRender
     public float getWidth(String text, float size)
     {
         float width = 0;
-        final float scale = (size / (float) VisualSettings.FONT_QUALITY.get());
 
         for (char c : text.toCharArray())
         {
-            width += (glyphInfo(c).advance() >> 6) * scale;
+            GlyphInfo glyphInfo = glyphInfo(c);
+            width += glyphInfo.advance() * size;
         }
 
         return width;
@@ -72,7 +89,7 @@ public class TextRender
 
     /// Deprecated - internal
     @Deprecated
-    public FontInfo getFontInfo()
+    public FontInfo fontInfo()
     {
         return fontInfo;
     }

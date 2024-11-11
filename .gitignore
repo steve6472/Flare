@@ -37,3 +37,5 @@ build/
 # debug
 atlas.png
 /dep/
+blockbench_atlas.png
+resources/font/generated/

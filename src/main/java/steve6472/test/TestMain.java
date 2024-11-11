@@ -7,11 +7,11 @@ import steve6472.volkaniums.core.Volkaniums;
  * Date: 9/29/2024
  * Project: Volkaniums <br>
  */
-public class TestMain
 class TestMain
 {
     public static void main(String[] args)
     {
+        System.setProperty("joml.format", "false");
         Volkaniums.start(new TestApp());
     }
 }

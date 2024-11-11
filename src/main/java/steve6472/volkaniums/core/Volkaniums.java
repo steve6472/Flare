@@ -104,7 +104,7 @@ public class Volkaniums
         commands.createCommandPool(device, surface);
         textRender = new TextRender();
         //noinspection deprecation
-        SamplerLoader.addSamplerLoader((a, b, c) -> textRender.getFontInfo().getSamplerLoader(a, b, c));
+        SamplerLoader.addSamplerLoader((a, b, c) -> textRender.fontInfo().getSamplerLoader(a, b, c));
         RegistryCreators.createVkContents(device, commands, graphicsQueue);
         renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, commands, surface, vrData, textRender);
         app.createRenderSystems(renderer);
@@ -139,7 +139,7 @@ public class Volkaniums
                     frameInfo.camera.cameraIndex = 0;
 
                     if (VisualSettings.RENDER_CENTER_POINT.get())
-                        addDebugObjectForFrame(cross(new Vector3f(0, 0, 0), 0.1f, DARK_GRAY));
+                        addDebugObjectForFrame(cross(new Vector3f(0, 0, 0), 0.5f, DARK_GRAY));
 
                     // Render
                     renderer.totalRenderCount = 0;

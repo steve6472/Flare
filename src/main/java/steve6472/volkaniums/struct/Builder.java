@@ -3,6 +3,7 @@ package steve6472.volkaniums.struct;
 import steve6472.core.util.Preconditions;
 import steve6472.volkaniums.AlignmentUtils;
 
+import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -27,7 +28,19 @@ public final class Builder
     {
         Preconditions.checkTrue(arraySize < 0, "Array size has to be 0 or more!");
 
-        members.add(new MemberEntry(memberData.makeArray(arraySize), AlignmentUtils.sizeof(memberData.clazz()) * arraySize, arraySize));
+        members.add(new MemberEntry(memberData.makeArray(arraySize, AlignmentUtils.sizeof(memberData.clazz())), AlignmentUtils.sizeof(memberData.clazz()) * arraySize, arraySize));
+        return this;
+    }
+
+    public Builder addStruct(StructDef struct)
+    {
+        members.add(new MemberEntry(struct.memberData(), struct.sizeof()));
+        return this;
+    }
+
+    public Builder addStructArray(StructDef struct, int arraySize)
+    {
+        members.add(new MemberEntry(struct.memberData().makeArray(arraySize, struct.sizeof()), struct.sizeof() * arraySize, arraySize));
         return this;
     }
 
@@ -37,12 +50,6 @@ public final class Builder
         this.dynamicBufferSize = dynamicBufferSize;
         return this;
     }
-
-//    public Builder addStructArray(StructDef struct, int i)
-//    {
-//        members.add(new MemberEntry(data, 0, struct.sizeof() * i));
-//        return this;
-//    }
 
     public StructDef build()
     {
@@ -54,6 +61,7 @@ public final class Builder
             builtStruct.members.add(member);
         }
         builtStruct.size *= dynamicBufferSize;
+        builtStruct.createMemberData();
 
         return builtStruct;
     }
@@ -68,6 +76,7 @@ public final class Builder
             builtStruct.members.add(member);
         }
         builtStruct.size *= dynamicBufferSize;
+        builtStruct.createMemberData();
 
         return builtStruct;
     }

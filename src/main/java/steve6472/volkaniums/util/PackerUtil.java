@@ -12,7 +12,7 @@ import java.util.Map;
  * Date: 10/20/2024
  * Project: Volkaniums <br>
  */
-public class PackerUtil
+public final class PackerUtil
 {
     public static ImagePacker pack(int startingImageSize, Map<String, BufferedImage> images, boolean includeError)
     {

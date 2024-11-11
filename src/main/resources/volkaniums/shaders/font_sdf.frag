@@ -1,24 +1,36 @@
 #version 450
 #extension GL_ARB_separate_shader_objects: enable
 
-layout (location = 0) in vec4 fragColor;
-layout (location = 1) in vec2 uv;
+layout (location = 0) in vec2 uv;
+layout (location = 1) flat in int index;
 
 layout (location = 0) out vec4 outColor;
 
 layout(set = 0, binding = 1) uniform sampler2D texSampler;
 
-const float softness = 0.0;
-const float thickness = 0.7; // range 0..1
+struct FontStyle
+{
+    vec4 color;
+    vec4 outlineColor;
+    vec4 shadowColor;
 
-const vec4 outlineColor = vec4(1.0, 1.0, 1.0, 1);
-const float outlineThickness = 0.5;
-const float outlineSoftness = 0.5;
+    float softness;
+    float outlineSoftness;
+    float shadowSoftness;
+    float soft; // 1 - true, 0 - false
 
-const vec2 shadowOffset = vec2(-0.003, -0.003);
-const float shadowSoftness = 0.2;
-const float shadowThickness = 0.7;
-const vec4 shadowColor = vec4(0.07, 0.07, 0.07, 1.0);
+    float thickness;
+    float outlineThickness;
+    float shadowThickness;
+    float _padding1;
+
+    vec2 shadowOffset;
+    vec2 atlasSize;
+};
+
+layout(std140, set = 0, binding = 2) readonly buffer FontUBO {
+    FontStyle array[];
+} styles;
 
 vec4 blendImages(vec4 colorA, vec4 colorB)
 {
@@ -35,17 +47,45 @@ vec4 blendImages(vec4 colorA, vec4 colorB)
     return vec4(blendedColor, finalAlpha);
 }
 
+float median(float a, float b, float c)
+{
+    return max(min(a, b), min(max(a, b), c));
+}
+
+float median(float a, float b, float c, float d)
+{
+    float maxAB = max(a, b);
+    float minAB = min(a, b);
+    float maxCD = max(c, d);
+    float minCD = min(c, d);
+
+    float middleMax = min(maxAB, maxCD);
+    float middleMin = max(minAB, minCD);
+
+    return (middleMax + middleMin) * 0.5;
+}
+
 void main()
 {
-    float sdf = texture(texSampler, uv).r;
-    float distance = smoothstep(1.0 - thickness - softness, 1.0 - thickness + softness, sdf);
+    FontStyle style = styles.array[index];
+    
+    float sdf = 0;
+    if (style.soft == 1)
+    {
+        sdf = texture(texSampler, uv).a;
+    } else
+    {
+        vec4 msd = texture(texSampler, uv);
+        sdf = median(msd.r, msd.g, msd.b);
+    }
+    float distance = smoothstep(1.0 - style.thickness - style.softness, 1.0 - style.thickness + style.softness, sdf);
 
-    float outline = smoothstep(outlineThickness - outlineSoftness, outlineThickness + outlineSoftness, sdf);
-    vec4 mainImage = vec4(mix(outlineColor.rgb, fragColor.rgb, outline), clamp(distance, 0, 1));
+    float outline = smoothstep(style.outlineThickness - style.outlineSoftness, style.outlineThickness + style.outlineSoftness, sdf);
+    vec4 mainImage = vec4(mix(style.outlineColor.rgb, style.color.rgb, outline), clamp(distance, 0, 1));
 
-    float shadow = texture(texSampler, uv + shadowOffset).r;
-    shadow = smoothstep(1.0 - shadowThickness - shadowSoftness, 1.0 - shadowThickness + shadowSoftness, shadow);
-    vec4 shadowImage = vec4(shadowColor.rgb, clamp(shadow, 0, 1));
+    float shadow = texture(texSampler, uv - style.shadowOffset / style.atlasSize).a;
+    shadow = smoothstep(1.0 - style.shadowThickness - style.shadowSoftness, 1.0 - style.shadowThickness + style.shadowSoftness, shadow);
+    vec4 shadowImage = vec4(style.shadowColor.rgb, clamp(shadow, 0, 1));
 
     vec4 finalImage = blendImages(shadowImage, mainImage);
 

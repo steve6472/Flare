@@ -130,7 +130,7 @@ public interface Pipelines
             .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "volkaniums/shaders/font_sdf.vert", VK_SHADER_STAGE_VERTEX_BIT)
             .addShader(ShaderSPIRVUtils.ShaderKind.FRAGMENT_SHADER, "volkaniums/shaders/font_sdf.frag", VK_SHADER_STAGE_FRAGMENT_BIT)
             .done()
-        .vertexInputInfo(Vertex.POS3F_COL4F_UV)
+        .vertexInputInfo(Vertex.POS3F_UV_FONT_INDEX)
         .inputAssembly(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, false)
         .viewport()
             .viewportBounds(0.0f, extent.height(), extent.width(), -extent.height())

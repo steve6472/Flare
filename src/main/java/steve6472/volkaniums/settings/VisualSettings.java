@@ -25,8 +25,12 @@ public class VisualSettings extends SettingRegister
     /// Path to the font file (only one font can be loaded in the whole app for now)
     public static StringSetting FONT_PATH = registerString("font_path", "resources/font/cmunrm.ttf");
 
-    /// Specifies the quality for bitmap font
-    public static IntSetting FONT_QUALITY = registerInt("font_quality", 32);
+    /// Max timeout for font generating
+    public static IntSetting FONT_GENERATE_TIMEOUT = registerInt("font_generate_timeout", 15);
+
+    /// Generate font on startup
+    /// Automatically set to false after font is generated
+    public static BoolSetting GENERATE_FONT = registerBool("generate_font", true);
 
     /*
      * Vr
@@ -62,4 +66,8 @@ public class VisualSettings extends SettingRegister
     /// Validation level
     /// A warning is thrown if validation level is set to anything other than NONE and no Vulkan SDK is found
     public static EnumSetting<ValidationLevel> VALIDATION_LEVEL = registerEnum("validation_level", ValidationLevel.WARNING);
+
+    /// If true, logs everything from the font generator process
+    /// (default false as it is mostly missing glyphs)
+    public static BoolSetting FONT_GEN_LOGS = registerBool("font_gen_logs", false);
 }

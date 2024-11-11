@@ -11,6 +11,9 @@ import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
 import steve6472.volkaniums.assets.model.blockbench.BlockbenchLoader;
 import steve6472.volkaniums.assets.model.blockbench.anim.KeyframeType;
 import steve6472.volkaniums.settings.VisualSettings;
+import steve6472.volkaniums.ui.font.FontStyleEntry;
+import steve6472.volkaniums.ui.font.StyleLoader;
+import steve6472.volkaniums.ui.font.style.FontStyle;
 
 /**
  * Created by steve6472
@@ -27,6 +30,7 @@ public class VolkaniumsRegistries extends RegistryCreators
     // Models have to load after the model types registries
     public static final ObjectRegistry<LoadedModel> STATIC_LOADED_MODEL = createObjectRegistry("static_loaded_model", ErrorModel.INSTANCE, BlockbenchLoader::loadStaticModels);
     public static final ObjectRegistry<LoadedModel> ANIMATED_LOADED_MODEL = createObjectRegistry("animated_loaded_model", ErrorModel.INSTANCE, BlockbenchLoader::loadAnimatedModels);
+    public static final ObjectRegistry<FontStyleEntry> FONT_STYLE = createObjectRegistry("font_style", StyleLoader::bootstrap);
 
     // VK Objects
     public static final ObjectRegistry<TextureSampler> SAMPLER = createVkObjectRegistry("sampler", SamplerLoader::loadSamplers);

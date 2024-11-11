@@ -95,9 +95,6 @@ public class MasterRenderer
 
         renderSystems.forEach(RenderSystem::cleanup);
 
-        //noinspection deprecation
-        textRender.getFontInfo().cleanup();
-
         vkDestroyCommandPool(device, commands.commandPool, null);
     }
 

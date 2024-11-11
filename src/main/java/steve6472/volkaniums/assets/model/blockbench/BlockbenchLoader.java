@@ -39,7 +39,7 @@ public class BlockbenchLoader
 {
     private static final Logger LOGGER = Log.getLogger(BlockbenchLoader.class);
     private static final String MODELS_PATH = "resources" + File.separator + "models" + File.separator + "blockbench" + File.separator;
-    private static final int STARTING_IMAGE_SIZE = 4;
+    private static final int STARTING_IMAGE_SIZE = 512;
 
     private static final Map<String, BufferedImage> IMAGES = new HashMap<>();
 
@@ -68,7 +68,7 @@ public class BlockbenchLoader
     {
         try
         {
-            ImageIO.write(image, "PNG", new File("atlas.png"));
+            ImageIO.write(image, "PNG", new File("blockbench_atlas.png"));
         } catch (IOException e)
         {
             LOGGER.warning("Failed to save debug atlas.png, exception: " + e.getMessage());
