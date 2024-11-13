@@ -34,12 +34,12 @@ public interface SBO
         .addMember(FLOAT) // softness
         .addMember(FLOAT) // outlineSoftness
         .addMember(FLOAT) // shadowSoftness
-        .addMember(FLOAT) // SOFT
+        .addMember(INT)   // soft
 
         .addMember(FLOAT) // thickness
         .addMember(FLOAT) // outlineThickness
         .addMember(FLOAT) // shadowThickness
-        .addMember(FLOAT) // padding
+        .addMember(INT)   // font index
 
         .addMember(VEC_2F) // shadowOffset
         .addMember(VEC_2F) // atlasSize

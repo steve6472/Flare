@@ -1,12 +1,14 @@
 #version 450
 #extension GL_ARB_separate_shader_objects: enable
+#extension GL_EXT_nonuniform_qualifier : require
 
 layout (location = 0) in vec2 uv;
 layout (location = 1) flat in int index;
 
 layout (location = 0) out vec4 outColor;
 
-layout(set = 0, binding = 1) uniform sampler2D texSampler;
+layout(set = 0, binding = 1) uniform sampler2D texSampler[];
+#define image texSampler[style.fontIndex]
 
 struct FontStyle
 {
@@ -17,18 +19,18 @@ struct FontStyle
     float softness;
     float outlineSoftness;
     float shadowSoftness;
-    float soft; // 1 - true, 0 - false
+    int soft; // 1 - true, 0 - false
 
     float thickness;
     float outlineThickness;
     float shadowThickness;
-    float _padding1;
+    int fontIndex;
 
     vec2 shadowOffset;
     vec2 atlasSize;
 };
 
-layout(std140, set = 0, binding = 2) readonly buffer FontUBO {
+layout(std140, set = 0, binding = 2) readonly buffer FontSBO {
     FontStyle array[];
 } styles;
 
@@ -68,14 +70,14 @@ float median(float a, float b, float c, float d)
 void main()
 {
     FontStyle style = styles.array[index];
-    
+
     float sdf = 0;
     if (style.soft == 1)
     {
-        sdf = texture(texSampler, uv).a;
+        sdf = texture(image, uv).a;
     } else
     {
-        vec4 msd = texture(texSampler, uv);
+        vec4 msd = texture(image, uv);
         sdf = median(msd.r, msd.g, msd.b);
     }
     float distance = smoothstep(1.0 - style.thickness - style.softness, 1.0 - style.thickness + style.softness, sdf);
@@ -83,7 +85,7 @@ void main()
     float outline = smoothstep(style.outlineThickness - style.outlineSoftness, style.outlineThickness + style.outlineSoftness, sdf);
     vec4 mainImage = vec4(mix(style.outlineColor.rgb, style.color.rgb, outline), clamp(distance, 0, 1));
 
-    float shadow = texture(texSampler, uv - style.shadowOffset / style.atlasSize).a;
+    float shadow = texture(image, uv - style.shadowOffset / style.atlasSize).a;
     shadow = smoothstep(1.0 - style.shadowThickness - style.shadowSoftness, 1.0 - style.shadowThickness + style.shadowSoftness, shadow);
     vec4 shadowImage = vec4(style.shadowColor.rgb, clamp(shadow, 0, 1));
 

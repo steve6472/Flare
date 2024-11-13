@@ -7,8 +7,9 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import steve6472.core.log.Log;
 import steve6472.core.registry.Key;
-import steve6472.volkaniums.assets.model.blockbench.LoadedModel;
+import steve6472.volkaniums.Constants;
 import steve6472.volkaniums.registry.VolkaniumsRegistries;
+import steve6472.volkaniums.ui.font.layout.AtlasData;
 import steve6472.volkaniums.ui.font.style.FontStyle;
 import steve6472.volkaniums.util.ResourceCrawl;
 
@@ -27,35 +28,40 @@ public class StyleLoader
 {
     private static final Logger LOGGER = Log.getLogger(StyleLoader.class);
 
-    private static final String STYLES_PATH = "resources" + File.separator + "font" + File.separator + "styles" + File.separator;
+    private static final File STYLES = new File(Constants.RESOURCES_FOLDER, "font/styles");
 
     public static FontStyleEntry bootstrap()
     {
         List<FontStyleEntry> styles = new ArrayList<>();
-        styles.add(new FontStyleEntry(FontStyle.BASE_KEY, FontStyle.BASE, 0));
 
-        ResourceCrawl.crawl(new File(STYLES_PATH), true, (file, relPath) -> {
-
-            InputStreamReader streamReader;
-            try
-            {
-                streamReader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
-            } catch (FileNotFoundException e)
-            {
-                throw new RuntimeException(e);
-            }
-            BufferedReader reader = new BufferedReader(streamReader);
-            JsonElement jsonElement = JsonParser.parseReader(reader);
-            DataResult<Pair<FontStyle, JsonElement>> decode = FontStyle.CODEC.decode(JsonOps.INSTANCE, jsonElement);
-
-            relPath = relPath.replace("\\", "/");
-            FontStyle style = decode.getOrThrow().getFirst();
-            FontStyleEntry entry = new FontStyleEntry(Key.defaultNamespace(relPath), style, styles.size());
+        ResourceCrawl.crawlAndLoadJsonCodec(STYLES, FontStyle.CODEC, (style, key) ->
+        {
+            FontStyleEntry entry = new FontStyleEntry(key, style, styles.size());
+            LOGGER.finest("Loaded font style " + entry.key());
             styles.add(entry);
         });
 
         styles.forEach(VolkaniumsRegistries.FONT_STYLE::register);
 
+        udpateAtlasSizes();
+
         return styles.getFirst();
+    }
+
+    private static void udpateAtlasSizes()
+    {
+        for (Key styleKey : VolkaniumsRegistries.FONT_STYLE.keys())
+        {
+            FontStyle style = VolkaniumsRegistries.FONT_STYLE.get(styleKey).style();
+            Font font = style.font();
+            if (font == null)
+            {
+                LOGGER.severe("Font Style '" + styleKey + "' references '" + style.font() + "' which has not been loaded!");
+                continue;
+            }
+
+            AtlasData atlasData = font.getAtlasData();
+            style.atlasSize().set(atlasData.width() / atlasData.size(), atlasData.height() / atlasData.size());
+        }
     }
 }

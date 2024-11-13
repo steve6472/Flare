@@ -100,9 +100,9 @@ public class SkinRenderSystem extends RenderSystem
             {
                 DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
                 frame.descriptorSet = descriptorWriter
-                    .writeBuffer(0, frame.uboBuffer, stack)
-                    .writeBuffer(1, frame.sboBuffer, stack)
-                    .writeImage(2, sampler, stack)
+                    .writeBuffer(0, stack, frame.uboBuffer)
+                    .writeBuffer(1, stack, frame.sboBuffer)
+                    .writeImage(2, stack, sampler)
                     .build();
             }
         }

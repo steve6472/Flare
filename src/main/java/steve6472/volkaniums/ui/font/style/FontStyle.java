@@ -3,20 +3,23 @@ package steve6472.volkaniums.ui.font.style;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Vector2f;
-import org.joml.Vector4f;
 import steve6472.core.registry.Key;
 import steve6472.core.util.ExtraCodecs;
+import steve6472.volkaniums.registry.VolkaniumsRegistries;
 import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.SBO;
+import steve6472.volkaniums.ui.font.Font;
+import steve6472.volkaniums.ui.font.FontEntry;
 
 /**
  * Created by steve6472
  * Date: 11/10/2024
  * Project: Volkaniums <br>
  */
-public record FontStyle(ColorSoftThick base, ColorSoftThick outline, ColorSoftThick shadow, boolean soft, Vector2f shadowOffset, Vector2f atlasSize)
+public record FontStyle(FontEntry fontEntry, ColorSoftThick base, ColorSoftThick outline, ColorSoftThick shadow, boolean soft, Vector2f shadowOffset, Vector2f atlasSize)
 {
     public static final Codec<FontStyle> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+        Key.CODEC.xmap(VolkaniumsRegistries.FONT::get, FontEntry::key).fieldOf("font").forGetter(FontStyle::fontEntry),
         ColorSoftThick.CODEC.optionalFieldOf("base", ColorSoftThick.EMPTY).forGetter(FontStyle::base),
         ColorSoftThick.CODEC.optionalFieldOf("outline", ColorSoftThick.EMPTY).forGetter(FontStyle::outline),
         ColorSoftThick.CODEC.optionalFieldOf("shadow", ColorSoftThick.EMPTY).forGetter(FontStyle::shadow),
@@ -25,57 +28,14 @@ public record FontStyle(ColorSoftThick base, ColorSoftThick outline, ColorSoftTh
         ExtraCodecs.VEC_2F.optionalFieldOf("atlas_size", new Vector2f()).forGetter(FontStyle::atlasSize)
     ).apply(instance, FontStyle::new));
 
-    /*
-    public static final FontStyle DEBUG = new FontStyle(
-        new ColorSoftThick( // base
-            new Vector4f(0.4f, 0.8f, 0.8f, 1.0f),
-            0.1f,
-            0.7f
-        ),
-        new ColorSoftThick( // outline
-            new Vector4f(1.0f, 0.6f, 1.0f, 1.0f),
-            0.5f,
-            0.5f
-        ),
-        new ColorSoftThick( // shadow
-            new Vector4f(0.00f, 0.00f, 0.3f, 1.0f),
-            0.2f,
-            0.7f
-        ),
-        true,
-        new Vector2f(0.2f, 0.3f),
-        new Vector2f()
-    );*/
-
-    public static final Key BASE_KEY = Key.defaultNamespace("base");
-
-    public static final FontStyle BASE = new FontStyle(
-        new ColorSoftThick( // base
-            new Vector4f(0.8f, 0.8f, 0.8f, 1.0f),
-            0.0f,
-            0.7f
-        ),
-        new ColorSoftThick( // outline
-            new Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
-            0.5f,
-            0.5f
-        ),
-        new ColorSoftThick( // shadow
-            new Vector4f(0.07f, 0.07f, 0.07f, 1.0f),
-            0.2f,
-            0.7f
-        ),
-        false,
-        new Vector2f(0.03f, 0.03f),
-        new Vector2f()
-    );
-
-    public void updateFontStyles(Struct styles, int index)
+    public Font font()
     {
-        styles.getMember(0, Struct[].class)[index] = toStruct();
+        return fontEntry.font();
     }
 
-    public Struct toStruct()
+    public static final Key DEFAULT = Key.defaultNamespace("default");
+
+    public Struct toStruct(int fontIndex)
     {
         return SBO.MSDF_FONT_STYLE.create(
             base.color(),
@@ -85,12 +45,12 @@ public record FontStyle(ColorSoftThick base, ColorSoftThick outline, ColorSoftTh
             base.softness(),
             outline.softness(),
             shadow.softness(),
-            soft ? 1f : 0f,
+            soft ? 1 : 0,
 
             base.thickness(),
             outline.thickness(),
             shadow.thickness(),
-            0f, // PADDING
+            fontIndex,
 
             shadowOffset,
             atlasSize

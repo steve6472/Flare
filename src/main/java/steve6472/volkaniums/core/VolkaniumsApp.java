@@ -10,7 +10,6 @@ import steve6472.volkaniums.input.UserInput;
 import steve6472.volkaniums.Window;
 import steve6472.volkaniums.pipeline.builder.PipelineConstructor;
 import steve6472.volkaniums.render.RenderSystem;
-import steve6472.volkaniums.ui.font.FontInfo;
 import steve6472.volkaniums.ui.font.TextRender;
 import steve6472.volkaniums.vr.VrData;
 import steve6472.volkaniums.vr.VrInput;

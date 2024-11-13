@@ -80,9 +80,9 @@ public final class StaticModelRenderSystem extends RenderSystem
             {
                 DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
                 frame.descriptorSet = descriptorWriter
-                    .writeBuffer(0, frame.uboBuffer, stack, UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT)
-                    .writeImage(1, VolkaniumsRegistries.SAMPLER.get(Constants.BLOCKBENCH_TEXTURE), stack)
-                    .writeBuffer(2, frame.sboBuffer, stack)
+                    .writeBuffer(0, stack, frame.uboBuffer, UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT)
+                    .writeImage(1, stack, VolkaniumsRegistries.SAMPLER.get(Constants.BLOCKBENCH_TEXTURE))
+                    .writeBuffer(2, stack, frame.sboBuffer)
                     .build();
             }
         }

@@ -31,11 +31,11 @@ public class DescriptorWriter
 
     public DescriptorWriter writeBuffer(int binding, VkDescriptorBufferInfo.Buffer bufferInfo)
     {
-        writes.add(new Write(getDescriptorType(binding), binding, bufferInfo, null));
+        writes.add(new Write(getDescriptorType(binding), binding, bufferInfo, null, 1));
         return this;
     }
 
-    public DescriptorWriter writeBuffer(int binding, VkBuffer buffer, MemoryStack stack)
+    public DescriptorWriter writeBuffer(int binding, MemoryStack stack, VkBuffer buffer)
     {
         VkDescriptorBufferInfo.Buffer bufferInfo = VkDescriptorBufferInfo.calloc(1, stack);
         bufferInfo.offset(0);
@@ -45,7 +45,7 @@ public class DescriptorWriter
         return writeBuffer(binding, bufferInfo);
     }
 
-    public DescriptorWriter writeBuffer(int binding, VkBuffer buffer, MemoryStack stack, int rangeOverride)
+    public DescriptorWriter writeBuffer(int binding, MemoryStack stack, VkBuffer buffer, int rangeOverride)
     {
         VkDescriptorBufferInfo.Buffer bufferInfo = VkDescriptorBufferInfo.calloc(1, stack);
         bufferInfo.offset(0);
@@ -57,11 +57,17 @@ public class DescriptorWriter
 
     public DescriptorWriter writeImage(int binding, VkDescriptorImageInfo.Buffer bufferInfo)
     {
-        writes.add(new Write(getDescriptorType(binding), binding, null, bufferInfo));
+        writes.add(new Write(getDescriptorType(binding), binding, null, bufferInfo, 1));
         return this;
     }
 
-    public DescriptorWriter writeImage(int binding, TextureSampler textureSampler, MemoryStack stack)
+    public DescriptorWriter writeImages(int binding, VkDescriptorImageInfo.Buffer bufferInfo, int count)
+    {
+        writes.add(new Write(getDescriptorType(binding), binding, null, bufferInfo, count));
+        return this;
+    }
+
+    public DescriptorWriter writeImage(int binding, MemoryStack stack, TextureSampler textureSampler)
     {
         VkDescriptorImageInfo.Buffer imageInfo = VkDescriptorImageInfo.calloc(1, stack);
         imageInfo.imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -69,6 +75,23 @@ public class DescriptorWriter
         imageInfo.sampler(textureSampler.textureSampler);
 
         return writeImage(binding, imageInfo);
+    }
+
+    public DescriptorWriter writeImages(int binding, MemoryStack stack, TextureSampler... textureSamplers)
+    {
+        if (textureSamplers.length == 0)
+            throw new RuntimeException("Tried to create descriptor of 0 images");
+
+        VkDescriptorImageInfo.Buffer imageInfo = VkDescriptorImageInfo.calloc(textureSamplers.length, stack);
+        for (int i = 0; i < textureSamplers.length; i++)
+        {
+            VkDescriptorImageInfo info = imageInfo.get(i);
+            info.imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            info.imageView(textureSamplers[i].textureImageView);
+            info.sampler(textureSamplers[i].textureSampler);
+        }
+
+        return writeImages(binding, imageInfo, textureSamplers.length);
     }
 
     private int getDescriptorType(int binding)
@@ -120,7 +143,8 @@ public class DescriptorWriter
         vkUpdateDescriptorSets(pool.device, writeBuffer, null);
     }
 
-    private record Write(int type, int binding, VkDescriptorBufferInfo.Buffer bufferInfo, VkDescriptorImageInfo.Buffer imageInfo)
+    private record Write(int type, int binding, VkDescriptorBufferInfo.Buffer bufferInfo, VkDescriptorImageInfo.Buffer imageInfo,
+                         int count)
     {
         public Write
         {
@@ -136,7 +160,7 @@ public class DescriptorWriter
             write.dstBinding(binding);
             write.dstArrayElement(0);
             write.descriptorType(type);
-            write.descriptorCount(1);
+            write.descriptorCount(count);
             if (bufferInfo != null)
                 write.pBufferInfo(bufferInfo);
             else

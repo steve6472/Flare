@@ -6,7 +6,6 @@ import com.jme3.bullet.util.NativeLibrary;
 import com.jme3.system.NativeLibraryLoader;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 import steve6472.core.registry.Key;
 import steve6472.core.setting.SettingsLoader;
@@ -14,10 +13,6 @@ import steve6472.volkaniums.Camera;
 import steve6472.volkaniums.core.FrameInfo;
 import steve6472.volkaniums.core.VolkaniumsApp;
 import steve6472.volkaniums.input.KeybindUpdater;
-import steve6472.volkaniums.pipeline.Pipelines;
-import steve6472.volkaniums.render.StaticModelRenderSystem;
-import steve6472.volkaniums.render.debug.DebugRender;
-import steve6472.volkaniums.ui.font.style.FontStyle;
 
 import java.io.File;
 import java.util.logging.Level;
@@ -96,8 +91,9 @@ class TestApp extends VolkaniumsApp
         if (TestKeybinds.BACK.isActive())
             Y -= frameInfo.frameTime() * speed;
 
-        text().centeredLine("Rainbow in a Pot", 1f, new Vector3f(0, 0.f, 0), new Vector4f(0.8f, 0.8f, 0.8f, 1.0f));
-        text().centeredLine("AV  Ty", 1f, new Vector3f(0, 1.f, 0), new Vector4f(0.8f, 0.8f, 0.8f, 1.0f), Key.defaultNamespace("debug"));
+        text().centeredLine("Rainbow in a Pot", 1f, new Vector3f(0, 0.f, 0));
+        text().centeredLine("AV  Ty", 1f, new Vector3f(0, 1.f, 0), Key.defaultNamespace("debug"));
+        text().centeredLine("Comic Sans MS", 1f, new Vector3f(0, -1.f, 0), Key.defaultNamespace("default_comic_sans"));
     }
 
     @Override

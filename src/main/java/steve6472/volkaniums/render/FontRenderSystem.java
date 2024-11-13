@@ -3,9 +3,10 @@ package steve6472.volkaniums.render;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
+import steve6472.core.registry.Key;
+import steve6472.volkaniums.assets.TextureSampler;
 import steve6472.volkaniums.struct.def.SBO;
 import steve6472.volkaniums.ui.font.*;
-import steve6472.volkaniums.Constants;
 import steve6472.volkaniums.MasterRenderer;
 import steve6472.volkaniums.VkBuffer;
 import steve6472.volkaniums.core.FrameInfo;
@@ -18,8 +19,6 @@ import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.UBO;
 import steve6472.volkaniums.struct.def.Vertex;
 import steve6472.volkaniums.ui.font.layout.GlyphInfo;
-import steve6472.volkaniums.ui.font.layout.Kerning;
-import steve6472.volkaniums.ui.font.style.FontStyle;
 
 import java.nio.LongBuffer;
 import java.util.ArrayList;
@@ -44,10 +43,19 @@ public class FontRenderSystem extends RenderSystem
     {
         super(masterRenderer, pipeline);
 
+        int fontCount = VolkaniumsRegistries.FONT.keys().size();
+        TextureSampler[] fontSamplers = new TextureSampler[fontCount];
+
+        for (Key key : VolkaniumsRegistries.FONT.keys())
+        {
+            FontEntry fontEntry = VolkaniumsRegistries.FONT.get(key);
+            fontSamplers[fontEntry.index()] = VolkaniumsRegistries.SAMPLER.get(key);
+        }
+
         globalSetLayout = DescriptorSetLayout
             .builder(device)
             .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT)
-            .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+            .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, fontCount)
             .addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
             .build();
         globalPool = DescriptorPool.builder(device)
@@ -84,9 +92,9 @@ public class FontRenderSystem extends RenderSystem
             {
                 DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
                 frame.get(i).descriptorSet = descriptorWriter
-                    .writeBuffer(0, frame.get(i).uboBuffer, stack, UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT)
-                    .writeImage(1, VolkaniumsRegistries.SAMPLER.get(Constants.FONT_TEXTURE), stack)
-                    .writeBuffer(2, frame.get(i).sboFontStyles, stack)
+                    .writeBuffer(0, stack, frame.get(i).uboBuffer, UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT)
+                    .writeImages(1, stack, fontSamplers)
+                    .writeBuffer(2, stack, frame.get(i).sboFontStyles)
                     .build();
             }
         }
@@ -112,14 +120,12 @@ public class FontRenderSystem extends RenderSystem
     {
         TextRender textRender = getMasterRenderer().textRender();
         //noinspection deprecation
-        FontInfo fontInfo = getMasterRenderer().textRender().fontInfo();
-        //noinspection deprecation
         List<TextLine> lines = textRender.lines();
 
         if (lines.isEmpty())
             return;
 
-        List<Struct> verticies = createFromChars(fontInfo, lines);
+        List<Struct> verticies = createFromChars(lines);
 
         FlightFrame flightFrame = frame.get(frameInfo.frameIndex());
 
@@ -155,25 +161,27 @@ public class FontRenderSystem extends RenderSystem
         VolkaniumsRegistries.FONT_STYLE.keys().forEach(key ->
         {
             FontStyleEntry fontStyleEntry = VolkaniumsRegistries.FONT_STYLE.get(key);
-            styles[fontStyleEntry.index()] = fontStyleEntry.style().toStruct();
+            styles[fontStyleEntry.index()] = fontStyleEntry.style().toStruct(fontStyleEntry.style().fontEntry().index());
         });
 
         return SBO.MSDF_FONT_STYLES.create((Object) styles);
     }
 
-    private List<Struct> createFromChars(FontInfo fontInfo, List<TextLine> lines)
+    private List<Struct> createFromChars(List<TextLine> lines)
     {
         List<Struct> structs = new ArrayList<>(lines.size() * 6 * 32);
 
         for (TextLine line : lines)
         {
-            createTextLine(fontInfo, line, structs);
+            createTextLine(line, structs);
         }
         return structs;
     }
 
-    private void createTextLine(FontInfo fontInfo, TextLine line, List<Struct> structs)
+    private void createTextLine(TextLine line, List<Struct> structs)
     {
+        FontStyleEntry style = line.style();
+        Font font = style.style().font();
         float size = line.size();
         float x = line.startPos().x;
         float y = line.startPos().y;
@@ -185,18 +193,15 @@ public class FontRenderSystem extends RenderSystem
             char character = charEntries[i];
             char nextCharacter = i < charEntries.length - 1 ? charEntries[i + 1] : 0;
 
-            GlyphInfo glyphInfo = getMasterRenderer().textRender().glyphInfo(character);
-            float kerningAdvance = getMasterRenderer().textRender().kerningAdvance(character, nextCharacter);
-            if (glyphInfo == null)
-                glyphInfo = getMasterRenderer().textRender().errorGlyph();
+            GlyphInfo glyphInfo = font.glyphInfo(character);
+            float kerningAdvance = font.kerningAdvance(character, nextCharacter);
 
             if (glyphInfo == null)
-                throw new RuntimeException("Not even Error char found! Abort the mission!");
+                throw new RuntimeException("Glyph for " + character + " (" + ((int) character) + ") not found!");
 
             if (!glyphInfo.isInvisible())
             {
-                FontStyleEntry fontStyleEntry = VolkaniumsRegistries.FONT_STYLE.get(line.style());
-                createChar(fontInfo, glyphInfo, x, y, z, size, structs, fontStyleEntry == null ? 0 : fontStyleEntry.index());
+                createChar(font, glyphInfo, x, y, z, size, structs, style.index());
             }
 
             x += glyphInfo.advance() * size;
@@ -204,10 +209,10 @@ public class FontRenderSystem extends RenderSystem
         }
     }
 
-    private void createChar(FontInfo fontInfo, GlyphInfo glyphInfo, float x, float y, float z, float size, List<Struct> structs, int styleIndex)
+    private void createChar(Font font, GlyphInfo glyphInfo, float x, float y, float z, float size, List<Struct> structs, int styleIndex)
     {
-        Vector2f tl = new Vector2f(glyphInfo.atlasBounds().left(), glyphInfo.atlasBounds().top()).div(fontInfo.getAtlasData().width(), fontInfo.getAtlasData().height());
-        Vector2f br = new Vector2f(glyphInfo.atlasBounds().right(), glyphInfo.atlasBounds().bottom()).div(fontInfo.getAtlasData().width(), fontInfo.getAtlasData().height());
+        Vector2f tl = new Vector2f(glyphInfo.atlasBounds().left(), glyphInfo.atlasBounds().top()).div(font.getAtlasData().width(), font.getAtlasData().height());
+        Vector2f br = new Vector2f(glyphInfo.atlasBounds().right(), glyphInfo.atlasBounds().bottom()).div(font.getAtlasData().width(), font.getAtlasData().height());
 
         float xpos = x + glyphInfo.planeBounds().left() * size;
         float ypos = y - glyphInfo.planeBounds().bottom() * size;

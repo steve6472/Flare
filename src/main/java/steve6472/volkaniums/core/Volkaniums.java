@@ -16,7 +16,6 @@ import steve6472.volkaniums.registry.RegistryCreators;
 import steve6472.volkaniums.registry.VolkaniumsRegistries;
 import steve6472.volkaniums.settings.ValidationLevel;
 import steve6472.volkaniums.settings.VisualSettings;
-import steve6472.volkaniums.ui.font.TextRender;
 import steve6472.volkaniums.vr.VrData;
 import steve6472.volkaniums.vr.VrUtil;
 
@@ -48,7 +47,6 @@ public class Volkaniums
     private VkQueue graphicsQueue;
     private VkQueue presentQueue;
     private VrData vrData;
-    private TextRender textRender;
 
     // ======= METHODS ======= //
 
@@ -70,6 +68,7 @@ public class Volkaniums
 
     private void start()
     {
+        createGeneratedFolder();
         window = new Window(app.windowTitle());
         app.userInput = new UserInput(window);
         app.preInit();
@@ -79,6 +78,18 @@ public class Volkaniums
         app.postInit();
         mainLoop();
         cleanup();
+    }
+
+    private void createGeneratedFolder()
+    {
+        if (!Constants.GENERATED_FOLDER.exists())
+        {
+            if (!Constants.GENERATED_FOLDER.mkdirs())
+            {
+                LOGGER.severe("Could not create 'generated' folder at " + Constants.GENERATED_FOLDER.getAbsolutePath());
+                throw new RuntimeException("Could not geenrate generated folder");
+            }
+        }
     }
 
     private void initContent()
@@ -102,11 +113,8 @@ public class Volkaniums
         createLogicalDevice();
         vrData.createVkResources(device, graphicsQueue);
         commands.createCommandPool(device, surface);
-        textRender = new TextRender();
-        //noinspection deprecation
-        SamplerLoader.addSamplerLoader((a, b, c) -> textRender.fontInfo().getSamplerLoader(a, b, c));
         RegistryCreators.createVkContents(device, commands, graphicsQueue);
-        renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, commands, surface, vrData, textRender);
+        renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, commands, surface, vrData);
         app.createRenderSystems(renderer);
         renderer.builtinLast();
         renderer.getSwapChain().createSwapChainObjects();
@@ -270,13 +278,18 @@ public class Volkaniums
             deviceFeatures.wideLines(VisualSettings.ENABLE_WIDE_LINES.get());
 
             VkPhysicalDeviceVulkan11Features vulkan11Features = VkPhysicalDeviceVulkan11Features.calloc(stack);
-            vulkan11Features.sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES);
+            vulkan11Features.sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES);
             vulkan11Features.shaderDrawParameters(true);
+
+            VkPhysicalDeviceVulkan12Features vulkan12features = VkPhysicalDeviceVulkan12Features.calloc(stack);
+            vulkan12features.sType(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES);
+            vulkan12features.runtimeDescriptorArray(true);
 
             VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.calloc(stack);
 
             createInfo.sType(VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO);
             createInfo.pNext(vulkan11Features);
+            createInfo.pNext(vulkan12features);
             createInfo.pQueueCreateInfos(queueCreateInfos);
             // queueCreateInfoCount is automatically set
 

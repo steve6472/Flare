@@ -27,9 +27,6 @@ public class Constants
     /// Blockbench texture atlas
     public static final Key BLOCKBENCH_TEXTURE = Key.defaultNamespace("blockbench_main");
 
-    /// Font texture atlas
-    public static final Key FONT_TEXTURE = Key.defaultNamespace("font_main");
-
     /// Used for code-generated resources
     public static final String ENGINE_NAMESPACE = "builtin_engine";
 
@@ -38,4 +35,11 @@ public class Constants
 
     /// File to save visual settings
     public static final File VISUAL_SETTINGS_FILE = new File("settings" + File.separator + "volkaniums_visual_settings.json");
+
+    /// Root folder for generated resources
+    public static final File GENERATED_FOLDER = new File("generated");
+
+    /// Root folder for resources
+    /// TODO: replace all resources references with this
+    public static final File RESOURCES_FOLDER = new File("resources");
 }

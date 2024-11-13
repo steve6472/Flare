@@ -43,7 +43,7 @@ public class MasterRenderer
 
     private final List<RenderSystem> renderSystems = new ArrayList<>();
 
-    public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, Commands commands, long surface, VrData vrData, TextRender textRender)
+    public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, Commands commands, long surface, VrData vrData)
     {
         this.window = window;
         this.device = device;
@@ -51,7 +51,7 @@ public class MasterRenderer
         this.presentQueue = presentQueue;
         this.commands = commands;
         this.vrData = vrData;
-        this.textRender = textRender;
+        this.textRender = new TextRender();
 
         swapChain = new SwapChain(device, window, surface, this);
     }

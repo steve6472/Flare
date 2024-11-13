@@ -22,15 +22,8 @@ public class VisualSettings extends SettingRegister
     public static EnumSetting<PresentMode> PRESENT_MODE = registerEnum("present_mode", PresentMode.MAILBOX);
     public static IntSetting GLOBAL_CAMERA_COUNT = registerInt("global_camera_count", 3);
 
-    /// Path to the font file (only one font can be loaded in the whole app for now)
-    public static StringSetting FONT_PATH = registerString("font_path", "resources/font/cmunrm.ttf");
-
-    /// Max timeout for font generating
+    /// Max timeout for font generating in seconds
     public static IntSetting FONT_GENERATE_TIMEOUT = registerInt("font_generate_timeout", 15);
-
-    /// Generate font on startup
-    /// Automatically set to false after font is generated
-    public static BoolSetting GENERATE_FONT = registerBool("generate_font", true);
 
     /*
      * Vr
@@ -69,5 +62,6 @@ public class VisualSettings extends SettingRegister
 
     /// If true, logs everything from the font generator process
     /// (default false as it is mostly missing glyphs)
+    /// Does not exactly work 'cause the fonts are generated before the settings are read....
     public static BoolSetting FONT_GEN_LOGS = registerBool("font_gen_logs", false);
 }
