@@ -1,8 +1,7 @@
-package steve6472.volkaniums.ui.font;
+package steve6472.volkaniums.ui.font.style;
 
 import steve6472.core.registry.Key;
 import steve6472.core.registry.Keyable;
-import steve6472.volkaniums.ui.font.style.FontStyle;
 
 /**
  * Created by steve6472

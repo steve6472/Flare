@@ -10,13 +10,14 @@ import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.SBO;
 import steve6472.volkaniums.ui.font.Font;
 import steve6472.volkaniums.ui.font.FontEntry;
+import steve6472.volkaniums.ui.font.layout.AtlasData;
 
 /**
  * Created by steve6472
  * Date: 11/10/2024
  * Project: Volkaniums <br>
  */
-public record FontStyle(FontEntry fontEntry, ColorSoftThick base, ColorSoftThick outline, ColorSoftThick shadow, boolean soft, Vector2f shadowOffset, Vector2f atlasSize)
+public record FontStyle(FontEntry fontEntry, ColorSoftThick base, ColorSoftThick outline, ColorSoftThick shadow, boolean soft, Vector2f shadowOffset)
 {
     public static final Codec<FontStyle> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         Key.CODEC.xmap(VolkaniumsRegistries.FONT::get, FontEntry::key).fieldOf("font").forGetter(FontStyle::fontEntry),
@@ -24,8 +25,7 @@ public record FontStyle(FontEntry fontEntry, ColorSoftThick base, ColorSoftThick
         ColorSoftThick.CODEC.optionalFieldOf("outline", ColorSoftThick.EMPTY).forGetter(FontStyle::outline),
         ColorSoftThick.CODEC.optionalFieldOf("shadow", ColorSoftThick.EMPTY).forGetter(FontStyle::shadow),
         Codec.BOOL.optionalFieldOf("soft", false).forGetter(FontStyle::soft),
-        ExtraCodecs.VEC_2F.fieldOf("shadow_offset").forGetter(FontStyle::shadowOffset),
-        ExtraCodecs.VEC_2F.optionalFieldOf("atlas_size", new Vector2f()).forGetter(FontStyle::atlasSize)
+        ExtraCodecs.VEC_2F.fieldOf("shadow_offset").forGetter(FontStyle::shadowOffset)
     ).apply(instance, FontStyle::new));
 
     public Font font()
@@ -35,8 +35,10 @@ public record FontStyle(FontEntry fontEntry, ColorSoftThick base, ColorSoftThick
 
     public static final Key DEFAULT = Key.defaultNamespace("default");
 
-    public Struct toStruct(int fontIndex)
+    public Struct toStruct(FontEntry font)
     {
+        AtlasData atlasData = font.font().getAtlasData();
+
         return SBO.MSDF_FONT_STYLE.create(
             base.color(),
             outline.color(),
@@ -50,10 +52,10 @@ public record FontStyle(FontEntry fontEntry, ColorSoftThick base, ColorSoftThick
             base.thickness(),
             outline.thickness(),
             shadow.thickness(),
-            fontIndex,
+            font.index(),
 
             shadowOffset,
-            atlasSize
+            new Vector2f(atlasData.width() / atlasData.size(), atlasData.height() / atlasData.size())
         );
     }
 }

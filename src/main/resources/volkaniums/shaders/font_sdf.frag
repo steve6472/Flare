@@ -92,7 +92,10 @@ void main()
     vec4 finalImage = blendImages(shadowImage, mainImage);
 
     if (finalImage.a <= 0)
+//        outColor = vec4(1, 0, 1, 1);
         discard;
+    else
+        outColor = finalImage;
 
-    outColor = finalImage;
+//    outColor = finalImage;
 }

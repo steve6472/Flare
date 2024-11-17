@@ -13,8 +13,8 @@ import steve6472.volkaniums.assets.model.blockbench.anim.KeyframeType;
 import steve6472.volkaniums.settings.VisualSettings;
 import steve6472.volkaniums.ui.font.FontEntry;
 import steve6472.volkaniums.ui.font.FontLoader;
-import steve6472.volkaniums.ui.font.FontStyleEntry;
-import steve6472.volkaniums.ui.font.StyleLoader;
+import steve6472.volkaniums.ui.font.style.FontStyleEntry;
+import steve6472.volkaniums.ui.font.style.StyleLoader;
 
 /**
  * Created by steve6472

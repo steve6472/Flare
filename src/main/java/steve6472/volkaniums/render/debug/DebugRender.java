@@ -1,12 +1,12 @@
 package steve6472.volkaniums.render.debug;
 
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import steve6472.volkaniums.render.debug.objects.*;
 import steve6472.volkaniums.settings.VisualSettings;
 import steve6472.volkaniums.struct.Struct;
+import steve6472.volkaniums.util.MatrixAnim;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,47 +42,16 @@ public class DebugRender
     {
         List<Struct> vertices = new ArrayList<>();
         long currentTime = System.currentTimeMillis();
+        Matrix4f store = new Matrix4f();
         debugLines.forEach(ren ->
         {
             // TODO: fix scale of 0 not showing anything & fix scaling moving objects towards/from origin
-            float t = Math.min(1.0f, (float)(currentTime - ren.startTime()) / (ren.endTime() - ren.startTime()));
-            ren.object().addVerticies(vertices, interpolate(ren.transformFrom(), ren.transformTo(), t));
+            float t = MatrixAnim.getAnimTime(ren.startTime(), ren.endTime(), currentTime);
+            ren.object().addVerticies(vertices, MatrixAnim.animate(ren.transformFrom(), ren.transformTo(), t, store));
         });
         if (!VisualSettings.DEBUG_LINE_SINGLE_BUFFER.get())
             clearOldVerticies();
         return vertices;
-    }
-
-    private static void decompose(Matrix4f mat, Vector3f translation, Quaternionf rotation, Vector3f scale)
-    {
-        mat.getTranslation(translation);
-        mat.getUnnormalizedRotation(rotation);
-        mat.getScale(scale);
-    }
-
-    private static Matrix4f interpolate(Matrix4f matA, Matrix4f matB, float t)
-    {
-        Vector3f translationA = new Vector3f(), translationB = new Vector3f();
-        Quaternionf rotationA = new Quaternionf(), rotationB = new Quaternionf();
-        Vector3f scaleA = new Vector3f(), scaleB = new Vector3f();
-
-        decompose(matA, translationA, rotationA, scaleA);
-        decompose(matB, translationB, rotationB, scaleB);
-
-        Vector3f interpolatedTranslation = new Vector3f();
-        translationA.lerp(translationB, t, interpolatedTranslation);
-
-        Quaternionf interpolatedRotation = new Quaternionf();
-        rotationA.slerp(rotationB, t, interpolatedRotation);
-
-        Vector3f interpolatedScale = new Vector3f();
-        scaleA.lerp(scaleB, t, interpolatedScale);
-
-        return new Matrix4f()
-            .translate(interpolatedTranslation)
-            .rotate(interpolatedRotation)
-            .scale(interpolatedScale)
-            ;
     }
 
     public void clearOldVerticies()

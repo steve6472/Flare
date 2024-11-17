@@ -1,13 +1,14 @@
 package steve6472.volkaniums.ui.font;
 
+import steve6472.core.log.Log;
 import steve6472.volkaniums.Constants;
 import steve6472.volkaniums.registry.VolkaniumsRegistries;
-import steve6472.volkaniums.settings.VisualSettings;
 import steve6472.volkaniums.util.ResourceCrawl;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Created by steve6472

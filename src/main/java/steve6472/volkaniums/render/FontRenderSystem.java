@@ -1,9 +1,12 @@
 package steve6472.volkaniums.render;
 
-import org.joml.Vector2f;
-import org.joml.Vector3f;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import org.joml.*;
+import org.joml.Math;
 import org.lwjgl.system.MemoryStack;
 import steve6472.core.registry.Key;
+import steve6472.volkaniums.Camera;
 import steve6472.volkaniums.assets.TextureSampler;
 import steve6472.volkaniums.struct.def.SBO;
 import steve6472.volkaniums.ui.font.*;
@@ -19,8 +22,12 @@ import steve6472.volkaniums.struct.Struct;
 import steve6472.volkaniums.struct.def.UBO;
 import steve6472.volkaniums.struct.def.Vertex;
 import steve6472.volkaniums.ui.font.layout.GlyphInfo;
+import steve6472.volkaniums.ui.font.render.*;
+import steve6472.volkaniums.ui.font.style.FontStyleEntry;
+import steve6472.volkaniums.util.MatrixAnim;
 
 import java.nio.LongBuffer;
+import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,12 +127,14 @@ public class FontRenderSystem extends RenderSystem
     {
         TextRender textRender = getMasterRenderer().textRender();
         //noinspection deprecation
-        List<TextLine> lines = textRender.lines();
+        List<TextLineObject> lines = textRender.lines();
+        //noinspection deprecation
+        List<TextMessageObject> messages = textRender.messages();
 
-        if (lines.isEmpty())
+        if (lines.isEmpty() && messages.isEmpty())
             return;
 
-        List<Struct> verticies = createFromChars(lines);
+        List<Struct> verticies = createFromChars(lines, messages, frameInfo.camera());
 
         FlightFrame flightFrame = frame.get(frameInfo.frameIndex());
 
@@ -152,7 +161,11 @@ public class FontRenderSystem extends RenderSystem
         vkCmdBindVertexBuffers(frameInfo.commandBuffer(), 0, vertexBuffers, offsets);
         vkCmdDraw(frameInfo.commandBuffer(), verticies.size(), 1, 0, 0);
 
-        lines.clear();
+        long currentTime = System.currentTimeMillis();
+        lines.removeIf(ren -> ren.endTime() <= currentTime || ren.endTime() == 0);
+
+        // TODO: make normal clear
+        messages.clear();
     }
 
     private Struct updateFontStylesSBO()
@@ -161,32 +174,46 @@ public class FontRenderSystem extends RenderSystem
         VolkaniumsRegistries.FONT_STYLE.keys().forEach(key ->
         {
             FontStyleEntry fontStyleEntry = VolkaniumsRegistries.FONT_STYLE.get(key);
-            styles[fontStyleEntry.index()] = fontStyleEntry.style().toStruct(fontStyleEntry.style().fontEntry().index());
+            styles[fontStyleEntry.index()] = fontStyleEntry.style().toStruct(fontStyleEntry.style().fontEntry());
         });
 
         return SBO.MSDF_FONT_STYLES.create((Object) styles);
     }
 
-    private List<Struct> createFromChars(List<TextLine> lines)
+    private List<Struct> createFromChars(List<TextLineObject> lines, List<TextMessageObject> messages, Camera camera)
     {
         List<Struct> structs = new ArrayList<>(lines.size() * 6 * 32);
 
-        for (TextLine line : lines)
+        for (TextLineObject object : lines)
         {
-            createTextLine(line, structs);
+            createTextLine(object, camera, structs);
+        }
+
+        for (TextMessageObject object : messages)
+        {
+            createTextMessage(object, camera, structs);
         }
         return structs;
     }
 
-    private void createTextLine(TextLine line, List<Struct> structs)
+    private void createTextLine(TextLineObject textObject, Camera camera, List<Struct> structs)
     {
+        TextLine line = textObject.line();
         FontStyleEntry style = line.style();
         Font font = style.style().font();
         float size = line.size();
-        float x = line.startPos().x;
-        float y = line.startPos().y;
-        float z = line.startPos().z;
 
+        Vector2f alignOffset = new Vector2f();
+        line.anchor().applyOffset(alignOffset, font.getWidth(line.charEntries(), size), font.getMetrics().ascender() * size, font.getMetrics().descender() * size);
+
+        Matrix4f transform = new Matrix4f();
+        float animTime = MatrixAnim.getAnimTime(textObject.startTime(), textObject.endTime(), System.currentTimeMillis());
+        MatrixAnim.animate(textObject.transformFrom(), textObject.transformTo(), animTime, transform);
+
+        line.billboard().apply(camera, transform);
+        transform.translate(alignOffset.x, alignOffset.y, 0);
+
+        Vector2f offset = new Vector2f();
         char[] charEntries = line.charEntries();
         for (int i = 0; i < charEntries.length; i++)
         {
@@ -196,36 +223,117 @@ public class FontRenderSystem extends RenderSystem
             GlyphInfo glyphInfo = font.glyphInfo(character);
             float kerningAdvance = font.kerningAdvance(character, nextCharacter);
 
-            if (glyphInfo == null)
-                throw new RuntimeException("Glyph for " + character + " (" + ((int) character) + ") not found!");
-
             if (!glyphInfo.isInvisible())
             {
-                createChar(font, glyphInfo, x, y, z, size, structs, style.index());
+                createChar(font, glyphInfo, offset, size, structs, style.index(), transform);
             }
 
-            x += glyphInfo.advance() * size;
-            x += kerningAdvance * size;
+            offset.x += glyphInfo.advance() * size;
+
+            if (i < charEntries.length - 1)
+                offset.x += kerningAdvance * size;
         }
     }
 
-    private void createChar(Font font, GlyphInfo glyphInfo, float x, float y, float z, float size, List<Struct> structs, int styleIndex)
+    private void createTextMessage(TextMessageObject textObject, Camera camera, List<Struct> structs)
     {
+        TextMessage message = textObject.message();
+
+        Matrix4f transform = new Matrix4f();
+        float animTime = MatrixAnim.getAnimTime(textObject.startTime(), textObject.endTime(), System.currentTimeMillis());
+        MatrixAnim.animate(textObject.transformFrom(), textObject.transformTo(), animTime, transform);
+
+        // TODO: line breaking
+        BreakIterator breakIterator = BreakIterator.getLineInstance();
+        StringBuilder bobTheBuilder = new StringBuilder();
+        textObject.message().lines().forEach(l -> bobTheBuilder.append(l.charEntries()));
+        breakIterator.setText(bobTheBuilder.toString());
+
+        int current = breakIterator.next();
+        int previous = 0;
+        IntList breakIndicies = new IntArrayList();
+        float totalWidth = 0;
+        float maxWidth = 0;
+        while (current != BreakIterator.DONE)
+        {
+            float width = message.getWidth(previous, current);
+            totalWidth += width;
+
+            if (totalWidth > message.maxWidth())
+            {
+                breakIndicies.add(previous);
+                maxWidth = Math.max(maxWidth, totalWidth - width);
+                totalWidth = width;
+            }
+
+            previous = current;
+            current = breakIterator.next();
+        }
+
+//        Vector2f alignOffset = new Vector2f();
+//        message.anchor().applyOffset(alignOffset, maxWidth, font.getMetrics().ascender() * messageSize, font.getMetrics().descender() * messageSize);
+
+        message.billboard().apply(camera, transform);
+//        transform.translate(alignOffset.x, alignOffset.y, 0);
+
+        Vector2f offset = new Vector2f();
+        int[] charIndex = {0};
+
+        message.iterateCharacters((character, nextCharacter) ->
+        {
+            if (character.glyph() == null)
+                throw new RuntimeException("Glyph for some character not found not found!");
+
+            Font font = character.style().style().font();
+
+            float kerningAdvance = 0f;
+            if (nextCharacter != null && font == nextCharacter.style().style().font())
+            {
+                kerningAdvance = font.kerningAdvance((char) character.glyph().index(), (char) nextCharacter.glyph().index());
+            }
+
+            if (breakIndicies.contains(charIndex[0]))
+            {
+                int lineNum = (breakIndicies.indexOf(charIndex[0]) + 1);
+                float lineHeight = font.getMetrics().ascender() - font.getMetrics().descender() + 0;
+                offset.set(0, lineNum * lineHeight * character.size());
+            }
+
+            if (!character.glyph().isInvisible())
+            {
+                createChar(font, character.glyph(), offset, character.size(), structs, character.style().index(), transform);
+            }
+
+            offset.x += character.glyph().advance() * character.size();
+            offset.x += kerningAdvance * character.size();
+
+            charIndex[0]++;
+        });
+    }
+
+    private void createChar(Font font, GlyphInfo glyphInfo, Vector2f offset, float size, List<Struct> structs, int styleIndex, Matrix4f transform)
+    {
+        if (glyphInfo == UnknownCharacter.unknownGlyph())
+        {
+            font = UnknownCharacter.fontEntry().font();
+            styleIndex = UnknownCharacter.styleEntry().index();
+        }
+
         Vector2f tl = new Vector2f(glyphInfo.atlasBounds().left(), glyphInfo.atlasBounds().top()).div(font.getAtlasData().width(), font.getAtlasData().height());
         Vector2f br = new Vector2f(glyphInfo.atlasBounds().right(), glyphInfo.atlasBounds().bottom()).div(font.getAtlasData().width(), font.getAtlasData().height());
 
-        float xpos = x + glyphInfo.planeBounds().left() * size;
-        float ypos = y - glyphInfo.planeBounds().bottom() * size;
+        float xpos = offset.x + glyphInfo.planeBounds().left() * size;
+        float ypos = offset.y - glyphInfo.planeBounds().bottom() * size;
 
         float w = glyphInfo.planeBounds().width() * size;
         float h = glyphInfo.planeBounds().height() * size;
 
-        Vector3f vtl = new Vector3f(xpos, ypos + h, z);
-        Vector3f vbl = new Vector3f(xpos, ypos, z);
-        Vector3f vbr = new Vector3f(xpos + w, ypos, z);
-        Vector3f vtr = new Vector3f(xpos + w, ypos + h, z);
+        Vector3f vtl = new Vector3f(xpos, ypos + h, 0).mulPosition(transform);
+        Vector3f vbl = new Vector3f(xpos, ypos, 0).mulPosition(transform);
+        Vector3f vbr = new Vector3f(xpos + w, ypos, 0).mulPosition(transform);
+        Vector3f vtr = new Vector3f(xpos + w, ypos + h, 0).mulPosition(transform);
 
-        structs.add(Vertex.POS3F_UV_FONT_INDEX.create(vtl, new Vector2f(tl.x, tl.y), styleIndex)); // todo: make it into an SBO, index into it by int(vertexId / 6)
+        structs.add(Vertex.POS3F_UV_FONT_INDEX.create(vtl, new Vector2f(tl.x, tl.y), styleIndex));
         structs.add(Vertex.POS3F_UV_FONT_INDEX.create(vbl, new Vector2f(tl.x, br.y), styleIndex));
         structs.add(Vertex.POS3F_UV_FONT_INDEX.create(vbr, new Vector2f(br.x, br.y), styleIndex));
 

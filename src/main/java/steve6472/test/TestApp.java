@@ -13,8 +13,11 @@ import steve6472.volkaniums.Camera;
 import steve6472.volkaniums.core.FrameInfo;
 import steve6472.volkaniums.core.VolkaniumsApp;
 import steve6472.volkaniums.input.KeybindUpdater;
+import steve6472.volkaniums.registry.VolkaniumsRegistries;
+import steve6472.volkaniums.ui.font.render.*;
 
 import java.io.File;
+import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -71,7 +74,7 @@ class TestApp extends VolkaniumsApp
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
-        frameInfo.camera().setViewTarget(new Vector3f(1f, 1.5f, -1), new Vector3f(0, 0.5f, 0));
+        frameInfo.camera().setViewTarget(new Vector3f(-0.5f, 1.0f, 1), new Vector3f(0, 0.5f, 0));
         Vector2i mousePos = input().getMousePositionRelativeToTopLeftOfTheWindow();
         frameInfo.camera().setPerspectiveProjection(TestSettings.FOV.get(), aspectRatio(), 0.1f, 1024f);
         if (window().isFocused())
@@ -91,9 +94,25 @@ class TestApp extends VolkaniumsApp
         if (TestKeybinds.BACK.isActive())
             Y -= frameInfo.frameTime() * speed;
 
-        text().centeredLine("Rainbow in a Pot", 1f, new Vector3f(0, 0.f, 0));
-        text().centeredLine("AV  Ty", 1f, new Vector3f(0, 1.f, 0), Key.defaultNamespace("debug"));
-        text().centeredLine("Comic Sans MS", 1f, new Vector3f(0, -1.f, 0), Key.defaultNamespace("default_comic_sans"));
+        Key sans = Key.defaultNamespace("default_comic_sans");
+        Key debug = Key.defaultNamespace("debug");
+        Key digi = Key.defaultNamespace("digi");
+
+
+//                text().line(TextLine.fromText("Rainbow in a Pot", 1f), new Matrix4f().translate(0, 0, 0));
+//        text().message(new TextMessage(List.of(TextLine.fromText("Rainbow in a Pot", 1f)), 1f, 4f, Anchor.CENTER, Billboard.FIXED, Align.CENTER));
+//        text().message(new TextMessage(List.of(
+//            TextLine.fromText("Rainbow ", -1f),
+//            TextLine.fromText("in ", -1f),
+//            TextLine.fromText("a ", -1f),
+//            TextLine.fromText("Pot ", -1f, debug),
+//            TextLine.fromText("Sounds very yummy :)", -1f, sans)
+//        ), 0.5f, 4f, Anchor.CENTER, Billboard.FIXED, Align.CENTER));
+//        text().message(new TextMessage(List.of(
+//            TextLine.fromText("Hello world Hello world", -1f)
+//        ), 0.5f, 3f, Anchor.CENTER, Billboard.FIXED, Align.CENTER));
+        text().line(TextLine.fromText("Helloě world", 1f, digi)); // ě is an unknown character in the digi font
+//        text().line(TextLine.fromText("Comic Sans MS", 1f, Key.defaultNamespace("default_comic_sans")));
     }
 
     @Override

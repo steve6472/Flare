@@ -43,6 +43,7 @@
             <artifactId>SteveCore</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <!--TODO: remove this dependency!-->
         <dependency>
             <groupId>com.github.stephengold</groupId>
             <artifactId>Libbulletjme</artifactId>
@@ -93,14 +94,6 @@
         </dependency>
         <dependency>
             <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl-freetype</artifactId>
-        </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.lwjgl</groupId>-->
-<!--            <artifactId>lwjgl-harfbuzz</artifactId>-->
-<!--        </dependency>-->
-        <dependency>
-            <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl</artifactId>
             <classifier>${lwjgl.natives}</classifier>
         </dependency>
@@ -143,11 +136,6 @@
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-opengl</artifactId>
             <classifier>natives-linux</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl-freetype</artifactId>
-            <classifier>${lwjgl.natives}</classifier>
         </dependency>
     </dependencies>
 

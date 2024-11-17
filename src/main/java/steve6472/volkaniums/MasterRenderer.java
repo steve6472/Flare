@@ -8,7 +8,7 @@ import steve6472.volkaniums.render.*;
 import steve6472.volkaniums.render.debug.DebugRender;
 import steve6472.volkaniums.settings.VisualSettings;
 import steve6472.volkaniums.struct.def.UBO;
-import steve6472.volkaniums.ui.font.TextRender;
+import steve6472.volkaniums.ui.font.render.TextRender;
 import steve6472.volkaniums.vr.VrData;
 
 import java.nio.IntBuffer;

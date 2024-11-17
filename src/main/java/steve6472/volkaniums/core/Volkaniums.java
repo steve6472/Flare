@@ -5,7 +5,6 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.util.freetype.FreeType;
 import org.lwjgl.vulkan.*;
 import steve6472.core.SteveCore;
 import steve6472.core.log.Log;
@@ -28,6 +27,9 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.vulkan.VK13.*;
 import static steve6472.volkaniums.render.debug.DebugRender.*;
 
+/**
+ * TODO: Rename to Flare
+ */
 public class Volkaniums
 {
     private static final Logger LOGGER = Log.getLogger(Volkaniums.class);
@@ -56,8 +58,6 @@ public class Volkaniums
     {
         if (INSTANCE != null)
             throw new RuntimeException("Volkaniums already started!");
-
-        Configuration.HARFBUZZ_LIBRARY_NAME.set(FreeType.getLibrary());
 
         Volkaniums volkaniums = new Volkaniums();
         SteveCore.DEFAULT_KEY_NAMESPACE = app.defaultNamespace();
