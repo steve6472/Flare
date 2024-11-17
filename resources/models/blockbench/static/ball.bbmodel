@@ -12567,7 +12567,7 @@
     "outliner": ["58704839-2f09-8e8e-7b70-ae23f69d1dd4"],
     "textures": [
         {
-            "path": "C:\\storage\\Volkaniums\\src\\main\\resources\\textures\\white_ball.png",
+            "path": "C:\\storage\\Flare\\src\\main\\resources\\textures\\white_ball.png",
             "name": "white_ball.png",
             "folder": "block",
             "namespace": "",

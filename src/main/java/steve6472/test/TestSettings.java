@@ -6,7 +6,7 @@ import steve6472.core.setting.SettingRegister;
 /**
  * Created by steve6472
  * Date: 9/29/2024
- * Project: Volkaniums <br>
+ * Project: Flare <br>
  */
 class TestSettings extends SettingRegister
 {

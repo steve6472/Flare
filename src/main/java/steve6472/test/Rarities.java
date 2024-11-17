@@ -1,11 +1,11 @@
 package steve6472.test;
 
-import steve6472.volkaniums.render.debug.DebugRender;
+import steve6472.flare.render.debug.DebugRender;
 
 /**
  * Created by steve6472
  * Date: 9/29/2024
- * Project: Volkaniums <br>
+ * Project: Flare <br>
  */
 class Rarities
 {

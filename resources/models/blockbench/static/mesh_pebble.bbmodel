@@ -253,7 +253,7 @@
     "outliner": ["ac0aa86e-556c-f293-1fe2-cc4f4b508749"],
     "textures": [
         {
-            "path": "C:\\storage\\Volkaniums\\src\\main\\resources\\textures\\mesh_pebble.png",
+            "path": "C:\\storage\\Flare\\src\\main\\resources\\textures\\mesh_pebble.png",
             "name": "mesh_pebble.png",
             "folder": "block",
             "namespace": "",

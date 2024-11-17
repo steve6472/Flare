@@ -250,7 +250,7 @@
     ],
     "textures": [
         {
-            "path": "C:\\storage\\Volkaniums\\src\\main\\resources\\textures\\small_rock.png",
+            "path": "C:\\storage\\Flare\\src\\main\\resources\\textures\\small_rock.png",
             "name": "small_rock.png",
             "folder": "block",
             "namespace": "",

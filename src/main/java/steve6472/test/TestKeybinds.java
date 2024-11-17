@@ -2,13 +2,13 @@ package steve6472.test;
 
 import org.lwjgl.glfw.GLFW;
 import steve6472.core.registry.Key;
-import steve6472.volkaniums.input.Keybind;
-import steve6472.volkaniums.input.KeybindType;
+import steve6472.flare.input.Keybind;
+import steve6472.flare.input.KeybindType;
 
 /**
  * Created by steve6472
  * Date: 9/30/2024
- * Project: Volkaniums <br>
+ * Project: Flare <br>
  */
 class TestKeybinds
 {

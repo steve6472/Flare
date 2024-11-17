@@ -9,23 +9,21 @@ import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 import steve6472.core.registry.Key;
 import steve6472.core.setting.SettingsLoader;
-import steve6472.volkaniums.Camera;
-import steve6472.volkaniums.core.FrameInfo;
-import steve6472.volkaniums.core.VolkaniumsApp;
-import steve6472.volkaniums.input.KeybindUpdater;
-import steve6472.volkaniums.registry.VolkaniumsRegistries;
-import steve6472.volkaniums.ui.font.render.*;
+import steve6472.flare.Camera;
+import steve6472.flare.core.FrameInfo;
+import steve6472.flare.core.FlareApp;
+import steve6472.flare.input.KeybindUpdater;
+import steve6472.flare.ui.font.render.*;
 
 import java.io.File;
-import java.util.List;
 import java.util.logging.Level;
 
 /**
  * Created by steve6472
  * Date: 9/29/2024
- * Project: Volkaniums <br>
+ * Project: Flare <br>
  */
-class TestApp extends VolkaniumsApp
+class TestApp extends FlareApp
 {
     private static final File TEST_SETTINGS = new File("settings/test_settings.json");
 
@@ -130,7 +128,7 @@ class TestApp extends VolkaniumsApp
     @Override
     public String windowTitle()
     {
-        return "Test Volkaniums App";
+        return "Test Flare App";
     }
 
     @Override

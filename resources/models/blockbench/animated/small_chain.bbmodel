@@ -1151,7 +1151,7 @@
     ],
     "textures": [
         {
-            "path": "C:\\storage\\Volkaniums\\src\\main\\resources\\textures\\chain.png",
+            "path": "C:\\storage\\Flare\\src\\main\\resources\\textures\\chain.png",
             "name": "chain.png",
             "folder": "block",
             "namespace": "",

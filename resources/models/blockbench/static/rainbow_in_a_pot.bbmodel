@@ -626,7 +626,7 @@
     ],
     "textures": [
         {
-            "path": "C:\\storage\\Volkaniums\\resources\\textures\\rainbow_in_a_pot.png",
+            "path": "C:\\storage\\Flare\\resources\\textures\\rainbow_in_a_pot.png",
             "name": "rainbow_in_a_pot.png",
             "folder": "block",
             "namespace": "",

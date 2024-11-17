@@ -62,7 +62,7 @@
     "outliner": ["b3621925-f7fb-8025-a987-5b7feb1d3a17"],
     "textures": [
         {
-            "path": "C:\\storage\\Volkaniums\\src\\main\\resources\\textures\\white_cube.png",
+            "path": "C:\\storage\\Flare\\src\\main\\resources\\textures\\white_cube.png",
             "name": "white_cube.png",
             "folder": "block",
             "namespace": "",

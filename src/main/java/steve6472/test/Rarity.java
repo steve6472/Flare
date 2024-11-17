@@ -11,7 +11,7 @@ import steve6472.core.util.ExtraCodecs;
 /**
  * Created by steve6472
  * Date: 9/29/2024
- * Project: Volkaniums <br>
+ * Project: Flare <br>
  */
 record Rarity(Key key, String name, Vector4f color) implements Keyable, Serializable<Rarity>
 {

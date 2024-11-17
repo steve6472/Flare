@@ -146,7 +146,7 @@
     "outliner": ["9887d5be-e738-f787-62cb-975aee8ea530", "53c52181-8933-f1d0-afca-be566fb85146", "f2410d0f-4626-8a92-ba94-a76c48815221"],
     "textures": [
         {
-            "path": "C:\\storage\\Volkaniums\\resources\\textures\\backdrop.png",
+            "path": "C:\\storage\\Flare\\resources\\textures\\backdrop.png",
             "name": "backdrop.png",
             "folder": "block",
             "namespace": "",

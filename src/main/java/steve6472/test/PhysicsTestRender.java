@@ -12,11 +12,11 @@ import com.jme3.math.Transform;
 import com.jme3.math.Vector3f;
 import org.joml.Matrix4f;
 import steve6472.core.registry.Key;
-import steve6472.volkaniums.assets.model.Model;
-import steve6472.volkaniums.core.FrameInfo;
-import steve6472.volkaniums.registry.VolkaniumsRegistries;
-import steve6472.volkaniums.render.SBOTransfromArray;
-import steve6472.volkaniums.render.StaticModelRenderImpl;
+import steve6472.flare.assets.model.Model;
+import steve6472.flare.core.FrameInfo;
+import steve6472.flare.registry.FlareRegistries;
+import steve6472.flare.render.SBOTransfromArray;
+import steve6472.flare.render.StaticModelRenderImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Created by steve6472
  * Date: 10/1/2024
- * Project: Volkaniums <br>
+ * Project: Flare <br>
  */
 class PhysicsTestRender extends StaticModelRenderImpl
 {
@@ -52,10 +52,10 @@ class PhysicsTestRender extends StaticModelRenderImpl
         addPlane(Vector3f.UNIT_X.mult(-1), -scaleX);
         addPlane(Vector3f.UNIT_Z.mult(-1), -scaleX);
 
-        var ball = transfromArray.addArea(VolkaniumsRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/ball")));
-        var cube = transfromArray.addArea(VolkaniumsRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/cube")));
-        var pebble = transfromArray.addArea(VolkaniumsRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/mesh_pebble")));
-        var rainbowInAPot = transfromArray.addArea(VolkaniumsRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/rainbow_in_a_pot")));
+        var ball = transfromArray.addArea(FlareRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/ball")));
+        var cube = transfromArray.addArea(FlareRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/cube")));
+        var pebble = transfromArray.addArea(FlareRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/mesh_pebble")));
+        var rainbowInAPot = transfromArray.addArea(FlareRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/rainbow_in_a_pot")));
 
         /*
 
