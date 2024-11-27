@@ -1,0 +1,11 @@
+{
+    name: "Flare",
+    description: [
+        "Built-in Flare resources",
+        "",
+        "Font: ",
+        " - unknown",
+        " - arial"
+    ],
+    authors: "steve6472"
+}

@@ -1,0 +1,2 @@
+https://ttfonts.net/font/5956_01DigitGraphics.htm
+https://github.com/justinmeiners/stb-truetype-example/blob/master/font/cmunrm.ttf

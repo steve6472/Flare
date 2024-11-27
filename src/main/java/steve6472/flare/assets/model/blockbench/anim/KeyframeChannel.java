@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Matrix4f;
 import steve6472.core.util.MathUtil;
-import steve6472.flare.Constants;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.assets.model.blockbench.anim.datapoint.*;
 
 import java.util.List;
@@ -107,7 +107,7 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
 
     public static final class RotationKeyframe extends AnimationKeyframeChannel<Vec3DataPoint>
     {
-        public static final Codec<RotationKeyframe> CODEC = createKeyframe(Vec3DataPoint.scaledResultCodec(Constants.DEG_TO_RAD), RotationKeyframe::new);
+        public static final Codec<RotationKeyframe> CODEC = createKeyframe(Vec3DataPoint.scaledResultCodec(FlareConstants.DEG_TO_RAD), RotationKeyframe::new);
         public RotationKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.ROTATION; }
 
@@ -126,7 +126,7 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
 
     public static final class PositionKeyframe extends AnimationKeyframeChannel<Vec3DataPoint>
     {
-        public static final Codec<PositionKeyframe> CODEC = createKeyframe(Vec3DataPoint.scaledResultCodec(Constants.BB_MODEL_SCALE), PositionKeyframe::new);
+        public static final Codec<PositionKeyframe> CODEC = createKeyframe(Vec3DataPoint.scaledResultCodec(FlareConstants.BB_MODEL_SCALE), PositionKeyframe::new);
         public PositionKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.POSITION; }
 

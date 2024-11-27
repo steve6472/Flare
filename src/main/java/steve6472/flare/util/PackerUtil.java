@@ -1,7 +1,7 @@
 package steve6472.flare.util;
 
 import steve6472.core.util.ImagePacker;
-import steve6472.flare.Constants;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.assets.model.blockbench.ErrorModel;
 
 import java.awt.image.BufferedImage;
@@ -38,7 +38,7 @@ public final class PackerUtil
             {
                 try
                 {
-                    packer.insertImage(Constants.ERROR_TEXTURE, ErrorModel.IMAGE);
+                    packer.insertImage(FlareConstants.ERROR_TEXTURE, ErrorModel.IMAGE);
                 } catch (RuntimeException ignored)
                 {
                     startingImageSize *= 2;

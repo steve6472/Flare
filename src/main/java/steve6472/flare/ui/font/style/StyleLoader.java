@@ -1,7 +1,9 @@
 package steve6472.flare.ui.font.style;
 
 import steve6472.core.log.Log;
-import steve6472.flare.Constants;
+import steve6472.core.registry.Key;
+import steve6472.flare.core.Flare;
+import steve6472.flare.module.Module;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.ui.font.FontEntry;
 import steve6472.flare.ui.font.UnknownCharacter;
@@ -21,18 +23,22 @@ public class StyleLoader
 {
     private static final Logger LOGGER = Log.getLogger(StyleLoader.class);
 
-    private static final File STYLES = new File(Constants.RESOURCES_FOLDER, "font/styles");
+    private static final String PATH = "font/styles";
 
-    public static FontStyleEntry bootstrap()
+    public static void bootstrap()
     {
         List<FontStyleEntry> styles = new ArrayList<>();
 
-        ResourceCrawl.crawlAndLoadJsonCodec(STYLES, FontStyle.CODEC, (style, key) ->
+        for (Module module : Flare.getModuleManager().getModules())
         {
-            FontStyleEntry entry = new FontStyleEntry(key, style, styles.size());
-            LOGGER.finest("Loaded font style " + entry.key());
-            styles.add(entry);
-        });
+            module.iterateNamespaces((folder, namespace) ->
+                ResourceCrawl.crawlAndLoadJsonCodec(new File(folder, PATH), FontStyle.CODEC, (style, key) ->
+            {
+                FontStyleEntry entry = new FontStyleEntry(Key.withNamespace(namespace, key), style, styles.size());
+                LOGGER.finest("Loaded font style " + entry.key());
+                styles.add(entry);
+            }));
+        }
 
         styles.forEach(FlareRegistries.FONT_STYLE::register);
 
@@ -48,7 +54,5 @@ public class StyleLoader
         {
             UnknownCharacter.init();
         }
-
-        return styles.getFirst();
     }
 }

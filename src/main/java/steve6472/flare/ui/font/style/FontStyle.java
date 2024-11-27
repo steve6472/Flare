@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Vector2f;
 import steve6472.core.registry.Key;
 import steve6472.core.util.ExtraCodecs;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.SBO;
@@ -20,7 +21,7 @@ import steve6472.flare.ui.font.layout.AtlasData;
 public record FontStyle(FontEntry fontEntry, ColorSoftThick base, ColorSoftThick outline, ColorSoftThick shadow, boolean soft, Vector2f shadowOffset)
 {
     public static final Codec<FontStyle> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-        Key.CODEC.xmap(FlareRegistries.FONT::get, FontEntry::key).fieldOf("font").forGetter(FontStyle::fontEntry),
+        ExtraCodecs.keyedFromRegistry(FlareRegistries.FONT).fieldOf("font").forGetter(FontStyle::fontEntry),
         ColorSoftThick.CODEC.optionalFieldOf("base", ColorSoftThick.EMPTY).forGetter(FontStyle::base),
         ColorSoftThick.CODEC.optionalFieldOf("outline", ColorSoftThick.EMPTY).forGetter(FontStyle::outline),
         ColorSoftThick.CODEC.optionalFieldOf("shadow", ColorSoftThick.EMPTY).forGetter(FontStyle::shadow),
@@ -33,7 +34,7 @@ public record FontStyle(FontEntry fontEntry, ColorSoftThick base, ColorSoftThick
         return fontEntry.font();
     }
 
-    public static final Key DEFAULT = Key.defaultNamespace("default");
+    public static final Key DEFAULT = Key.withNamespace(FlareConstants.ENGINE_NAMESPACE, "arial");
 
     public Struct toStruct(FontEntry font)
     {

@@ -1,16 +1,19 @@
 package steve6472.flare.util;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
-import steve6472.core.registry.Key;
+import steve6472.core.log.Log;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.function.BiConsumer;
+import java.util.logging.Logger;
 
 /**
  * Created by steve6472
@@ -19,12 +22,14 @@ import java.util.function.BiConsumer;
  */
 public final class ResourceCrawl
 {
+    private static final Logger LOGGER = Log.getLogger(ResourceCrawl.class);
+
     public static void crawl(File startingDir, boolean stripExtFromRel, BiConsumer<File, String> end)
     {
         recursiveCrawl(startingDir, startingDir, stripExtFromRel, end);
     }
 
-    public static <T> void crawlAndLoadJsonCodec(File startingDir, Codec<T> codec, BiConsumer<T, Key> end)
+    public static <T> void crawlAndLoadJsonCodec(File startingDir, Codec<T> codec, BiConsumer<T, String> end)
     {
         crawl(startingDir, true, (file, relPath) ->
         {
@@ -37,12 +42,29 @@ public final class ResourceCrawl
                 throw new RuntimeException(e);
             }
             BufferedReader reader = new BufferedReader(streamReader);
-            JsonElement jsonElement = JsonParser.parseReader(reader);
-            DataResult<Pair<T, JsonElement>> decode = codec.decode(JsonOps.INSTANCE, jsonElement);
+            JsonElement jsonElement;
+            try
+            {
+                jsonElement = JsonParser.parseReader(reader);
+            } catch (JsonIOException | JsonSyntaxException e)
+            {
+                LOGGER.severe("Could not load json from '" + file + "'");
+                throw new RuntimeException(e);
+            }
+
+            DataResult<Pair<T, JsonElement>> decode;
+            try
+            {
+                decode = codec.decode(JsonOps.INSTANCE, jsonElement);
+            } catch (Exception ex)
+            {
+                LOGGER.severe("Error when decoding:\n" + jsonElement.toString());
+                throw ex;
+            }
 
             relPath = relPath.replace("\\", "/");
             T obj = decode.getOrThrow().getFirst();
-            end.accept(obj, Key.defaultNamespace(relPath));
+            end.accept(obj, relPath);
         });
     }
 

@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.*;
 import steve6472.core.util.ExtraCodecs;
 import steve6472.core.util.ImagePacker;
-import steve6472.flare.Constants;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.assets.model.blockbench.*;
 
 import java.awt.*;
@@ -31,15 +31,15 @@ public record MeshElement(UUID uuid, String name, Vector3f rotation, Vector3f or
         new MeshElement(
             uuid1,
             name1,
-            rotation1.mul(Constants.DEG_TO_RAD),
-            origin1.mul(Constants.BB_MODEL_SCALE),
+            rotation1.mul(FlareConstants.DEG_TO_RAD),
+            origin1.mul(FlareConstants.BB_MODEL_SCALE),
             scaleVertices(vertices1),
             faces1))
     );
 
     private static Map<String, Vector3f> scaleVertices(Map<String, Vector3f> vertices)
     {
-        vertices.forEach((_, v) -> v.mul(Constants.BB_MODEL_SCALE));
+        vertices.forEach((_, v) -> v.mul(FlareConstants.BB_MODEL_SCALE));
         return vertices;
     }
 

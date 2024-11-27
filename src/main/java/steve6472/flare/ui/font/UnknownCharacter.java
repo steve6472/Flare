@@ -1,6 +1,7 @@
 package steve6472.flare.ui.font;
 
 import steve6472.core.registry.Key;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.ui.font.layout.GlyphInfo;
 import steve6472.flare.ui.font.style.FontStyleEntry;
@@ -13,8 +14,8 @@ import steve6472.flare.ui.font.style.FontStyleEntry;
 public class UnknownCharacter
 {
     private static final String UNKNOWN = "unknown";
-    public static final Key FONT_KEY = Key.defaultNamespace(UNKNOWN);
-    public static final Key STYLE_KEY = Key.defaultNamespace(UNKNOWN);
+    public static final Key FONT_KEY = Key.withNamespace(FlareConstants.ENGINE_NAMESPACE, UNKNOWN);
+    public static final Key STYLE_KEY = Key.withNamespace(FlareConstants.ENGINE_NAMESPACE, UNKNOWN);
 
     private static FontEntry fontEntry;
     private static FontStyleEntry styleEntry;

@@ -6,7 +6,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import steve6472.core.util.ExtraCodecs;
 import steve6472.core.util.ImagePacker;
-import steve6472.flare.Constants;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.assets.model.blockbench.Element;
 import steve6472.flare.assets.model.blockbench.ElementType;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
@@ -32,7 +32,7 @@ public record NullObjectElement(UUID uuid, String name, Vector3f position, Strin
         new NullObjectElement(
             uuid1,
             name1,
-            position1.mul(Constants.BB_MODEL_SCALE),
+            position1.mul(FlareConstants.BB_MODEL_SCALE),
             ikTarget1,
             ikSource1,
             lockIkTargetRotation1))

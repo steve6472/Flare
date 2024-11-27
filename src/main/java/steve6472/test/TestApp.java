@@ -33,7 +33,8 @@ class TestApp extends FlareApp
         PhysicsSpace.logger.setLevel(Level.WARNING);
         PhysicsRigidBody.logger2.setLevel(Level.WARNING);
         NativeLibraryLoader.logger.setLevel(Level.WARNING);
-        NativeLibraryLoader.loadLibbulletjme(true, new File("dep"), "Debug", "Sp");
+        // TODO: remove bullet from Flare, use this exporting feature in Orbiter. Move the exporting into a separate util class
+        NativeLibraryLoader.loadLibbulletjme(true, new File("generated/flare"), "Debug", "Sp");
         NativeLibrary.setStartupMessageEnabled(false);
     }
 
@@ -92,9 +93,9 @@ class TestApp extends FlareApp
         if (TestKeybinds.BACK.isActive())
             Y -= frameInfo.frameTime() * speed;
 
-        Key sans = Key.defaultNamespace("default_comic_sans");
-        Key debug = Key.defaultNamespace("debug");
-        Key digi = Key.defaultNamespace("digi");
+        Key sans = Key.withNamespace("test", "default_comic_sans");
+        Key debug = Key.withNamespace("test", "debug");
+        Key digi = Key.withNamespace("test", "digi");
 
 
 //                text().line(TextLine.fromText("Rainbow in a Pot", 1f), new Matrix4f().translate(0, 0, 0));

@@ -2,6 +2,7 @@ package steve6472.flare.registry;
 
 import steve6472.core.registry.*;
 import steve6472.core.setting.Setting;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.SamplerLoader;
 import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.assets.model.Model;
@@ -23,19 +24,24 @@ import steve6472.flare.ui.font.style.StyleLoader;
  */
 public class FlareRegistries extends RegistryCreators
 {
-    public static final ObjectRegistry<Setting<?, ?>> VISUAL_SETTINGS = createObjectRegistry("visual_settings", () -> VisualSettings.USERNAME);
+    public static final ObjectRegistry<Setting<?, ?>> VISUAL_SETTINGS = createObjectRegistry(id("visual_settings"), () -> VisualSettings.USERNAME);
 
-    public static final Registry<ElementType<?>> MODEL_ELEMENT = createRegistry("model_element", () -> ElementType.CUBE);
-    public static final Registry<KeyframeType<?>> KEYFRAME_TYPE = createRegistry("keyframe_type", () -> KeyframeType.ROTATION);
+    public static final Registry<ElementType<?>> MODEL_ELEMENT = createRegistry(id("model_element"), () -> ElementType.CUBE);
+    public static final Registry<KeyframeType<?>> KEYFRAME_TYPE = createRegistry(id("keyframe_type"), () -> KeyframeType.ROTATION);
 
     // Models have to load after the model types registries
-    public static final ObjectRegistry<LoadedModel> STATIC_LOADED_MODEL = createObjectRegistry("static_loaded_model", ErrorModel.INSTANCE, BlockbenchLoader::loadStaticModels);
-    public static final ObjectRegistry<LoadedModel> ANIMATED_LOADED_MODEL = createObjectRegistry("animated_loaded_model", ErrorModel.INSTANCE, BlockbenchLoader::loadAnimatedModels);
-    public static final ObjectRegistry<FontEntry> FONT = createObjectRegistry("font", FontLoader::bootstrap);
-    public static final ObjectRegistry<FontStyleEntry> FONT_STYLE = createObjectRegistry("font_style", StyleLoader::bootstrap);
+    public static final ObjectRegistry<LoadedModel> STATIC_LOADED_MODEL = createObjectRegistry(id("static_loaded_model"), ErrorModel.INSTANCE, BlockbenchLoader::loadStaticModels);
+    public static final ObjectRegistry<LoadedModel> ANIMATED_LOADED_MODEL = createObjectRegistry(id("animated_loaded_model"), ErrorModel.INSTANCE, BlockbenchLoader::loadAnimatedModels);
+    public static final ObjectRegistry<FontEntry> FONT = createObjectRegistry(id("font"), FontLoader::bootstrap);
+    public static final ObjectRegistry<FontStyleEntry> FONT_STYLE = createObjectRegistry(id("font_style"), StyleLoader::bootstrap);
 
     // VK Objects
-    public static final ObjectRegistry<TextureSampler> SAMPLER = createVkObjectRegistry("sampler", SamplerLoader::loadSamplers);
-    public static final ObjectRegistry<Model> STATIC_MODEL = createVkObjectRegistry("static_model", ErrorModel.VK_STATIC_INSTANCE, BlockbenchLoader::createStaticModels);
-    public static final ObjectRegistry<Model> ANIMATED_MODEL = createVkObjectRegistry("animated_model", ErrorModel.VK_ANIMATED_INSTANCE, BlockbenchLoader::createAnimatedModels);
+    public static final ObjectRegistry<TextureSampler> SAMPLER = createVkObjectRegistry(id("sampler"), SamplerLoader::loadSamplers);
+    public static final ObjectRegistry<Model> STATIC_MODEL = createVkObjectRegistry(id("static_model"), ErrorModel.VK_STATIC_INSTANCE, BlockbenchLoader::createStaticModels);
+    public static final ObjectRegistry<Model> ANIMATED_MODEL = createVkObjectRegistry(id("animated_model"), ErrorModel.VK_ANIMATED_INSTANCE, BlockbenchLoader::createAnimatedModels);
+
+    private static Key id(String id)
+    {
+        return Key.withNamespace(FlareConstants.ENGINE_NAMESPACE, id);
+    }
 }

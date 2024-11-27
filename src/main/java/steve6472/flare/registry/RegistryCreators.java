@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 public class RegistryCreators
 {
     private static final Logger LOGGER = Log.getLogger(RegistryCreators.class);
-    protected static Map<Key, Supplier<?>> LOADERS = new LinkedHashMap<>();
+    protected static Map<Key, Runnable> LOADERS = new LinkedHashMap<>();
     protected static Map<Key, VkContent<?>> VK_LOADERS = new LinkedHashMap<>();
 
     /// This method simply ensures that the fields in a static class are loaded.
@@ -31,9 +31,21 @@ public class RegistryCreators
      * Creators
      */
 
-    protected static <T extends Keyable & Serializable<?>> Registry<T> createRegistry(String id, Supplier<T> bootstrap)
+    protected static <T extends Keyable & Serializable<?>> Registry<T> createRegistry(String id, Runnable bootstrap)
     {
         Key key = Key.defaultNamespace(id);
+        LOGGER.finest("Creating Registry " + key);
+        LOADERS.put(key, bootstrap);
+        return new Registry<>(key);
+    }
+
+    protected static <T extends Keyable & Serializable<?>> Registry<T> createRegistry(String id, Supplier<T> bootstrap)
+    {
+        return createRegistry(id, (Runnable) bootstrap::get);
+    }
+
+    protected static <T extends Keyable & Serializable<?>> Registry<T> createRegistry(Key key, Runnable bootstrap)
+    {
         LOGGER.finest("Creating Registry " + key);
         LOADERS.put(key, bootstrap);
         return new Registry<>(key);
@@ -41,14 +53,24 @@ public class RegistryCreators
 
     protected static <T extends Keyable & Serializable<?>> Registry<T> createRegistry(Key key, Supplier<T> bootstrap)
     {
-        LOGGER.finest("Creating Registry " + key);
+        return createRegistry(key, (Runnable) bootstrap::get);
+    }
+
+    protected static <T extends Keyable> ObjectRegistry<T> createObjectRegistry(String id, Runnable bootstrap)
+    {
+        Key key = Key.defaultNamespace(id);
+        LOGGER.finest("Creating Object Registry " + key);
         LOADERS.put(key, bootstrap);
-        return new Registry<>(key);
+        return new ObjectRegistry<>(key);
     }
 
     protected static <T extends Keyable> ObjectRegistry<T> createObjectRegistry(String id, Supplier<T> bootstrap)
     {
-        Key key = Key.defaultNamespace(id);
+        return createObjectRegistry(id, (Runnable) bootstrap::get);
+    }
+
+    protected static <T extends Keyable> ObjectRegistry<T> createObjectRegistry(Key key, Runnable bootstrap)
+    {
         LOGGER.finest("Creating Object Registry " + key);
         LOADERS.put(key, bootstrap);
         return new ObjectRegistry<>(key);
@@ -56,12 +78,10 @@ public class RegistryCreators
 
     protected static <T extends Keyable> ObjectRegistry<T> createObjectRegistry(Key key, Supplier<T> bootstrap)
     {
-        LOGGER.finest("Creating Object Registry " + key);
-        LOADERS.put(key, bootstrap);
-        return new ObjectRegistry<>(key);
+        return createObjectRegistry(key, (Runnable) bootstrap::get);
     }
 
-    protected static <T extends Keyable> ObjectRegistry<T> createObjectRegistry(String id, T defaultValue, Supplier<T> bootstrap)
+    protected static <T extends Keyable> ObjectRegistry<T> createObjectRegistry(String id, T defaultValue, Runnable bootstrap)
     {
         Key key = Key.defaultNamespace(id);
         LOGGER.finest("Creating Object Registry " + key);
@@ -69,11 +89,21 @@ public class RegistryCreators
         return new ObjectRegistry<>(key, defaultValue);
     }
 
-    protected static <T extends Keyable> ObjectRegistry<T> createObjectRegistry(Key key, T defaultValue, Supplier<T> bootstrap)
+    protected static <T extends Keyable> ObjectRegistry<T> createObjectRegistry(String id, T defaultValue, Supplier<T> bootstrap)
+    {
+        return createObjectRegistry(id, defaultValue, (Runnable) bootstrap::get);
+    }
+
+    protected static <T extends Keyable> ObjectRegistry<T> createObjectRegistry(Key key, T defaultValue, Runnable bootstrap)
     {
         LOGGER.finest("Creating Object Registry " + key);
         LOADERS.put(key, bootstrap);
         return new ObjectRegistry<>(key, defaultValue);
+    }
+
+    protected static <T extends Keyable> ObjectRegistry<T> createObjectRegistry(Key key, T defaultValue, Supplier<T> bootstrap)
+    {
+        return createObjectRegistry(key, defaultValue, (Runnable) bootstrap::get);
     }
 
     protected static <T extends Keyable> ObjectRegistry<T> createVkObjectRegistry(String id, VkContent<T> bootstrap)
@@ -114,16 +144,7 @@ public class RegistryCreators
     {
         LOGGER.finest("Creating content");
         LOADERS.forEach((key, loader) -> {
-            try
-            {
-                if (loader.get() == null)
-                {
-                    LOGGER.severe("Failed to load registry " + key);
-                }
-            } catch (Exception ex)
-            {
-                throw new RuntimeException(ex);
-            }
+            loader.run();
             LOGGER.finest("Bootstrapped " + key);
         });
     }
@@ -132,13 +153,7 @@ public class RegistryCreators
     {
         LOGGER.finest("Creating VK content");
         VK_LOADERS.forEach((key, loader) -> {
-            try
-            {
-                loader.apply(device, commands, graphicsQueue);
-            } catch (Exception ex)
-            {
-                throw new RuntimeException(ex);
-            }
+            loader.apply(device, commands, graphicsQueue);
             LOGGER.finest("Bootstrapped " + key);
         });
     }

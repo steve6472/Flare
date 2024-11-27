@@ -6,7 +6,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import steve6472.core.util.ExtraCodecs;
 import steve6472.core.util.ImagePacker;
-import steve6472.flare.Constants;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.assets.model.blockbench.Element;
 import steve6472.flare.assets.model.blockbench.ElementType;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
@@ -30,8 +30,8 @@ public record LocatorElement(UUID uuid, String name, Vector3f position, Vector3f
         new LocatorElement(
             uuid1,
             name1,
-            position1.mul(Constants.BB_MODEL_SCALE),
-            rotation1.mul(Constants.DEG_TO_RAD),
+            position1.mul(FlareConstants.BB_MODEL_SCALE),
+            rotation1.mul(FlareConstants.DEG_TO_RAD),
             ignoreInheretedScale1))
     );
 

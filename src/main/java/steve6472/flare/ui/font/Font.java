@@ -16,10 +16,11 @@ import org.lwjgl.vulkan.VkQueue;
 import steve6472.core.log.Log;
 import steve6472.core.registry.Key;
 import steve6472.flare.Commands;
-import steve6472.flare.Constants;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.SamplerLoader;
 import steve6472.flare.assets.Texture;
 import steve6472.flare.assets.TextureSampler;
+import steve6472.flare.module.Module;
 import steve6472.flare.settings.VisualSettings;
 import steve6472.flare.ui.font.layout.*;
 
@@ -45,22 +46,16 @@ public class Font
     private static final String DEFAULT_CHARSET = "[0x0,0xFFFF]";
     private static final int DEFAULT_SIZE = 48;
     private static final int DEFAULT_PXPADDING = 1;
-    private static final File GENERATED_FONT = new File(Constants.GENERATED_FOLDER, "font");
-    private static final File GENERATOR = new File(Constants.RESOURCES_FOLDER, "font/generator/msdf-atlas-gen.exe");
 
     public static final Codec<Font> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-        Codec.STRING.flatXmap(fontPath ->
-        {
-            fontPath = fontPath.replace("%SystemRoot%", System.getenv("SystemRoot"));
-            return DataResult.success(new File(fontPath));
-        }, _ -> DataResult.error(() -> "Too lazy to serialize, so just don't")).fieldOf("path").forGetter(o -> o.fontFile),
+        Codec.STRING.fieldOf("path").forGetter(o -> o.fontPath),
         Codec.STRING.optionalFieldOf("charset", DEFAULT_CHARSET).forGetter(o -> o.charset),
         Codec.INT.optionalFieldOf("size", DEFAULT_SIZE).forGetter(o -> o.size),
         Codec.INT.optionalFieldOf("px_padding", DEFAULT_PXPADDING).forGetter(o -> o.pxPadding)
     ).apply(instance, Font::new));
 
     private final String charset;
-    private final File fontFile;
+    private final String fontPath;
     private final int size;
     private final int pxPadding;
 
@@ -69,41 +64,42 @@ public class Font
     private AtlasData atlasData;
     private Metrics metrics;
 
-    private Font(File fontFile, String charset, int size, int pxPadding)
+    private Font(String fontPath, String charset, int size, int pxPadding)
     {
-        this.fontFile = fontFile;
+        this.fontPath = fontPath;
         this.charset = charset;
         this.size = size;
         this.pxPadding = pxPadding;
     }
 
-    public void init(Key key)
+    public void init(Module module, Key key)
     {
         String name = key.id();
-        final File fontTexture = new File(GENERATED_FONT, name + ".png");
-        final File fontLayout = new File(GENERATED_FONT, name + "_layout.json");
-        final File fontCharset = new File(GENERATED_FONT, name + "_charset.txt");
+        final File fontNamespace = new File(new File(FlareConstants.GENERATED_FLARE, "font"), key.namespace());
+
+        final File fontTexture = new File(fontNamespace, name + ".png");
+        final File fontLayout = new File(fontNamespace, name + "_layout.json");
+        final File fontCharset = new File(fontNamespace, name + "_charset.txt");
 
         LOGGER.finest("Init font " + key);
         try
         {
             if (!fontTexture.exists() || !fontLayout.exists() || !fontCharset.exists())
             {
-                LOGGER.fine("Reason to generate: fontTexture.exists() -> " + !fontTexture.exists() + ", fontLayout.exists() -> " + !fontLayout.exists() + ", fontCharset.exists() -> " + !fontCharset.exists());
+                LOGGER.fine("Reason to generate: Font Texture -> " + fontTexture.exists() + ", Font Layout -> " + fontLayout.exists() + ", Font Charset -> " + fontCharset.exists());
 
-                File parentFile = fontTexture.getParentFile();
-                if (!parentFile.exists())
+                if (!fontNamespace.exists())
                 {
-                    if (!parentFile.mkdirs())
+                    if (!fontNamespace.mkdirs())
                     {
-                        throw new RuntimeException("Could not create " + parentFile.getAbsolutePath());
+                        throw new RuntimeException("Could not font namespace folder " + fontNamespace.getAbsolutePath());
                     }
                 }
 
                 LOGGER.finest("Generating charset for " + key);
                 generateCharset(fontCharset);
                 LOGGER.finest("Calling msdf-atlas-gen");
-                generateImageAndLayout(fontTexture, fontLayout, fontCharset);
+                generateImageAndLayout(module.getRootFolder(), key.namespace(), fontTexture, fontLayout, fontCharset);
             }
             readFontLayout(fontLayout);
 
@@ -126,12 +122,23 @@ public class Font
         }
     }
 
-    private void generateImageAndLayout(File fontTexture, File fontLayout, File fontCharset) throws IOException, InterruptedException
+    private void generateImageAndLayout(File moduleRoot, String namespace, File fontTexture, File fontLayout, File fontCharset) throws IOException, InterruptedException
     {
+        File fontFile;
+        if (fontPath.contains("%SystemRoot%"))
+        {
+            fontFile = new File(fontPath.replace("%SystemRoot%", System.getenv("SystemRoot")));
+        } else
+        {
+            fontFile = new File(new File(moduleRoot, namespace), "font/assets/" + fontPath);
+        }
         LOGGER.finer("Generating font from " + fontFile.getAbsolutePath());
 
+        if (!fontFile.exists())
+            throw new RuntimeException("Font file not found! " + fontFile.getAbsolutePath());
+
         Process process = new ProcessBuilder().command(
-            GENERATOR.getPath(),
+            FlareConstants.MSDF_EXE.getPath(),
             "-font", fontFile.getAbsolutePath(),
             "-type", AtlasType.MTSDF.stringValue(),
             "-potr",
@@ -214,6 +221,10 @@ public class Font
         return new TextureSampler(texture, device, key, VK_FILTER_LINEAR);
     }
 
+    /*
+     * Font data getters and util methods
+     */
+
     public AtlasData getAtlasData()
     {
         return atlasData;
@@ -224,19 +235,9 @@ public class Font
         return metrics;
     }
 
-    public Long2ObjectMap<Long2FloatMap> getKerning()
-    {
-        return kerning;
-    }
-
     public String getCharset()
     {
         return charset;
-    }
-
-    public Long2ObjectMap<GlyphInfo> getGlyphs()
-    {
-        return glyphs;
     }
 
     public GlyphInfo glyphInfo(long character)

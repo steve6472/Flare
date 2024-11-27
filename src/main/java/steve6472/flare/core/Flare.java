@@ -8,8 +8,10 @@ import org.lwjgl.vulkan.*;
 import steve6472.core.SteveCore;
 import steve6472.core.log.Log;
 import steve6472.core.setting.SettingsLoader;
+import steve6472.core.util.ResourceListing;
 import steve6472.flare.*;
 import steve6472.flare.input.UserInput;
+import steve6472.flare.module.ModuleManager;
 import steve6472.flare.registry.RegistryCreators;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.settings.ValidationLevel;
@@ -17,8 +19,13 @@ import steve6472.flare.settings.VisualSettings;
 import steve6472.flare.vr.VrData;
 import steve6472.flare.vr.VrUtil;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -45,6 +52,7 @@ public class Flare
     private VkQueue graphicsQueue;
     private VkQueue presentQueue;
     private VrData vrData;
+    private ModuleManager moduleManager;
 
     // ======= METHODS ======= //
 
@@ -64,7 +72,8 @@ public class Flare
 
     private void start()
     {
-        createGeneratedFolder();
+        createGeneratedFolders();
+        exportBuiltinResources();
         window = new Window(app.windowTitle());
         app.userInput = new UserInput(window);
         app.preInit();
@@ -76,15 +85,87 @@ public class Flare
         cleanup();
     }
 
-    private void createGeneratedFolder()
+    private void createGeneratedFolders()
     {
-        if (!Constants.GENERATED_FOLDER.exists())
+        createFolderOrError(FlareConstants.GENERATED_FLARE);
+        createFolderOrError(FlareConstants.FLARE_DEBUG_FOLDER);
+        createFolderOrError(FlareConstants.MODULES);
+        createFolderOrError(FlareConstants.FLARE_MODULE);
+    }
+
+    private void createFolderOrError(File directory)
+    {
+        if (!directory.exists())
         {
-            if (!Constants.GENERATED_FOLDER.mkdirs())
+            if (!directory.mkdirs())
             {
-                LOGGER.severe("Could not create 'generated' folder at " + Constants.GENERATED_FOLDER.getAbsolutePath());
+                LOGGER.severe("Could not create folder at " + directory.getAbsolutePath());
                 throw new RuntimeException("Could not geenrate generated folder");
             }
+        }
+    }
+
+    private void exportBuiltinResources()
+    {
+        try
+        {
+            exportFolder("flare/export/msdf", FlareConstants.GENERATED_FLARE);
+            exportFolder("flare/export/bullet", FlareConstants.GENERATED_FLARE);
+
+            exportFolder("flare/module", FlareConstants.FLARE_MODULE);
+        } catch (IOException | URISyntaxException exception)
+        {
+            LOGGER.severe("Failed to export Flare Module! Stopping application.");
+            throw new RuntimeException(exception);
+        }
+    }
+
+    /// This does not exactly work well, it works differently when ran from IDE and when ran as jar
+    /// For now it seems to work tho
+    private void exportFolder(String path, File destination) throws IOException, URISyntaxException
+    {
+        String pathForListing = path;
+        if (!pathForListing.endsWith("/"))
+            pathForListing = pathForListing + "/";
+
+        String[] resourceListing = ResourceListing.getResourceListing(Flare.class, pathForListing);
+//        System.out.println("pathForListing: " + pathForListing + " destination: " + destination + " listing: " + Arrays.toString(resourceListing) + " (" + (resourceListing == null ? "-1" : resourceListing.length) + ")");
+
+        if (resourceListing == null || resourceListing.length == 0)
+        {
+            exportFile(path, destination);
+            return;
+        }
+
+        if (!destination.exists())
+        {
+            if (!destination.mkdirs())
+            {
+                LOGGER.severe("Failed to create folder for export " + destination);
+                return;
+            }
+        }
+
+        for (String resource : resourceListing)
+        {
+            if (resource.isBlank())
+                continue;
+
+            exportFolder(path + "/" + resource, new File(destination, resource));
+        }
+    }
+
+    private void exportFile(String path, File destination) throws IOException
+    {
+//        System.out.println("Exporting file " + path + " to " + destination);
+        if (!destination.exists())
+        {
+            if (!path.startsWith("/"))
+                path = "/" + path;
+            InputStream link = Flare.class.getResourceAsStream(path);
+            Objects.requireNonNull(link, "Path '" + path + "' not found!");
+            Files.copy(link, destination.getAbsoluteFile().toPath());
+            link.close();
         }
     }
 
@@ -93,8 +174,11 @@ public class Flare
         RegistryCreators.init(FlareRegistries.VISUAL_SETTINGS);
         app.initRegistries();
 
+        moduleManager = new ModuleManager();
+        moduleManager.loadModules();
+
         RegistryCreators.createContents();
-        SettingsLoader.loadFromJsonFile(FlareRegistries.VISUAL_SETTINGS, Constants.VISUAL_SETTINGS_FILE);
+        SettingsLoader.loadFromJsonFile(FlareRegistries.VISUAL_SETTINGS, FlareConstants.VISUAL_SETTINGS_FILE);
         app.loadSettings();
     }
 
@@ -182,7 +266,7 @@ public class Flare
     {
         app.saveSettings();
         // Save settings
-        SettingsLoader.saveToJsonFile(FlareRegistries.VISUAL_SETTINGS, Constants.VISUAL_SETTINGS_FILE);
+        SettingsLoader.saveToJsonFile(FlareRegistries.VISUAL_SETTINGS, FlareConstants.VISUAL_SETTINGS_FILE);
 
         LOGGER.fine("Cleanup");
 
@@ -338,5 +422,10 @@ public class Flare
 
             surface = pSurface.get(0);
         }
+    }
+
+    public static ModuleManager getModuleManager()
+    {
+        return INSTANCE.moduleManager;
     }
 }

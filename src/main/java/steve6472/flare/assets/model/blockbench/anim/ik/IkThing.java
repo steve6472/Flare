@@ -2,7 +2,7 @@ package steve6472.flare.assets.model.blockbench.anim.ik;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import steve6472.flare.Constants;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
 import steve6472.flare.assets.model.blockbench.SkinData;
 import steve6472.flare.assets.model.blockbench.anim.AnimationController;
@@ -130,7 +130,7 @@ public class IkThing
         pointA.sub(pointB, dir);
         dir.normalize();
 //        Vector3f normalizedA = new Vector3f(0, 1, 0);
-        Vector3f normalizedA = Constants.CAMERA_UP;
+        Vector3f normalizedA = FlareConstants.CAMERA_UP;
         Vector3f axis = new Vector3f();
         normalizedA.cross(dir, axis).normalize();
         float angle = (float) Math.acos(normalizedA.dot(dir));

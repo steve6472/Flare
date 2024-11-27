@@ -1,0 +1,5 @@
+{
+    name: "Flare Test",
+    description: "Built-in test module for testing Flare",
+    authors: "steve6472"
+}

@@ -9,7 +9,7 @@ import org.joml.Vector4f;
 import steve6472.core.util.ExtraCodecs;
 import steve6472.core.util.ImagePacker;
 import steve6472.core.util.Preconditions;
-import steve6472.flare.Constants;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.assets.model.blockbench.*;
 
 import java.awt.*;
@@ -44,11 +44,11 @@ public record CubeElement(UUID uuid, String name, Vector3f from, Vector3f to, Ve
             return new CubeElement(
                 uuid1,
                 name1,
-                from1.mul(Constants.BB_MODEL_SCALE),
-                to1.mul(Constants.BB_MODEL_SCALE),
-                rotation1.mul(Constants.DEG_TO_RAD),
-                origin1.mul(Constants.BB_MODEL_SCALE),
-                inflate1 * Constants.BB_MODEL_SCALE,
+                from1.mul(FlareConstants.BB_MODEL_SCALE),
+                to1.mul(FlareConstants.BB_MODEL_SCALE),
+                rotation1.mul(FlareConstants.DEG_TO_RAD),
+                origin1.mul(FlareConstants.BB_MODEL_SCALE),
+                inflate1 * FlareConstants.BB_MODEL_SCALE,
                 newFaces);
         })
     );

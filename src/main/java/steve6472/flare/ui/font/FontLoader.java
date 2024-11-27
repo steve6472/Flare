@@ -1,6 +1,9 @@
 package steve6472.flare.ui.font;
 
-import steve6472.flare.Constants;
+import com.mojang.datafixers.util.Pair;
+import steve6472.core.registry.Key;
+import steve6472.flare.core.Flare;
+import steve6472.flare.module.Module;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.util.ResourceCrawl;
 
@@ -15,24 +18,27 @@ import java.util.List;
  */
 public class FontLoader
 {
-    private static final File FONTS = new File(Constants.RESOURCES_FOLDER, "font/font");
+    private static final String PATH = "font/fonts";
 
-    public static FontEntry bootstrap()
+    public static void bootstrap()
     {
-        List<FontEntry> fonts = new ArrayList<>();
+        List<Pair<FontEntry, Module>> fonts = new ArrayList<>();
 
-        ResourceCrawl.crawlAndLoadJsonCodec(FONTS, Font.CODEC, (info, key) ->
+        for (Module module : Flare.getModuleManager().getModules())
         {
-            FontEntry entry = new FontEntry(key, info, fonts.size());
-            fonts.add(entry);
-        });
-
-        for (FontEntry font : fonts)
-        {
-            font.font().init(font.key());
-            FlareRegistries.FONT.register(font);
+            module.iterateNamespaces((folder, namespace) ->
+                ResourceCrawl.crawlAndLoadJsonCodec(new File(folder, PATH), Font.CODEC, (info, key) ->
+            {
+                FontEntry entry = new FontEntry(Key.withNamespace(namespace, key), info, fonts.size());
+                fonts.add(Pair.of(entry, module));
+            }));
         }
 
-        return fonts.getFirst();
+        for (Pair<FontEntry, Module> pair : fonts)
+        {
+            FontEntry font = pair.getFirst();
+            font.font().init(pair.getSecond(), font.key());
+            FlareRegistries.FONT.register(font);
+        }
     }
 }

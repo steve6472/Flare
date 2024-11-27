@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Vector3f;
 import steve6472.core.util.ExtraCodecs;
-import steve6472.flare.Constants;
+import steve6472.flare.FlareConstants;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +23,7 @@ public final class OutlinerElement extends OutlinerUUID
                 ExtraCodecs.VEC_3F.optionalFieldOf("origin", new Vector3f()).forGetter(o -> o.origin),
                 ExtraCodecs.VEC_3F.optionalFieldOf("rotation", new Vector3f()).forGetter(o -> o.rotation),
                 Codec.withAlternative(OutlinerUUID.CODEC, selfCodec).listOf().optionalFieldOf("children", List.of()).forGetter(o -> o.children)
-            ).apply(instance, (uuid1, origin1, rotation1, children1) -> new OutlinerElement(uuid1, origin1.mul(Constants.BB_MODEL_SCALE), rotation1.mul(Constants.DEG_TO_RAD), children1)))
+            ).apply(instance, (uuid1, origin1, rotation1, children1) -> new OutlinerElement(uuid1, origin1.mul(FlareConstants.BB_MODEL_SCALE), rotation1.mul(FlareConstants.DEG_TO_RAD), children1)))
         );
 
     public static final Codec<OutlinerUUID> CODEC = Codec.withAlternative(OutlinerUUID.CODEC, RECURSIVE_CODEC);

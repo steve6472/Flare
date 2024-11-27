@@ -34,6 +34,7 @@ public abstract class FlareApp
 
     protected abstract void preInit();
     protected abstract Camera setupCamera();
+    /// Call [FlareApp#initRegistry(Registry)] to make sure registries are filled
     protected abstract void initRegistries();
     public abstract void loadSettings();
 

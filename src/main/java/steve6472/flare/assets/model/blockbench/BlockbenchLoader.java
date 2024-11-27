@@ -1,10 +1,5 @@
 package steve6472.flare.assets.model.blockbench;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JsonOps;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
 import steve6472.core.log.Log;
@@ -12,19 +7,20 @@ import steve6472.core.registry.Key;
 import steve6472.core.registry.ObjectRegistry;
 import steve6472.core.util.ImagePacker;
 import steve6472.flare.Commands;
-import steve6472.flare.Constants;
+import steve6472.flare.FlareConstants;
+import steve6472.flare.core.Flare;
+import steve6472.flare.module.Module;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.assets.Texture;
 import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.assets.model.Model;
 import steve6472.flare.assets.model.primitive.PrimitiveModel;
 import steve6472.flare.util.PackerUtil;
+import steve6472.flare.util.ResourceCrawl;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Function;
@@ -38,8 +34,9 @@ import java.util.logging.Logger;
 public class BlockbenchLoader
 {
     private static final Logger LOGGER = Log.getLogger(BlockbenchLoader.class);
-    private static final String MODELS_PATH = "resources" + File.separator + "models" + File.separator + "blockbench" + File.separator;
     private static final int STARTING_IMAGE_SIZE = 512;
+
+    private static final File DEBUG_ATLAS = new File(FlareConstants.FLARE_DEBUG_FOLDER, "blockbench_atlas.png");
 
     private static final Map<String, BufferedImage> IMAGES = new HashMap<>();
 
@@ -58,7 +55,7 @@ public class BlockbenchLoader
         saveDebugAtlas(image);
         Texture texture = new Texture();
         texture.createTextureImageFromBufferedImage(device, image, commands.commandPool, graphicsQueue);
-        TextureSampler sampler = new TextureSampler(texture, device, Constants.BLOCKBENCH_TEXTURE);
+        TextureSampler sampler = new TextureSampler(texture, device, FlareConstants.BLOCKBENCH_TEXTURE);
         FlareRegistries.SAMPLER.register(sampler);
         fixModelUvs(packer);
         return sampler;
@@ -68,7 +65,7 @@ public class BlockbenchLoader
     {
         try
         {
-            ImageIO.write(image, "PNG", new File("blockbench_atlas.png"));
+            ImageIO.write(image, "PNG", DEBUG_ATLAS);
         } catch (IOException e)
         {
             LOGGER.warning("Failed to save debug atlas.png, exception: " + e.getMessage());
@@ -92,14 +89,14 @@ public class BlockbenchLoader
         ErrorModel.INSTANCE.elements().forEach(el -> el.fixUvs(ErrorModel.INSTANCE, imagePacker));
     }
 
-    public static LoadedModel loadStaticModels()
+    public static void loadStaticModels()
     {
-        return loadModels("static", FlareRegistries.STATIC_LOADED_MODEL);
+        loadModels("static", FlareRegistries.STATIC_LOADED_MODEL);
     }
 
-    public static LoadedModel loadAnimatedModels()
+    public static void loadAnimatedModels()
     {
-        return loadModels("animated", FlareRegistries.ANIMATED_LOADED_MODEL);
+        loadModels("animated", FlareRegistries.ANIMATED_LOADED_MODEL);
     }
 
     public static Model createStaticModels(VkDevice device, Commands commands, VkQueue graphicsQueue)
@@ -133,29 +130,23 @@ public class BlockbenchLoader
         return first;
     }
 
-    private static LoadedModel loadModels(String path, ObjectRegistry<LoadedModel> modelRegistry)
+    private static void loadModels(String path, ObjectRegistry<LoadedModel> modelRegistry)
     {
-        LoadedModel[] models;
+        for (Module module : Flare.getModuleManager().getModules())
+        {
+            module.iterateNamespaces((folder, namespace) ->
+            {
+                File file = new File(folder, "models/blockbench/" + path);
 
-        try
-        {
-            File[] files = new File(MODELS_PATH + path).listFiles();
-            models = loadModels(files);
-        } catch (URISyntaxException | IOException e)
-        {
-            throw new RuntimeException(e);
+                ResourceCrawl.crawlAndLoadJsonCodec(file, LoadedModel.CODEC, (loadedModel, key) ->
+                {
+                    loadedModel = overrideKey(loadedModel, Key.withNamespace(namespace, "blockbench/" + path + "/" + key));
+
+                    modelRegistry.register(loadedModel.key(), loadedModel);
+                    loadTextures(loadedModel, file.getAbsolutePath());
+                });
+            });
         }
-
-        for (LoadedModel model : models)
-        {
-            modelRegistry.register(model.key(), model);
-            loadTextures(model, MODELS_PATH + path);
-        }
-
-        if (models.length > 0)
-            return models[0];
-
-        return ErrorModel.INSTANCE;
     }
 
     private static void loadTextures(LoadedModel model, String modelPath)
@@ -164,21 +155,20 @@ public class BlockbenchLoader
         try
         {
             List<TextureData> textures = model.textures();
-//            if (textures.size() > 1) LOGGER.warning("Multiple textures per model functionality not confirmed yet! (" + model.key() + ")");
             if (textures.isEmpty()) LOGGER.warning("Model has no texture, weirdness may happen! (" + model.key() + ")");
 
             for (TextureData texture : textures)
             {
                 String pathId = texture.relativePath();
-                IMAGES.computeIfAbsent(pathId, _ -> {
+                IMAGES.computeIfAbsent(pathId, _ ->
+                {
                     String path = Paths.get(modelPath).resolve(Paths.get(pathId)).normalize().toAbsolutePath().toString();
-
                     try
                     {
                         File input = new File(path);
                         if (!input.exists())
                         {
-                            throw new RuntimeException("Texture " + path + "(" + pathId + ")" + " not found");
+                            throw new RuntimeException("Texture " + path + " (" + pathId + ")" + " not found");
                         }
                         return ImageIO.read(input);
                     } catch (IOException e)
@@ -192,65 +182,6 @@ public class BlockbenchLoader
             LOGGER.severe("Failed to load texture for model " + model.key());
             throw e;
         }
-    }
-
-    private static LoadedModel[] loadModels(File[] files) throws URISyntaxException, IOException
-    {
-        if (files == null)
-            return new LoadedModel[0];
-
-        List<LoadedModel> models = new ArrayList<>();
-
-        for (File file : files)
-        {
-            if (!file.getAbsolutePath().endsWith(".bbmodel"))
-            {
-                Collections.addAll(models, loadModels(file.listFiles()));
-            } else
-            {
-                LoadedModel loadedModel = loadModel(file);
-                if (loadedModel != null)
-                    models.add(loadedModel);
-            }
-        }
-
-        return models.toArray(new LoadedModel[0]);
-    }
-
-    private static LoadedModel loadModel(File file) throws FileNotFoundException
-    {
-        if (!file.getAbsolutePath().endsWith(".bbmodel"))
-        {
-            LOGGER.severe("ExtraPath does not end with .bbmodel");
-            return ErrorModel.INSTANCE;
-        }
-
-        LOGGER.finest("Loading model: " + file);
-
-        InputStreamReader streamReader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
-        BufferedReader reader = new BufferedReader(streamReader);
-        JsonElement jsonElement = JsonParser.parseReader(reader);
-        DataResult<Pair<LoadedModel, JsonElement>> decode = LoadedModel.CODEC.decode(JsonOps.INSTANCE, jsonElement);
-
-        if (decode.isError())
-        {
-            LOGGER.severe("Resource loading error '" + file + "'");
-            decode.error().ifPresent(err -> LOGGER.severe(err.message()));
-            return ErrorModel.INSTANCE;
-        }
-
-        Pair<LoadedModel, JsonElement> decoded = decode.getOrThrow();
-        LoadedModel loadedModel = decoded.getFirst();
-
-        String filePath = file.getAbsolutePath();
-        int startIndex = filePath.indexOf(MODELS_PATH);
-        String extractedPath = filePath.substring(startIndex + MODELS_PATH.length() - ("blockbench" + File.separator).length());
-        extractedPath = extractedPath.substring(0, extractedPath.lastIndexOf(".bbmodel"));
-
-        // Replace windows separator \ with /
-        extractedPath = extractedPath.replace("\\", "/");
-
-        return overrideKey(loadedModel, Key.defaultNamespace(extractedPath));
     }
 
     private static LoadedModel overrideKey(LoadedModel model, Key newKey)

@@ -79,7 +79,7 @@ public class Commands
         renderArea.extent(extent);
         renderPassInfo.renderArea(renderArea);
         VkClearValue.Buffer clearValues = VkClearValue.calloc(2, stack);
-        clearValues.get(0).color().float32(stack.floats(Constants.CLEAR_COLOR.x, Constants.CLEAR_COLOR.y, Constants.CLEAR_COLOR.z, Constants.CLEAR_COLOR.w));
+        clearValues.get(0).color().float32(stack.floats(FlareConstants.CLEAR_COLOR.x, FlareConstants.CLEAR_COLOR.y, FlareConstants.CLEAR_COLOR.z, FlareConstants.CLEAR_COLOR.w));
         clearValues.get(1).depthStencil().set(1.0f, 0);
         renderPassInfo.pClearValues(clearValues);
 

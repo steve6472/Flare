@@ -3,10 +3,14 @@ package steve6472.flare.ui.font.render;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import steve6472.core.log.Log;
 import steve6472.core.registry.Key;
 import steve6472.flare.registry.FlareRegistries;
+import steve6472.flare.ui.font.UnknownCharacter;
 import steve6472.flare.ui.font.style.FontStyle;
 import steve6472.flare.ui.font.style.FontStyleEntry;
+
+import java.util.logging.Logger;
 
 /**
  * Created by steve6472
@@ -15,6 +19,8 @@ import steve6472.flare.ui.font.style.FontStyleEntry;
  */
 public record TextLine(char[] charEntries, float size, FontStyleEntry style, Anchor anchor, Billboard billboard)
 {
+    private static final Logger LOGGER = Log.getLogger(TextLine.class);
+
     private static final Anchor DEFAULT_ANCHOR = Anchor.CENTER;
     private static final Billboard DEFAULT_BILLBOARD = Billboard.FIXED;
 
@@ -98,6 +104,12 @@ public record TextLine(char[] charEntries, float size, FontStyleEntry style, Anc
 
     private static FontStyleEntry findStyle(Key key)
     {
-        return FlareRegistries.FONT_STYLE.get(key);
+        FontStyleEntry fontStyleEntry = FlareRegistries.FONT_STYLE.get(key);
+        if (fontStyleEntry == null)
+        {
+            LOGGER.warning("Could not find font style '" + key + "'");
+            return FlareRegistries.FONT_STYLE.get(UnknownCharacter.STYLE_KEY);
+        }
+        return fontStyleEntry;
     }
 }

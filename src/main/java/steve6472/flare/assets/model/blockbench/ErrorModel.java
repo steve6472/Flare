@@ -3,7 +3,7 @@ package steve6472.flare.assets.model.blockbench;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import steve6472.core.registry.Key;
-import steve6472.flare.Constants;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.assets.model.Model;
 import steve6472.flare.assets.model.blockbench.element.CubeElement;
 import steve6472.flare.assets.model.blockbench.outliner.OutlinerUUID;
@@ -27,7 +27,7 @@ public final class ErrorModel
 
     public static final String VERSION = "null";
 
-    public static final Key KEY = Key.withNamespace(Constants.ENGINE_NAMESPACE, "error_model");
+    public static final Key KEY = Key.withNamespace(FlareConstants.ENGINE_NAMESPACE, "error_model");
 
     public static final LoadedModel INSTANCE = new LoadedModel(
         new ModelMeta(VERSION, ModelFormat.FREE, false),
@@ -50,7 +50,7 @@ public final class ErrorModel
                 FaceType.DOWN, new CubeFace(new Vector4f(0, 0, 2, 2), 0))
         )),
         List.of(new OutlinerUUID(CUBE_ELEMENT_UUID)),
-        List.of(new TextureData(0, 2, 2, 2, 2, Constants.ERROR_TEXTURE)),
+        List.of(new TextureData(0, 2, 2, 2, 2, FlareConstants.ERROR_TEXTURE)),
         List.of()
     );
 
