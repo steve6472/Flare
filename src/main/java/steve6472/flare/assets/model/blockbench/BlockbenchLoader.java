@@ -1,5 +1,6 @@
 package steve6472.flare.assets.model.blockbench;
 
+import com.mojang.datafixers.util.Pair;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
 import steve6472.core.log.Log;
@@ -132,20 +133,29 @@ public class BlockbenchLoader
 
     private static void loadModels(String path, ObjectRegistry<LoadedModel> modelRegistry)
     {
+        Map<Key, Pair<LoadedModel, String>> models = new LinkedHashMap<>();
+
         for (Module module : Flare.getModuleManager().getModules())
         {
             module.iterateNamespaces((folder, namespace) ->
             {
-                File file = new File(folder, "models/blockbench/" + path);
+                File file = new File(folder, "model/blockbench/" + path);
 
-                ResourceCrawl.crawlAndLoadJsonCodec(file, LoadedModel.CODEC, (loadedModel, key) ->
+                ResourceCrawl.crawlAndLoadJsonCodec(file, LoadedModel.CODEC, (loadedModel, id) ->
                 {
-                    loadedModel = overrideKey(loadedModel, Key.withNamespace(namespace, "blockbench/" + path + "/" + key));
-
-                    modelRegistry.register(loadedModel.key(), loadedModel);
-                    loadTextures(loadedModel, file.getAbsolutePath());
+                    Key key = Key.withNamespace(namespace, "blockbench/" + path + "/" + id);
+                    loadedModel = overrideKey(loadedModel, key);
+                    LOGGER.finest("Loaded model " + key + " from " + module.name());
+                    models.put(key, Pair.of(loadedModel, file.getAbsolutePath()));
                 });
             });
+        }
+
+        for (Pair<LoadedModel, String> value : models.values())
+        {
+            LoadedModel model = value.getFirst();
+            modelRegistry.register(model.key(), model);
+            loadTextures(model, value.getSecond());
         }
     }
 

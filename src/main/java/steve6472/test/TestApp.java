@@ -110,7 +110,7 @@ class TestApp extends FlareApp
 //        text().message(new TextMessage(List.of(
 //            TextLine.fromText("Hello world Hello world", -1f)
 //        ), 0.5f, 3f, Anchor.CENTER, Billboard.FIXED, Align.CENTER));
-        text().line(TextLine.fromText("Helloě world", 1f, digi)); // ě is an unknown character in the digi font
+        text().line(TextLine.fromText("Helloě world", 1f)); // ě is an unknown character in the digi font
 //        text().line(TextLine.fromText("Comic Sans MS", 1f, Key.defaultNamespace("default_comic_sans")));
     }
 

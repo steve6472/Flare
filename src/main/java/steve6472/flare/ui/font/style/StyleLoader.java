@@ -10,8 +10,8 @@ import steve6472.flare.ui.font.UnknownCharacter;
 import steve6472.flare.util.ResourceCrawl;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -27,17 +27,23 @@ public class StyleLoader
 
     public static void bootstrap()
     {
-        List<FontStyleEntry> styles = new ArrayList<>();
+        Map<Key, FontStyleEntry> styles = new LinkedHashMap<>();
 
         for (Module module : Flare.getModuleManager().getModules())
         {
             module.iterateNamespaces((folder, namespace) ->
-                ResourceCrawl.crawlAndLoadJsonCodec(new File(folder, PATH), FontStyle.CODEC, (style, key) ->
             {
-                FontStyleEntry entry = new FontStyleEntry(Key.withNamespace(namespace, key), style, styles.size());
-                LOGGER.finest("Loaded font style " + entry.key());
-                styles.add(entry);
-            }));
+                File file = new File(folder, PATH);
+
+                ResourceCrawl.crawlAndLoadJsonCodec(file, FontStyle.CODEC, (style, id) ->
+                {
+                    Key key = Key.withNamespace(namespace, id);
+                    int index = styles.containsKey(key) ? styles.get(key).index() : styles.size();
+                    FontStyleEntry entry = new FontStyleEntry(key, style, index);
+                    LOGGER.finest("Loaded font style " + entry.key() + " from " + module.name());
+                    styles.put(key, entry);
+                });
+            });
         }
 
         styles.forEach(FlareRegistries.FONT_STYLE::register);

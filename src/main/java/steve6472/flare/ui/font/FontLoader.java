@@ -1,6 +1,7 @@
 package steve6472.flare.ui.font;
 
 import com.mojang.datafixers.util.Pair;
+import steve6472.core.log.Log;
 import steve6472.core.registry.Key;
 import steve6472.flare.core.Flare;
 import steve6472.flare.module.Module;
@@ -8,8 +9,9 @@ import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.util.ResourceCrawl;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Created by steve6472
@@ -18,23 +20,32 @@ import java.util.List;
  */
 public class FontLoader
 {
+    private static final Logger LOGGER = Log.getLogger(FontLoader.class);
+
     private static final String PATH = "font/fonts";
 
     public static void bootstrap()
     {
-        List<Pair<FontEntry, Module>> fonts = new ArrayList<>();
+        Map<Key, Pair<FontEntry, Module>> fonts = new LinkedHashMap<>();
 
         for (Module module : Flare.getModuleManager().getModules())
         {
             module.iterateNamespaces((folder, namespace) ->
-                ResourceCrawl.crawlAndLoadJsonCodec(new File(folder, PATH), Font.CODEC, (info, key) ->
             {
-                FontEntry entry = new FontEntry(Key.withNamespace(namespace, key), info, fonts.size());
-                fonts.add(Pair.of(entry, module));
-            }));
+                File file = new File(folder, PATH);
+
+                ResourceCrawl.crawlAndLoadJsonCodec(file, Font.CODEC, (info, id) ->
+                {
+                    Key key = Key.withNamespace(namespace, id);
+                    int index = fonts.containsKey(key) ? fonts.get(key).getFirst().index() : fonts.size();
+                    FontEntry entry = new FontEntry(key, info, index);
+                    LOGGER.finest("Loaded font " + entry.key() + " from " + module.name());
+                    fonts.put(key, Pair.of(entry, module));
+                });
+            });
         }
 
-        for (Pair<FontEntry, Module> pair : fonts)
+        for (Pair<FontEntry, Module> pair : fonts.values())
         {
             FontEntry font = pair.getFirst();
             font.font().init(pair.getSecond(), font.key());

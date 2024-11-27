@@ -23,9 +23,9 @@ public class RegistryCreators
     protected static Map<Key, VkContent<?>> VK_LOADERS = new LinkedHashMap<>();
 
     /// This method simply ensures that the fields in a static class are loaded.
-    public static void init(Registry<?> dummyRegistry) { }
+    public static void init(@SuppressWarnings("unused") Registry<?> dummyRegistry) { }
     /// This method simply ensures that the fields in a static class are loaded.
-    public static void init(ObjectRegistry<?> dummyRegistry) { }
+    public static void init(@SuppressWarnings("unused") ObjectRegistry<?> dummyRegistry) { }
 
     /*
      * Creators
@@ -144,8 +144,8 @@ public class RegistryCreators
     {
         LOGGER.finest("Creating content");
         LOADERS.forEach((key, loader) -> {
+            LOGGER.finest("Bootstrapping " + key);
             loader.run();
-            LOGGER.finest("Bootstrapped " + key);
         });
     }
 
@@ -153,8 +153,8 @@ public class RegistryCreators
     {
         LOGGER.finest("Creating VK content");
         VK_LOADERS.forEach((key, loader) -> {
+            LOGGER.finest("Bootstrapping " + key);
             loader.apply(device, commands, graphicsQueue);
-            LOGGER.finest("Bootstrapped " + key);
         });
     }
 }
