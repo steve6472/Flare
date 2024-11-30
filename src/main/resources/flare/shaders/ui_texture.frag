@@ -21,7 +21,8 @@
 #define RENDER_MODE TEXTURE
 
 layout (location = 0) in vec2 uv;
-layout (location = 1) flat in vec3 data;
+layout (location = 1) in vec3 color;
+layout (location = 2) flat in vec3 data;
 
 layout (location = 0) out vec4 outColor;
 
@@ -67,6 +68,123 @@ int getTextureType(int flags)
     return flags & 0x3;
 }
 
+vec2 calculateNineSliceUV(UITexture uiTexture)
+{
+    vec2 spritePixelSize = data.yz;
+    vec2 texturePixelSize = uiTexture.pixelScale;
+    /*
+     * Values for border checking
+     */
+    vec4 border = uiTexture.border;
+    //                         x=20.0 / 40.0   |   y=20.0 / 20.0
+    vec2 _borderScaleFactor = texturePixelSize / spritePixelSize;
+    vec4 _borderScaled = border * _borderScaleFactor.xyxy;
+    float borderLeft = _borderScaled.x;
+    float borderTop = _borderScaled.y;
+    float borderRight = texturePixelSize.x - _borderScaled.z;
+    float borderBottom = texturePixelSize.y - _borderScaled.w;
+    // 0-1 to 20-20
+    vec2 texturePixelUV = uv * texturePixelSize;
+
+    vec2 spriteUV = vec2(uv);
+    float spriteLeft = border.x / spritePixelSize.x;
+    float spriteTop = border.y / spritePixelSize.y;
+    float spriteRight = (spritePixelSize.x - border.z) / spritePixelSize.x;
+    float spriteBottom = (spritePixelSize.y - border.w) / spritePixelSize.y;
+
+    float textureLeft = border.x / texturePixelSize.x;
+    float textureTop = border.y / texturePixelSize.y;
+    float textureRight = (texturePixelSize.x - border.z) / texturePixelSize.x;
+    float textureBottom = (texturePixelSize.y - border.w) / texturePixelSize.y;
+
+    vec2 mappedSides = vec2(spriteUV);
+    mappedSides.x = map(mappedSides.x, spriteLeft, spriteRight, 0.0, 1.0);
+    mappedSides.x *= (spritePixelSize.x - border.x - border.z) / (texturePixelSize.x - border.x - border.z);
+    mappedSides.x = mod(mappedSides.x, 1.0);
+    mappedSides.x = map(mappedSides.x, 0.0, 1.0, textureLeft, textureRight);
+
+    mappedSides.y = map(mappedSides.y, spriteTop, spriteBottom, 0.0, 1.0);
+    mappedSides.y *= (spritePixelSize.y - border.y - border.w) / (texturePixelSize.y - border.y - border.w);
+    mappedSides.y = mod(mappedSides.y, 1.0);
+    mappedSides.y = map(mappedSides.y, 0.0, 1.0, textureTop, textureBottom);
+
+    // TOP
+    if (texturePixelUV.y < borderTop)
+    {
+        // Left
+        if (texturePixelUV.x < borderLeft)
+        {
+            spriteUV.x *= spritePixelSize.x / texturePixelSize.x;
+            spriteUV.y *= spritePixelSize.y / texturePixelSize.y;
+        }
+        // Middle
+        else if (texturePixelUV.x > borderLeft && texturePixelUV.x < borderRight)
+        {
+            spriteUV.x = mappedSides.x;
+            spriteUV.y *= spritePixelSize.y / texturePixelSize.y;
+        }
+        // Right
+        else if (texturePixelUV.x > borderRight)
+        {
+            spriteUV.x = map(spriteUV.x, spriteRight, 1.0, textureRight, 1.0);
+            spriteUV.y *= spritePixelSize.y / texturePixelSize.y;
+        }
+    }
+    // MIDDLE
+    else if (texturePixelUV.y > borderTop && texturePixelUV.y < borderBottom)
+    {
+        // Left
+        if (texturePixelUV.x < borderLeft)
+        {
+            spriteUV.x *= spritePixelSize.x / texturePixelSize.x;
+
+            spriteUV.y = mappedSides.y;
+        }
+        // Middle
+        else if (texturePixelUV.x > borderLeft && texturePixelUV.x < borderRight)
+        {
+            if (isStretchInner(uiTexture.flags))
+            {
+                spriteUV.x = map(spriteUV.x, spriteLeft, spriteRight, textureLeft, textureRight);
+                spriteUV.y = map(spriteUV.y, spriteTop, spriteBottom, textureTop, textureBottom);
+            } else
+            {
+                spriteUV = mappedSides;
+            }
+        }
+        // Right
+        else if (texturePixelUV.x > borderRight)
+        {
+            spriteUV.x = map(spriteUV.x, spriteRight, 1.0, textureRight, 1.0);
+            spriteUV.y = mappedSides.y;
+        }
+    }
+    // BOTTOM
+    else if (texturePixelUV.y > borderBottom)
+    {
+        // Left
+        if (texturePixelUV.x < borderLeft)
+        {
+            spriteUV.x *= spritePixelSize.x / texturePixelSize.x;
+            spriteUV.y = map(spriteUV.y, spriteBottom, 1.0, textureBottom, 1.0);
+        }
+        // Middle
+        else if (texturePixelUV.x > borderLeft && texturePixelUV.x < borderRight)
+        {
+            spriteUV.x = mappedSides.x;
+            spriteUV.y = map(spriteUV.y, spriteBottom, 1.0, textureBottom, 1.0);
+        }
+        // Right
+        else if (texturePixelUV.x > borderRight)
+        {
+            spriteUV.x = map(spriteUV.x, spriteRight, 1.0, textureRight, 1.0);
+            spriteUV.y = map(spriteUV.y, spriteBottom, 1.0, textureBottom, 1.0);
+        }
+    }
+
+    return spriteUV;
+}
+
 void main()
 {
     UITexture uiTexture = textures.array[int(data.x)];
@@ -88,131 +206,7 @@ void main()
     // NINE_SLICE
     else if (textureType == 1)
     {
-        /*
-         * Values for border checking
-         */
-        vec4 border = uiTexture.border;
-        //                         x=20.0 / 40.0   |   y=20.0 / 20.0
-        vec2 _borderScaleFactor = texturePixelSize / spritePixelSize;
-        vec4 _borderScaled = border * _borderScaleFactor.xyxy;
-        float borderLeft = _borderScaled.x;
-        float borderTop = _borderScaled.y;
-        float borderRight = texturePixelSize.x - _borderScaled.z;
-        float borderBottom = texturePixelSize.y - _borderScaled.w;
-        // 0-1 to 20-20
-        vec2 texturePixelUV = uv * texturePixelSize;
-
-        vec2 spriteUV = vec2(uv);
-        float spriteLeft = border.x / spritePixelSize.x;
-        float spriteTop = border.y / spritePixelSize.y;
-        float spriteRight = (spritePixelSize.x - border.z) / spritePixelSize.x;
-        float spriteBottom = (spritePixelSize.y - border.w) / spritePixelSize.y;
-
-        float textureLeft = border.x / texturePixelSize.x;
-        float textureTop = border.y / texturePixelSize.y;
-        float textureRight = (texturePixelSize.x - border.z) / texturePixelSize.x;
-        float textureBottom = (texturePixelSize.y - border.w) / texturePixelSize.y;
-
-        // TOP
-        if (texturePixelUV.y < borderTop)
-        {
-            // Left
-            if (texturePixelUV.x < borderLeft)
-            {
-                spriteUV.x *= spritePixelSize.x / texturePixelSize.x;
-                spriteUV.y *= spritePixelSize.y / texturePixelSize.y;
-            }
-            // Middle
-            else if (texturePixelUV.x > borderLeft && texturePixelUV.x < borderRight)
-            {
-                // Transform the middle part of the texture to 0-1
-                spriteUV.x = map(spriteUV.x, spriteLeft, spriteRight, 0.0, 1.0);
-                // Multiply by how many times the middle part should repeat
-                spriteUV.x *= (spritePixelSize.x - border.x - border.z) / (texturePixelSize.x - border.x - border.z);
-                // Make sure the value is between 0-1
-                spriteUV.x = mod(spriteUV.x, 1.0);
-                // Transform 0-1 back to middle part of the texture
-                spriteUV.x = map(spriteUV.x, 0.0, 1.0, textureLeft, textureRight);
-
-                spriteUV.y *= spritePixelSize.y / texturePixelSize.y;
-            }
-            // Right
-            else if (texturePixelUV.x > borderRight)
-            {
-                spriteUV.x = map(spriteUV.x, spriteRight, 1.0, textureRight, 1.0);
-                spriteUV.y *= spritePixelSize.y / texturePixelSize.y;
-            }
-        }
-        // MIDDLE
-        else if (texturePixelUV.y > borderTop && texturePixelUV.y < borderBottom)
-        {
-            // Left
-            if (texturePixelUV.x < borderLeft)
-            {
-                spriteUV.x *= spritePixelSize.x / texturePixelSize.x;
-
-                spriteUV.y = map(spriteUV.y, spriteTop, spriteBottom, 0.0, 1.0);
-                spriteUV.y *= (spritePixelSize.y - border.y - border.w) / (texturePixelSize.y - border.y - border.w);
-                spriteUV.y = mod(spriteUV.y, 1.0);
-                spriteUV.y = map(spriteUV.y, 0.0, 1.0, textureTop, textureBottom);
-            }
-            // Middle
-            else if (texturePixelUV.x > borderLeft && texturePixelUV.x < borderRight)
-            {
-                if (isStretchInner(uiTexture.flags))
-                {
-                    spriteUV.x = map(spriteUV.x, spriteLeft, spriteRight, textureLeft, textureRight);
-                    spriteUV.y = map(spriteUV.y, spriteTop, spriteBottom, textureTop, textureBottom);
-                } else
-                {
-                    spriteUV.x = map(spriteUV.x, spriteLeft, spriteRight, 0.0, 1.0);
-                    spriteUV.x *= (spritePixelSize.x - border.x - border.z) / (texturePixelSize.x - border.x - border.z);
-                    spriteUV.x = mod(spriteUV.x, 1.0);
-                    spriteUV.x = map(spriteUV.x, 0.0, 1.0, textureLeft, textureRight);
-
-                    spriteUV.y = map(spriteUV.y, spriteTop, spriteBottom, 0.0, 1.0);
-                    spriteUV.y *= (spritePixelSize.y - border.y - border.w) / (texturePixelSize.y - border.y - border.w);
-                    spriteUV.y = mod(spriteUV.y, 1.0);
-                    spriteUV.y = map(spriteUV.y, 0.0, 1.0, textureTop, textureBottom);
-                }
-            }
-            // Right
-            else if (texturePixelUV.x > borderRight)
-            {
-                spriteUV.x = map(spriteUV.x, spriteRight, 1.0, textureRight, 1.0);
-
-                spriteUV.y = map(spriteUV.y, spriteTop, spriteBottom, 0.0, 1.0);
-                spriteUV.y *= (spritePixelSize.y - border.y - border.w) / (texturePixelSize.y - border.y - border.w);
-                spriteUV.y = mod(spriteUV.y, 1.0);
-                spriteUV.y = map(spriteUV.y, 0.0, 1.0, textureTop, textureBottom);
-            }
-        }
-        // BOTTOM
-        else if (texturePixelUV.y > borderBottom)
-        {
-            // Left
-            if (texturePixelUV.x < borderLeft)
-            {
-                spriteUV.x *= spritePixelSize.x / texturePixelSize.x;
-                spriteUV.y = map(spriteUV.y, spriteBottom, 1.0, textureBottom, 1.0);
-            }
-            // Middle
-            else if (texturePixelUV.x > borderLeft && texturePixelUV.x < borderRight)
-            {
-                spriteUV.x = map(spriteUV.x, spriteLeft, spriteRight, 0.0, 1.0);
-                spriteUV.x *= (spritePixelSize.x - border.x - border.z) / (texturePixelSize.x - border.x - border.z);
-                spriteUV.x = mod(spriteUV.x, 1.0);
-                spriteUV.x = map(spriteUV.x, 0.0, 1.0, textureLeft, textureRight);
-
-                spriteUV.y = map(spriteUV.y, spriteBottom, 1.0, textureBottom, 1.0);
-            }
-            // Right
-            else if (texturePixelUV.x > borderRight)
-            {
-                spriteUV.x = map(spriteUV.x, spriteRight, 1.0, textureRight, 1.0);
-                spriteUV.y = map(spriteUV.y, spriteBottom, 1.0, textureBottom, 1.0);
-            }
-        }
+        vec2 spriteUV = calculateNineSliceUV(uiTexture);
 
         if (RENDER_MODE == TEXTURE)
         {
@@ -240,7 +234,6 @@ void main()
         if (col.a == 0)
             discard;
 
-//            outColor = vec4(uv.x, uv.y, 0, 1.0);
         outColor = col;
     }
     // TILED
@@ -256,4 +249,6 @@ void main()
         spriteUV.y = map(spriteUV.y, 0.0, 1.0, uiTexture.dimensions.y, uiTexture.dimensions.w);
         outColor = vec4(uv.x, uv.y, 0, 1.0);
     }
+
+    outColor *= vec4(color, 1.0);
 }

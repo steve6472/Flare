@@ -36,7 +36,7 @@ public class Camera
 
     public void setOrthographicProjection(float left, float right, float top, float bottom, float near, float far)
     {
-        projectionMatrix.identity().ortho(left, right, bottom, top, near, far);
+        projectionMatrix.identity().ortho(left, right, bottom, top, near, far, true);
         this.near = near;
         this.far = far;
     }

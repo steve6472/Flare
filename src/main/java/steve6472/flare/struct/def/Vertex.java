@@ -52,9 +52,9 @@ public interface Vertex
         .addMember(INT)     // font style index
         .build(StructVertex::new);
 
-    StructVertex POS3F_UV_DATA3F = builder()
+    StructVertex POS3F_COL3F_DATA3F = builder()
         .addMember(VEC_3F)  // position
-        .addMember(UV)      // uv
+        .addMember(VEC_3F)  // tint
         .addMember(VEC_3F)  // data
         .build(StructVertex::new);
 

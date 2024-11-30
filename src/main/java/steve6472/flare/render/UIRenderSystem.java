@@ -1,10 +1,9 @@
 package steve6472.flare.render;
 
-import org.joml.Vector2f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 import steve6472.core.registry.Key;
+import steve6472.flare.Camera;
 import steve6472.flare.FlareConstants;
 import steve6472.flare.MasterRenderer;
 import steve6472.flare.VkBuffer;
@@ -97,7 +96,7 @@ public final class UIRenderSystem extends RenderSystem
 
         buffer = new VkBuffer(
             masterRenderer.getDevice(),
-            Vertex.POS3F_UV_DATA3F.sizeof(),
+            Vertex.POS3F_COL3F_DATA3F.sizeof(),
             32768 * 4, // max 32k sprites at once, should be enough....
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
@@ -121,7 +120,14 @@ public final class UIRenderSystem extends RenderSystem
 
         FlightFrame flightFrame = frames.get(frameInfo.frameIndex());
 
-        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(frameInfo.camera().getProjectionMatrix(), frameInfo.camera().getViewMatrix());
+        Camera camera = new Camera();
+        int windowWidth = getMasterRenderer().getWindow().getWidth();
+        int windowHeight = getMasterRenderer().getWindow().getHeight();
+
+        camera.setOrthographicProjection(0, windowWidth, 0, windowHeight, 0f, 256f);
+        camera.setViewYXZ(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
+
+        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(camera.getProjectionMatrix(), camera.getViewMatrix());
         int singleInstanceSize = UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT;
 
         flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_CAMERA_UBO::memcpy, List.of(globalUBO), singleInstanceSize, singleInstanceSize * frameInfo.camera().cameraIndex);
@@ -137,7 +143,7 @@ public final class UIRenderSystem extends RenderSystem
             stack.longs(flightFrame.descriptorSet),
             stack.ints(singleInstanceSize * frameInfo.camera().cameraIndex));
 
-        buffer.writeToBuffer(Vertex.POS3F_UV_DATA3F::memcpy, verticies);
+        buffer.writeToBuffer(Vertex.POS3F_COL3F_DATA3F::memcpy, verticies);
 
 //        Struct windowSize = Push.WINDOW_SIZE.create((float) getMasterRenderer().getWindow().getWidth(), (float) getMasterRenderer().getWindow().getHeight());
         Struct windowSize = Push.WINDOW_SIZE.create((float) UITextureLoader.getAtlasWidth(), (float) UITextureLoader.getAtlasWidth());
@@ -154,40 +160,41 @@ public final class UIRenderSystem extends RenderSystem
         if (TestKeybinds.TO_RIGHT.isActive()) pixelW += 1;
     }
 
-    float pixelW = 20;
-    float pixelH = 20;
+    int pixelW = 20;
+    int pixelH = 20;
+
 
     private List<Struct> createVerticies()
     {
         List<Struct> structs = new ArrayList<>();
         UITextureEntry uiTextureEntry = FlareRegistries.UI_TEXTURE.get(Key.withNamespace("test", "box"));
-
-        float x = 0;
-        float y = 0;
-
-        float w = pixelW / uiTextureEntry.pixelSize().x;
-        float h = pixelH / uiTextureEntry.pixelSize().y;
-
-        Vector4f uv = uiTextureEntry.uv();
-        int index = uiTextureEntry.index();
-
-        Vector2f tl = new Vector2f(0, 0);
-        Vector2f br = new Vector2f(1, 1);
-
-        Vector3f vtl = new Vector3f(x - w / 2f, y + h / 2f, 0);
-        Vector3f vbl = new Vector3f(x - w / 2f, y - h / 2f, 0);
-        Vector3f vbr = new Vector3f(x + w / 2f, y - h / 2f, 0);
-        Vector3f vtr = new Vector3f(x + w / 2f, y + h / 2f, 0);
-
-        structs.add(Vertex.POS3F_UV_DATA3F.create(vtl, new Vector2f(tl.x, tl.y), new Vector3f(index, pixelW, pixelH)));
-        structs.add(Vertex.POS3F_UV_DATA3F.create(vbl, new Vector2f(tl.x, br.y), new Vector3f(index, pixelW, pixelH)));
-        structs.add(Vertex.POS3F_UV_DATA3F.create(vbr, new Vector2f(br.x, br.y), new Vector3f(index, pixelW, pixelH)));
-
-        structs.add(Vertex.POS3F_UV_DATA3F.create(vbr, new Vector2f(br.x, br.y), new Vector3f(index, pixelW, pixelH)));
-        structs.add(Vertex.POS3F_UV_DATA3F.create(vtr, new Vector2f(br.x, tl.y), new Vector3f(index, pixelW, pixelH)));
-        structs.add(Vertex.POS3F_UV_DATA3F.create(vtl, new Vector2f(tl.x, tl.y), new Vector3f(index, pixelW, pixelH)));
-
+        createSprite(structs, 0, 0, 0, pixelW * 10, pixelH * 10, uiTextureEntry);
         return structs;
+    }
+
+    private void createSprite(List<Struct> structs, int x, int y, float zIndex, int width, int height, UITextureEntry texture)
+    {
+        createSprite(structs, x, y, zIndex, width, height, texture, new Vector3f(1.0f));
+    }
+
+    private void createSprite(List<Struct> structs, int x, int y, float zIndex, int width, int height, UITextureEntry texture, Vector3f tint)
+    {
+        int index = texture.index();
+
+        // Define base vertices
+        Vector3f vtl = new Vector3f(x, y , zIndex);
+        Vector3f vbl = new Vector3f(x, y + height, zIndex);
+        Vector3f vbr = new Vector3f(x + width, y + height, zIndex);
+        Vector3f vtr = new Vector3f(x + width, y, zIndex);
+        Vector3f vertexData = new Vector3f(index, pixelW, pixelH);
+
+        structs.add(Vertex.POS3F_COL3F_DATA3F.create(vtl, tint, vertexData));
+        structs.add(Vertex.POS3F_COL3F_DATA3F.create(vbl, tint, vertexData));
+        structs.add(Vertex.POS3F_COL3F_DATA3F.create(vbr, tint, vertexData));
+
+        structs.add(Vertex.POS3F_COL3F_DATA3F.create(vbr, tint, vertexData));
+        structs.add(Vertex.POS3F_COL3F_DATA3F.create(vtr, tint, vertexData));
+        structs.add(Vertex.POS3F_COL3F_DATA3F.create(vtl, tint, vertexData));
     }
 
     private Struct updateUITextures()
