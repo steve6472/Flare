@@ -9,6 +9,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import steve6472.core.log.Log;
+import steve6472.core.util.GsonUtil;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -33,25 +34,7 @@ public final class ResourceCrawl
     {
         crawl(startingDir, true, (file, relPath) ->
         {
-            InputStreamReader streamReader;
-            try
-            {
-                streamReader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
-            } catch (FileNotFoundException e)
-            {
-                throw new RuntimeException(e);
-            }
-            BufferedReader reader = new BufferedReader(streamReader);
-            JsonElement jsonElement;
-            try
-            {
-                jsonElement = JsonParser.parseReader(reader);
-            } catch (JsonIOException | JsonSyntaxException e)
-            {
-                LOGGER.severe("Could not load json from '" + file + "'");
-                throw new RuntimeException(e);
-            }
-
+            JsonElement jsonElement = GsonUtil.loadJson(file);
             DataResult<Pair<T, JsonElement>> decode;
             try
             {
@@ -62,7 +45,6 @@ public final class ResourceCrawl
                 throw ex;
             }
 
-            relPath = relPath.replace("\\", "/");
             T obj = decode.getOrThrow().getFirst();
             end.accept(obj, relPath);
         });

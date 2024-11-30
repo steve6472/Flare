@@ -13,6 +13,8 @@ import steve6472.flare.Camera;
 import steve6472.flare.core.FrameInfo;
 import steve6472.flare.core.FlareApp;
 import steve6472.flare.input.KeybindUpdater;
+import steve6472.flare.pipeline.Pipelines;
+import steve6472.flare.render.UIRenderSystem;
 import steve6472.flare.ui.font.render.*;
 
 import java.io.File;
@@ -60,6 +62,7 @@ class TestApp extends FlareApp
     protected void createRenderSystems()
     {
 //        addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new PhysicsTestRender(), Pipelines.BLOCKBENCH_STATIC));
+        addRenderSystem(UIRenderSystem::new, Pipelines.UI_TEXTURE);
     }
 
     @Override
@@ -110,7 +113,7 @@ class TestApp extends FlareApp
 //        text().message(new TextMessage(List.of(
 //            TextLine.fromText("Hello world Hello world", -1f)
 //        ), 0.5f, 3f, Anchor.CENTER, Billboard.FIXED, Align.CENTER));
-        text().line(TextLine.fromText("Helloě world", 1f)); // ě is an unknown character in the digi font
+//        text().line(TextLine.fromText("Helloě world", 1f)); // ě is an unknown character in the digi font
 //        text().line(TextLine.fromText("Comic Sans MS", 1f, Key.defaultNamespace("default_comic_sans")));
     }
 

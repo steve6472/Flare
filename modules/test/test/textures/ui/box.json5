@@ -1,0 +1,5 @@
+{
+    type: "nine_slice",
+    stretch_inner: true,
+    border: 3
+}

@@ -33,6 +33,7 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import static org.lwjgl.vulkan.VK10.VK_FILTER_LINEAR;
+import static org.lwjgl.vulkan.VK10.VK_SAMPLER_MIPMAP_MODE_LINEAR;
 
 /**
  * Created by steve6472
@@ -218,7 +219,7 @@ public class Font
 
         Texture texture = new Texture();
         texture.createTextureImageFromBufferedImage(device, fontTexture, commands.commandPool, graphicsQueue);
-        return new TextureSampler(texture, device, key, VK_FILTER_LINEAR);
+        return new TextureSampler(texture, device, key, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR, true);
     }
 
     /*

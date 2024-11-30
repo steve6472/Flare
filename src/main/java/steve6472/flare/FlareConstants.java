@@ -27,6 +27,9 @@ public class FlareConstants
     /// Blockbench texture atlas
     public static final Key BLOCKBENCH_TEXTURE = Key.defaultNamespace("blockbench_main");
 
+    /// UI Texture atlas
+    public static final Key UI_TEXTURE = Key.defaultNamespace("ui_texture");
+
     /// Used for code-generated resources
     public static final String ENGINE_NAMESPACE = "flare";
 

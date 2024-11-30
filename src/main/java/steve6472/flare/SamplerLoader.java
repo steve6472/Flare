@@ -6,6 +6,7 @@ import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.assets.model.blockbench.BlockbenchLoader;
 import steve6472.flare.registry.VkContent;
 import steve6472.flare.registry.FlareRegistries;
+import steve6472.flare.ui.textures.UITextureLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,9 @@ public final class SamplerLoader
 
     public static TextureSampler loadSamplers(VkDevice device, Commands commands, VkQueue graphicsQueue)
     {
+        // Flare textures
         TextureSampler bbSampler = BlockbenchLoader.packImages(device, commands, graphicsQueue);
+        UITextureLoader.createTexture(device, commands, graphicsQueue);
 
         SAMPLER_LOADERS.forEach(loader ->
         {

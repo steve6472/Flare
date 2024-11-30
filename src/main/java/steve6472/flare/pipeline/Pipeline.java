@@ -7,6 +7,8 @@ import steve6472.core.util.Preconditions;
 import steve6472.flare.SwapChain;
 import steve6472.flare.pipeline.builder.PipelineConstructor;
 
+import java.util.Objects;
+
 import static org.lwjgl.vulkan.VK10.*;
 
 /**
@@ -19,6 +21,7 @@ public class Pipeline
     private long pipeline;
     private long pipelineLayout;
     private final PipelineConstructor constructor;
+    // TODO: add the vertex data, make it accessible from [RenderSystem]
 
     public Pipeline(PipelineConstructor constructor)
     {
@@ -49,7 +52,7 @@ public class Pipeline
 
     public void rebuild(VkDevice device, SwapChain swapChain, long... setLayouts)
     {
-        Preconditions.checkNotNull(constructor, "Tried to rebuild a Pipeline from a temporary object!");
+        Objects.requireNonNull(constructor, "Tried to rebuild a Pipeline from a temporary object!");
 
         Pipeline build = constructor.build(device, swapChain.swapChainExtent, swapChain.renderPass, setLayouts);
         pipeline = build.pipeline;
@@ -58,7 +61,7 @@ public class Pipeline
 
     public void rebuild(VkDevice device, VkExtent2D extent, long renderPass, long... setLayouts)
     {
-        Preconditions.checkNotNull(constructor, "Tried to rebuild a Pipeline from a temporary object!");
+        Objects.requireNonNull(constructor, "Tried to rebuild a Pipeline from a temporary object!");
 
         Pipeline build = constructor.build(device, extent, renderPass, setLayouts);
         pipeline = build.pipeline;

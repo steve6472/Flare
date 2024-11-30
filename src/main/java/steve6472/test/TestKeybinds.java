@@ -10,12 +10,17 @@ import steve6472.flare.input.KeybindType;
  * Date: 9/30/2024
  * Project: Flare <br>
  */
-class TestKeybinds
+public class TestKeybinds
 {
     public static final Keybind FORWARD = register(new Keybind(Key.defaultNamespace("forward"), KeybindType.REPEAT, GLFW.GLFW_KEY_W));
     public static final Keybind LEFT = register(new Keybind(Key.defaultNamespace("left"), KeybindType.REPEAT, GLFW.GLFW_KEY_A));
     public static final Keybind RIGHT = register(new Keybind(Key.defaultNamespace("right"), KeybindType.REPEAT, GLFW.GLFW_KEY_D));
     public static final Keybind BACK = register(new Keybind(Key.defaultNamespace("back"), KeybindType.REPEAT, GLFW.GLFW_KEY_S));
+
+    public static final Keybind TO_UP = register(new Keybind(Key.defaultNamespace("to_up"), KeybindType.ONCE, GLFW.GLFW_KEY_UP));
+    public static final Keybind TO_LEFT = register(new Keybind(Key.defaultNamespace("to_left"), KeybindType.ONCE, GLFW.GLFW_KEY_LEFT));
+    public static final Keybind TO_RIGHT = register(new Keybind(Key.defaultNamespace("to_right"), KeybindType.ONCE, GLFW.GLFW_KEY_RIGHT));
+    public static final Keybind TO_DOWN = register(new Keybind(Key.defaultNamespace("to_down"), KeybindType.ONCE, GLFW.GLFW_KEY_DOWN));
 
     private static Keybind register(Keybind keybind)
     {

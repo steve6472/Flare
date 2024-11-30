@@ -46,10 +46,16 @@ public interface Vertex
         .addMember(UV)      // uv
         .build(StructVertex::new);
 
-    StructVertex POS3F_UV_FONT_INDEX = builder()
+    StructVertex POS3F_UV_INDEX = builder()
         .addMember(VEC_3F)  // position
         .addMember(UV)      // uv
         .addMember(INT)     // font style index
+        .build(StructVertex::new);
+
+    StructVertex POS3F_UV_DATA3F = builder()
+        .addMember(VEC_3F)  // position
+        .addMember(UV)      // uv
+        .addMember(VEC_3F)  // data
         .build(StructVertex::new);
 
     StructVertex POS3F_NORMAL_UV = builder()

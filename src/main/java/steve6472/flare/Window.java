@@ -15,6 +15,8 @@ public class Window
 
     private long window;
     boolean framebufferResize;
+    private int currentWidth = WIDTH;
+    private int currentHeight = HEIGHT;
 
     public Window(String title)
     {
@@ -49,6 +51,18 @@ public class Window
     private void framebufferResizeCallback(long window, int width, int height)
     {
         framebufferResize = true;
+        currentWidth = width;
+        currentHeight = height;
+    }
+
+    public int getWidth()
+    {
+        return currentWidth;
+    }
+
+    public int getHeight()
+    {
+        return currentHeight;
     }
 
     public long window()

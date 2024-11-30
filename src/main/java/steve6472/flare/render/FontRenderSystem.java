@@ -29,6 +29,7 @@ import steve6472.flare.util.MatrixAnim;
 import java.nio.LongBuffer;
 import java.text.BreakIterator;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static org.lwjgl.vulkan.VK10.*;
@@ -108,7 +109,7 @@ public class FontRenderSystem extends RenderSystem
 
         buffer = new VkBuffer(
             masterRenderer.getDevice(),
-            Vertex.POS3F_UV_FONT_INDEX.sizeof(),
+            Vertex.POS3F_UV_INDEX.sizeof(),
             32768 * 6, // max 32k characters at once, should be enough....
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
@@ -154,24 +155,33 @@ public class FontRenderSystem extends RenderSystem
             stack.longs(flightFrame.descriptorSet),
             stack.ints(singleInstanceSize * frameInfo.camera().cameraIndex));
 
-        buffer.writeToBuffer(Vertex.POS3F_UV_FONT_INDEX::memcpy, verticies);
+        buffer.writeToBuffer(Vertex.POS3F_UV_INDEX::memcpy, verticies);
 
         LongBuffer vertexBuffers = stack.longs(buffer.getBuffer());
         LongBuffer offsets = stack.longs(0);
         vkCmdBindVertexBuffers(frameInfo.commandBuffer(), 0, vertexBuffers, offsets);
         vkCmdDraw(frameInfo.commandBuffer(), verticies.size(), 1, 0, 0);
+    }
+
+    public void clear()
+    {
+        TextRender textRender = getMasterRenderer().textRender();
+
+        //noinspection deprecation
+        List<TextLineObject> lines = textRender.lines();
+        //noinspection deprecation
+        List<TextMessageObject> messages = textRender.messages();
 
         long currentTime = System.currentTimeMillis();
         lines.removeIf(ren -> ren.endTime() <= currentTime || ren.endTime() == 0);
-
-        // TODO: make normal clear
-        messages.clear();
+        messages.removeIf(ren -> ren.endTime() <= currentTime || ren.endTime() == 0);
     }
 
     private Struct updateFontStylesSBO()
     {
-        Struct[] styles = new Struct[FlareRegistries.FONT_STYLE.keys().size()];
-        FlareRegistries.FONT_STYLE.keys().forEach(key ->
+        Collection<Key> keys = FlareRegistries.FONT_STYLE.keys();
+        Struct[] styles = new Struct[keys.size()];
+        keys.forEach(key ->
         {
             FontStyleEntry fontStyleEntry = FlareRegistries.FONT_STYLE.get(key);
             styles[fontStyleEntry.index()] = fontStyleEntry.style().toStruct(fontStyleEntry.style().fontEntry());
@@ -333,13 +343,13 @@ public class FontRenderSystem extends RenderSystem
         Vector3f vbr = new Vector3f(xpos + w, ypos, 0).mulPosition(transform);
         Vector3f vtr = new Vector3f(xpos + w, ypos + h, 0).mulPosition(transform);
 
-        structs.add(Vertex.POS3F_UV_FONT_INDEX.create(vtl, new Vector2f(tl.x, tl.y), styleIndex));
-        structs.add(Vertex.POS3F_UV_FONT_INDEX.create(vbl, new Vector2f(tl.x, br.y), styleIndex));
-        structs.add(Vertex.POS3F_UV_FONT_INDEX.create(vbr, new Vector2f(br.x, br.y), styleIndex));
+        structs.add(Vertex.POS3F_UV_INDEX.create(vtl, new Vector2f(tl.x, tl.y), styleIndex));
+        structs.add(Vertex.POS3F_UV_INDEX.create(vbl, new Vector2f(tl.x, br.y), styleIndex));
+        structs.add(Vertex.POS3F_UV_INDEX.create(vbr, new Vector2f(br.x, br.y), styleIndex));
 
-        structs.add(Vertex.POS3F_UV_FONT_INDEX.create(vbr, new Vector2f(br.x, br.y), styleIndex));
-        structs.add(Vertex.POS3F_UV_FONT_INDEX.create(vtr, new Vector2f(br.x, tl.y), styleIndex));
-        structs.add(Vertex.POS3F_UV_FONT_INDEX.create(vtl, new Vector2f(tl.x, tl.y), styleIndex));
+        structs.add(Vertex.POS3F_UV_INDEX.create(vbr, new Vector2f(br.x, br.y), styleIndex));
+        structs.add(Vertex.POS3F_UV_INDEX.create(vtr, new Vector2f(br.x, tl.y), styleIndex));
+        structs.add(Vertex.POS3F_UV_INDEX.create(vtl, new Vector2f(tl.x, tl.y), styleIndex));
     }
 
     @Override

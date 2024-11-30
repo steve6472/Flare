@@ -256,6 +256,8 @@ public class Flare
                     vrData.updateEyes(frameInfo.camera);
                 }
             }
+
+            renderer.clearText();
         }
 
         // Wait for the device to complete all operations before release resources

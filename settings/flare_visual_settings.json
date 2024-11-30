@@ -6,7 +6,7 @@
   "base_test:global_camera_count": 3,
   "base_test:line_width": 4.0,
   "base_test:present_mode": "Mailbox",
-  "base_test:render_center_point": true,
+  "base_test:render_center_point": false,
   "base_test:title_fps": true,
   "base_test:username": "Steve",
   "base_test:validation_level": "Info",

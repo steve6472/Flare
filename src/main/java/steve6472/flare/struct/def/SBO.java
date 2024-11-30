@@ -49,4 +49,33 @@ public interface SBO
     StructDef MSDF_FONT_STYLES = builder()
         .addStructArray(MSDF_FONT_STYLE, MAX_MSDF_FONT_STYLES)
         .build();
+
+
+
+    int MAX_UI_TEXTURE_ENTRIES = 1024;
+
+    StructDef UI_TEXTURE_ENTRY = builder()
+        .addMember(VEC_4F) // dimensions
+        .addMember(VEC_4F) // border
+
+        //  bits 0-1:
+        //      0b00 -> STRETCH
+        //      0b01 -> NINE_SLICE
+        //      0b10 -> TILED
+        //      0b11 -> *unused*
+        //
+        //  bit 2: T/F -> stretch inner
+        //  bit 3:
+        //      0b0 -> stretch left
+        //      0b1 -> tile left
+        //  bit4: T/F -> mirror, used only when border is tiled
+        .addMember(INT) // flags
+        .addMember(INT) // offset
+        .addMember(VEC_2F)
+
+        .build();
+
+    StructDef UI_TEXTURE_ENTRIES = builder()
+        .addStructArray(UI_TEXTURE_ENTRY, MAX_UI_TEXTURE_ENTRIES)
+        .build();
 }

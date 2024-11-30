@@ -69,7 +69,7 @@ public class BlockbenchLoader
             ImageIO.write(image, "PNG", DEBUG_ATLAS);
         } catch (IOException e)
         {
-            LOGGER.warning("Failed to save debug atlas.png, exception: " + e.getMessage());
+            LOGGER.warning("Failed to save debug " + DEBUG_ATLAS.getName() + ", exception: " + e.getMessage());
         }
     }
 

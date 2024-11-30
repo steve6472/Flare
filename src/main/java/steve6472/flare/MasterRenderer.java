@@ -42,6 +42,7 @@ public class MasterRenderer
     private boolean isFrameStarted;
 
     private final List<RenderSystem> renderSystems = new ArrayList<>();
+    private FontRenderSystem fontRenderSystem;
 
     public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, Commands commands, long surface, VrData vrData)
     {
@@ -59,7 +60,7 @@ public class MasterRenderer
     public void builtinLast()
     {
         addRenderSystem(new DebugLineRenderSystem(this, Pipelines.DEBUG_LINE));
-        addRenderSystem(new FontRenderSystem(this, Pipelines.FONT_SDF));
+        addRenderSystem(fontRenderSystem = new FontRenderSystem(this, Pipelines.FONT_SDF));
     }
 
     public void addRenderSystem(RenderSystem renderSystem)
@@ -218,6 +219,11 @@ public class MasterRenderer
             throw new RuntimeException("Can't end render pass on command buffer from a different frame");
 
         vkCmdEndRenderPass(commandBuffer);
+    }
+
+    public void clearText()
+    {
+        fontRenderSystem.clear();
     }
 
     public VkCommandBuffer getCurrentCommandBuffer()
