@@ -159,7 +159,6 @@ public class UITextureLoader
                 (rectangle.x + rectangle.width) * texel,
                 (rectangle.y + rectangle.height) * texel
             );
-            System.out.println(key + " " + uiTextureEntry.uv());
         }
     }
 

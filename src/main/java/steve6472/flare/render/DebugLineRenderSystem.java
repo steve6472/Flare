@@ -11,7 +11,6 @@ import steve6472.flare.render.debug.DebugRender;
 import steve6472.flare.settings.VisualSettings;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.UBO;
-import steve6472.flare.struct.def.Vertex;
 
 import java.nio.LongBuffer;
 import java.util.ArrayList;
@@ -72,7 +71,7 @@ public class DebugLineRenderSystem extends RenderSystem
         {
             buffer = new VkBuffer(
                 masterRenderer.getDevice(),
-                Vertex.POS3F_COL4F.sizeof(),
+                vertex().sizeof(),
                 262144,
                 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
@@ -120,7 +119,7 @@ public class DebugLineRenderSystem extends RenderSystem
             stack.longs(flightFrame.descriptorSet),
             stack.ints(singleInstanceSize * frameInfo.camera().cameraIndex));
 
-        buffer.writeToBuffer(Vertex.POS3F_COL4F::memcpy, verticies);
+        buffer.writeToBuffer(vertex()::memcpy, verticies);
 
         LongBuffer vertexBuffers = stack.longs(buffer.getBuffer());
         LongBuffer offsets = stack.longs(0);
@@ -159,22 +158,22 @@ public class DebugLineRenderSystem extends RenderSystem
 
         VkBuffer stagingBuffer = new VkBuffer(
             device,
-            Vertex.POS3F_COL4F.sizeof(),
+            vertex().sizeof(),
             verticies.size(),
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
         stagingBuffer.map();
-        stagingBuffer.writeToBuffer(Vertex.POS3F_COL4F::memcpy, verticies);
+        stagingBuffer.writeToBuffer(vertex()::memcpy, verticies);
 
         VkBuffer vertexBuffer = new VkBuffer(
             device,
-            Vertex.POS3F_COL4F.sizeof(),
+            vertex().sizeof(),
             verticies.size(),
             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
             VK_MEMORY_HEAP_DEVICE_LOCAL_BIT);
 
-        long bufferSize = (long) Vertex.POS3F_COL4F.sizeof() * verticies.size();
+        long bufferSize = (long) vertex().sizeof() * verticies.size();
         VkBuffer.copyBuffer(getMasterRenderer().getCommands(), device, getMasterRenderer().getGraphicsQueue(), stagingBuffer, vertexBuffer, bufferSize);
         stagingBuffer.cleanup();
 

@@ -266,6 +266,8 @@ public class Flare
 
     private void cleanup()
     {
+        FlareConstants.NULL_EXTENT.free();
+
         app.saveSettings();
         // Save settings
         SettingsLoader.saveToJsonFile(FlareRegistries.VISUAL_SETTINGS, FlareConstants.VISUAL_SETTINGS_FILE);

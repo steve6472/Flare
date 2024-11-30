@@ -43,11 +43,11 @@ public record DebugHemisphere(float radius, float heightOffset, int quality, boo
                 Vector3f v3 = polarToCartesian(radius, lat2, lon1, isTop ? heightOffset : -heightOffset).mulPosition(transform);
 
                 // Add lines connecting latitudes and longitudes
-                vertices.add(Vertex.POS3F_COL4F.create(v1, color));
-                vertices.add(Vertex.POS3F_COL4F.create(v2, color));  // Horizontal line on current latitude
+                vertices.add(vertex(v1, color));
+                vertices.add(vertex(v2, color));  // Horizontal line on current latitude
 
-                vertices.add(Vertex.POS3F_COL4F.create(v1, color));
-                vertices.add(Vertex.POS3F_COL4F.create(v3, color));  // Vertical line between latitudes
+                vertices.add(vertex(v1, color));
+                vertices.add(vertex(v3, color));  // Vertical line between latitudes
             }
         }
     }

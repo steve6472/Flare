@@ -49,42 +49,42 @@ public record DebugCuboid(Vector3f start, Vector3f end, Vector4f color) implemen
         p7.mulPosition(transform);
 
         // Front face (p0, p1, p2, p3)
-        vertices.add(Vertex.POS3F_COL4F.create(p0, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p1, color));
+        vertices.add(vertex(p0, color));
+        vertices.add(vertex(p1, color));
 
-        vertices.add(Vertex.POS3F_COL4F.create(p1, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p2, color));
+        vertices.add(vertex(p1, color));
+        vertices.add(vertex(p2, color));
 
-        vertices.add(Vertex.POS3F_COL4F.create(p2, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p3, color));
+        vertices.add(vertex(p2, color));
+        vertices.add(vertex(p3, color));
 
-        vertices.add(Vertex.POS3F_COL4F.create(p3, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p0, color));
+        vertices.add(vertex(p3, color));
+        vertices.add(vertex(p0, color));
 
         // Back face (p4, p5, p6, p7)
-        vertices.add(Vertex.POS3F_COL4F.create(p4, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p5, color));
+        vertices.add(vertex(p4, color));
+        vertices.add(vertex(p5, color));
 
-        vertices.add(Vertex.POS3F_COL4F.create(p5, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p6, color));
+        vertices.add(vertex(p5, color));
+        vertices.add(vertex(p6, color));
 
-        vertices.add(Vertex.POS3F_COL4F.create(p6, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p7, color));
+        vertices.add(vertex(p6, color));
+        vertices.add(vertex(p7, color));
 
-        vertices.add(Vertex.POS3F_COL4F.create(p7, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p4, color));
+        vertices.add(vertex(p7, color));
+        vertices.add(vertex(p4, color));
 
         // Connect front and back faces
-        vertices.add(Vertex.POS3F_COL4F.create(p0, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p4, color));
+        vertices.add(vertex(p0, color));
+        vertices.add(vertex(p4, color));
 
-        vertices.add(Vertex.POS3F_COL4F.create(p1, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p5, color));
+        vertices.add(vertex(p1, color));
+        vertices.add(vertex(p5, color));
 
-        vertices.add(Vertex.POS3F_COL4F.create(p2, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p6, color));
+        vertices.add(vertex(p2, color));
+        vertices.add(vertex(p6, color));
 
-        vertices.add(Vertex.POS3F_COL4F.create(p3, color));
-        vertices.add(Vertex.POS3F_COL4F.create(p7, color));
+        vertices.add(vertex(p3, color));
+        vertices.add(vertex(p7, color));
     }
 }

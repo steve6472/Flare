@@ -6,6 +6,7 @@ import steve6472.flare.core.FrameInfo;
 import steve6472.flare.MasterRenderer;
 import steve6472.flare.pipeline.Pipeline;
 import steve6472.flare.pipeline.builder.PipelineConstructor;
+import steve6472.flare.struct.type.StructVertex;
 import steve6472.flare.vr.VrData;
 import steve6472.flare.vr.VrRenderPass;
 
@@ -35,6 +36,11 @@ public abstract class RenderSystem
         if (masterRenderer.getVrData().vrRenderPass != VrRenderPass.NONE)
             return vrPipeline;
         return pipeline;
+    }
+
+    protected StructVertex vertex()
+    {
+        return pipeline().vertex();
     }
 
     public Pipeline _getPipeline()

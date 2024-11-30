@@ -20,7 +20,6 @@ import steve6472.flare.pipeline.builder.PipelineConstructor;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.UBO;
-import steve6472.flare.struct.def.Vertex;
 import steve6472.flare.ui.font.layout.GlyphInfo;
 import steve6472.flare.ui.font.render.*;
 import steve6472.flare.ui.font.style.FontStyleEntry;
@@ -109,7 +108,7 @@ public class FontRenderSystem extends RenderSystem
 
         buffer = new VkBuffer(
             masterRenderer.getDevice(),
-            Vertex.POS3F_UV_INDEX.sizeof(),
+            vertex().sizeof(),
             32768 * 6, // max 32k characters at once, should be enough....
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
@@ -155,7 +154,7 @@ public class FontRenderSystem extends RenderSystem
             stack.longs(flightFrame.descriptorSet),
             stack.ints(singleInstanceSize * frameInfo.camera().cameraIndex));
 
-        buffer.writeToBuffer(Vertex.POS3F_UV_INDEX::memcpy, verticies);
+        buffer.writeToBuffer(vertex()::memcpy, verticies);
 
         LongBuffer vertexBuffers = stack.longs(buffer.getBuffer());
         LongBuffer offsets = stack.longs(0);
@@ -343,13 +342,13 @@ public class FontRenderSystem extends RenderSystem
         Vector3f vbr = new Vector3f(xpos + w, ypos, 0).mulPosition(transform);
         Vector3f vtr = new Vector3f(xpos + w, ypos + h, 0).mulPosition(transform);
 
-        structs.add(Vertex.POS3F_UV_INDEX.create(vtl, new Vector2f(tl.x, tl.y), styleIndex));
-        structs.add(Vertex.POS3F_UV_INDEX.create(vbl, new Vector2f(tl.x, br.y), styleIndex));
-        structs.add(Vertex.POS3F_UV_INDEX.create(vbr, new Vector2f(br.x, br.y), styleIndex));
+        structs.add(vertex().create(vtl, new Vector2f(tl.x, tl.y), styleIndex));
+        structs.add(vertex().create(vbl, new Vector2f(tl.x, br.y), styleIndex));
+        structs.add(vertex().create(vbr, new Vector2f(br.x, br.y), styleIndex));
 
-        structs.add(Vertex.POS3F_UV_INDEX.create(vbr, new Vector2f(br.x, br.y), styleIndex));
-        structs.add(Vertex.POS3F_UV_INDEX.create(vtr, new Vector2f(br.x, tl.y), styleIndex));
-        structs.add(Vertex.POS3F_UV_INDEX.create(vtl, new Vector2f(tl.x, tl.y), styleIndex));
+        structs.add(vertex().create(vbr, new Vector2f(br.x, br.y), styleIndex));
+        structs.add(vertex().create(vtr, new Vector2f(br.x, tl.y), styleIndex));
+        structs.add(vertex().create(vtl, new Vector2f(tl.x, tl.y), styleIndex));
     }
 
     @Override

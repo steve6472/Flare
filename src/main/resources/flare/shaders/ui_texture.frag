@@ -76,14 +76,12 @@ vec2 calculateNineSliceUV(UITexture uiTexture)
      * Values for border checking
      */
     vec4 border = uiTexture.border;
-    //                         x=20.0 / 40.0   |   y=20.0 / 20.0
     vec2 _borderScaleFactor = texturePixelSize / spritePixelSize;
     vec4 _borderScaled = border * _borderScaleFactor.xyxy;
     float borderLeft = _borderScaled.x;
     float borderTop = _borderScaled.y;
     float borderRight = texturePixelSize.x - _borderScaled.z;
     float borderBottom = texturePixelSize.y - _borderScaled.w;
-    // 0-1 to 20-20
     vec2 texturePixelUV = uv * texturePixelSize;
 
     vec2 spriteUV = vec2(uv);

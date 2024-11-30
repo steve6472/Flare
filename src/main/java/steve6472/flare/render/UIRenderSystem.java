@@ -32,7 +32,7 @@ import static steve6472.flare.SwapChain.MAX_FRAMES_IN_FLIGHT;
 
 /**
  * Created by steve6472
- * Date: 8/31/2024
+ * Date: 11/27/2024
  * Project: Flare <br>
  */
 public final class UIRenderSystem extends RenderSystem
@@ -41,6 +41,8 @@ public final class UIRenderSystem extends RenderSystem
     private final DescriptorSetLayout globalSetLayout;
     private final List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
     private final VkBuffer buffer;
+
+    private static final Vector3f NO_TINT = new Vector3f(1.0f);
 
     public UIRenderSystem(MasterRenderer masterRenderer, PipelineConstructor pipeline)
     {
@@ -96,7 +98,7 @@ public final class UIRenderSystem extends RenderSystem
 
         buffer = new VkBuffer(
             masterRenderer.getDevice(),
-            Vertex.POS3F_COL3F_DATA3F.sizeof(),
+            vertex().sizeof(),
             32768 * 4, // max 32k sprites at once, should be enough....
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
@@ -143,7 +145,7 @@ public final class UIRenderSystem extends RenderSystem
             stack.longs(flightFrame.descriptorSet),
             stack.ints(singleInstanceSize * frameInfo.camera().cameraIndex));
 
-        buffer.writeToBuffer(Vertex.POS3F_COL3F_DATA3F::memcpy, verticies);
+        buffer.writeToBuffer(vertex()::memcpy, verticies);
 
 //        Struct windowSize = Push.WINDOW_SIZE.create((float) getMasterRenderer().getWindow().getWidth(), (float) getMasterRenderer().getWindow().getHeight());
         Struct windowSize = Push.WINDOW_SIZE.create((float) UITextureLoader.getAtlasWidth(), (float) UITextureLoader.getAtlasWidth());
@@ -174,7 +176,7 @@ public final class UIRenderSystem extends RenderSystem
 
     private void createSprite(List<Struct> structs, int x, int y, float zIndex, int width, int height, UITextureEntry texture)
     {
-        createSprite(structs, x, y, zIndex, width, height, texture, new Vector3f(1.0f));
+        createSprite(structs, x, y, zIndex, width, height, texture, NO_TINT);
     }
 
     private void createSprite(List<Struct> structs, int x, int y, float zIndex, int width, int height, UITextureEntry texture, Vector3f tint)
@@ -188,13 +190,13 @@ public final class UIRenderSystem extends RenderSystem
         Vector3f vtr = new Vector3f(x + width, y, zIndex);
         Vector3f vertexData = new Vector3f(index, pixelW, pixelH);
 
-        structs.add(Vertex.POS3F_COL3F_DATA3F.create(vtl, tint, vertexData));
-        structs.add(Vertex.POS3F_COL3F_DATA3F.create(vbl, tint, vertexData));
-        structs.add(Vertex.POS3F_COL3F_DATA3F.create(vbr, tint, vertexData));
+        structs.add(vertex().create(vtl, tint, vertexData));
+        structs.add(vertex().create(vbl, tint, vertexData));
+        structs.add(vertex().create(vbr, tint, vertexData));
 
-        structs.add(Vertex.POS3F_COL3F_DATA3F.create(vbr, tint, vertexData));
-        structs.add(Vertex.POS3F_COL3F_DATA3F.create(vtr, tint, vertexData));
-        structs.add(Vertex.POS3F_COL3F_DATA3F.create(vtl, tint, vertexData));
+        structs.add(vertex().create(vbr, tint, vertexData));
+        structs.add(vertex().create(vtr, tint, vertexData));
+        structs.add(vertex().create(vtl, tint, vertexData));
     }
 
     private Struct updateUITextures()

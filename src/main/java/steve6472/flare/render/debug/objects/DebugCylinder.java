@@ -38,14 +38,14 @@ public record DebugCylinder(float radius, float height, int quality, Vector4f co
             Vector3f bottom2 = new Vector3f(x2, -height, z2).mulPosition(transform);
 
             // Add vertical lines
-            vertices.add(Vertex.POS3F_COL4F.create(top1, color));
-            vertices.add(Vertex.POS3F_COL4F.create(bottom1, color));
+            vertices.add(vertex(top1, color));
+            vertices.add(vertex(bottom1, color));
 
             // Add horizontal lines connecting circles
-            vertices.add(Vertex.POS3F_COL4F.create(top1, color));
-            vertices.add(Vertex.POS3F_COL4F.create(top2, color));
-            vertices.add(Vertex.POS3F_COL4F.create(bottom1, color));
-            vertices.add(Vertex.POS3F_COL4F.create(bottom2, color));
+            vertices.add(vertex(top1, color));
+            vertices.add(vertex(top2, color));
+            vertices.add(vertex(bottom1, color));
+            vertices.add(vertex(bottom2, color));
         }
     }
 }

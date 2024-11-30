@@ -1,5 +1,6 @@
 package steve6472.flare.pipeline.builder;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkExtent2D;
@@ -22,7 +23,7 @@ import static org.lwjgl.vulkan.VK10.*;
  */
 public final class PipelineBuilder
 {
-    private final VkDevice device;
+    private final @Nullable VkDevice device;
     private StructVertex vertexInputInfo;
 
     private final ShadersInfo shadersInfo = new ShadersInfo();
@@ -34,7 +35,7 @@ public final class PipelineBuilder
     private final ColorBlendInfo colorBlendInfo = new ColorBlendInfo();
     private final PushConstantRange pushConstantRange = new PushConstantRange();
 
-    private PipelineBuilder(VkDevice device)
+    private PipelineBuilder(@Nullable VkDevice device)
     {
         this.device = device;
     }
@@ -91,16 +92,19 @@ public final class PipelineBuilder
     }
 
 
-    public static PipelineBuilder create(VkDevice device)
+    public static PipelineBuilder create(@Nullable VkDevice device)
     {
         return new PipelineBuilder(device);
     }
 
     public Pipeline build(long renderPass, long... setLayouts)
     {
+        if (device == null)
+            return new Pipeline(0, 0, vertexInputInfo);
+
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            long pipelineLayout = createPipelineLayout(stack, setLayouts);
+            long pipelineLayout = createPipelineLayout(device, stack, setLayouts);
 
             VkGraphicsPipelineCreateInfo.Buffer pipelineInfo = VkGraphicsPipelineCreateInfo.calloc(1, stack);
             pipelineInfo.sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO);
@@ -127,11 +131,11 @@ public final class PipelineBuilder
 
             shadersInfo.cleanup(device);
 
-            return new Pipeline(pGraphicsPipeline.get(0), pipelineLayout);
+            return new Pipeline(pGraphicsPipeline.get(0), pipelineLayout, vertexInputInfo);
         }
     }
 
-    private long createPipelineLayout(MemoryStack stack, long... setLayouts)
+    private long createPipelineLayout(VkDevice device, MemoryStack stack, long... setLayouts)
     {
         VkPipelineLayoutCreateInfo pipelineLayoutInfo = VkPipelineLayoutCreateInfo.calloc(stack);
         pipelineLayoutInfo.sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);

@@ -2,7 +2,9 @@ package steve6472.flare;
 
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.lwjgl.vulkan.VkExtent2D;
 import steve6472.core.registry.Key;
+import steve6472.flare.pipeline.Pipeline;
 
 import java.io.File;
 
@@ -17,6 +19,9 @@ public class FlareConstants
 
     /// Global clear color
     public static final Vector4f CLEAR_COLOR = new Vector4f(0.1f, 0.1f, 0.1f, 1.0f);
+
+    /// Null extent used by [Pipeline] to create a dummy Pipeline for the Vertex data
+    public static final VkExtent2D NULL_EXTENT = VkExtent2D.malloc();
 
     /// Note: This makes models be unable to be saved unless they are scaled in opposite direction before saving
     public static final float BB_MODEL_SCALE = 1f / 16f;
@@ -56,7 +61,6 @@ public class FlareConstants
     public static final File MSDF_EXE = new File(GENERATED_FLARE, "msdf_atlas_gen.exe");
 
     /// Root folder for modules
-    /// TODO: replace all resources references with this
     public static final File MODULES = new File("modules");
 
     public static final File FLARE_MODULE = new File(MODULES, ENGINE_NAMESPACE);
