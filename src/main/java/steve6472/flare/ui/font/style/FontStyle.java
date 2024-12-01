@@ -34,7 +34,7 @@ public record FontStyle(FontEntry fontEntry, ColorSoftThick base, ColorSoftThick
         return fontEntry.font();
     }
 
-    public static final Key DEFAULT = Key.withNamespace(FlareConstants.ENGINE_NAMESPACE, "arial");
+    public static final Key DEFAULT = Key.withNamespace(FlareConstants.NAMESPACE, "arial");
 
     public Struct toStruct(FontEntry font)
     {

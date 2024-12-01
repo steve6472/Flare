@@ -10,7 +10,6 @@ import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.render.SBOTransfromArray;
 import steve6472.flare.render.StaticModelRenderImpl;
 
-import javax.xml.crypto.dsig.Transform;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +18,7 @@ import java.util.List;
  * Date: 10/1/2024
  * Project: Flare <br>
  */
-class PhysicsTestRender extends StaticModelRenderImpl
+class EntityTestRender extends StaticModelRenderImpl
 {
     @Override
     protected void init(SBOTransfromArray<Model> transfromArray)
@@ -41,32 +40,6 @@ class PhysicsTestRender extends StaticModelRenderImpl
         entities.add(new Entity(cube.index(), new Vector3f(-2, 0, 0), new Vector3f(1.0f), new Quaternionf()));
         entities.add(new Entity(pebble.index(), new Vector3f(0, 0, 2), new Vector3f(1.0f), new Quaternionf()));
         entities.add(new Entity(rainbowInAPot.index(), new Vector3f(0, 0, 0), new Vector3f(1.0f), new Quaternionf()));
-
-        /*
-
-        for (int i = 0; i < TestSettings.SPHERE_AMOUNT.get(); i++)
-        {
-            // Add a sphere-shaped, dynamic, rigid body at the origin.
-            float radius = RandomUtil.randomFloat(0.25f, 0.75f);
-            CollisionShape shape = new SphereCollisionShape(radius);
-            PhysicsRigidBody body = new PhysicsRigidBody(shape, mass);
-            physicsSpace.add(body);
-            body.setPhysicsLocation(new Vector3f(RandomUtil.randomFloat(-scaleX, scaleX), RandomUtil.randomFloat(4, 16), RandomUtil.randomFloat(-scaleX, scaleX)));
-            body.setUserObject(new UserObj(ballArea.index()));
-            objects.add(body);
-        }
-
-        for (int i = 0; i < TestSettings.CUBE_AMOUNT.get(); i++)
-        {
-            // Add a sphere-shaped, dynamic, rigid body at the origin.
-            float radius = RandomUtil.randomFloat(0.25f, 0.75f);
-            CollisionShape shape = new BoxCollisionShape(radius);
-            PhysicsRigidBody body = new PhysicsRigidBody(shape, mass);
-            physicsSpace.add(body);
-            body.setPhysicsLocation(new Vector3f(RandomUtil.randomFloat(-scaleX, scaleX), RandomUtil.randomFloat(4, 16), RandomUtil.randomFloat(-scaleX, scaleX)));
-            body.setUserObject(new UserObj(cubeArea.index()));
-            objects.add(body);
-        }*/
     }
 
     @Override
@@ -84,16 +57,6 @@ class PhysicsTestRender extends StaticModelRenderImpl
             mat.translate(entity.position);
             mat.scale(entity.scale);
             lastArea.updateTransform(mat);
-        }
-    }
-
-    static final class UserObj
-    {
-        public int modelIndex;
-
-        UserObj(int modelIndex)
-        {
-            this.modelIndex = modelIndex;
         }
     }
 }

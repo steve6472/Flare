@@ -54,8 +54,6 @@ public class UITextureLoader
     private static final String PATH = "textures/ui";
     private static final String[] EXTENSIONS = {".json5", ".json"};
 
-    private static int atlasWidth;
-
     public static void bootstrap()
     {
         Map<Key, File> uiTextures = new LinkedHashMap<>();
@@ -79,6 +77,9 @@ public class UITextureLoader
             });
         }
 
+        UITextureEntry errorEntry = new UITextureEntry(FlareConstants.ERROR_TEXTURE, StretchTexture.instance(), new Vector4f(), new Vector2i(2, 2), FlareRegistries.UI_TEXTURE.keys().size());
+        FlareRegistries.UI_TEXTURE.register(errorEntry);
+
         uiTextures.forEach((key, imageFile) ->
         {
             UITexture texture = loadUITexture(imageFile);
@@ -90,7 +91,8 @@ public class UITextureLoader
             {
                 throw new RuntimeException(e);
             }
-            FlareRegistries.UI_TEXTURE.register(new UITextureEntry(key, texture, new Vector4f(), new Vector2i(image.getWidth(), image.getHeight()), FlareRegistries.UI_TEXTURE.keys().size()));
+            UITextureEntry entry = new UITextureEntry(key, texture, new Vector4f(), new Vector2i(image.getWidth(), image.getHeight()), FlareRegistries.UI_TEXTURE.keys().size());
+            FlareRegistries.UI_TEXTURE.register(entry);
 
             IMAGES.put(key, image);
         });
@@ -132,8 +134,6 @@ public class UITextureLoader
         ImagePacker packer = PackerUtil.pack(STARTING_IMAGE_SIZE, toPack, true);
         IMAGES.clear();
 
-        atlasWidth = packer.getImage().getWidth();
-
         BufferedImage image = packer.getImage();
         saveDebugAtlas(image);
         Texture texture = new Texture();
@@ -160,11 +160,6 @@ public class UITextureLoader
                 (rectangle.y + rectangle.height) * texel
             );
         }
-    }
-
-    public static int getAtlasWidth()
-    {
-        return atlasWidth;
     }
 
     private static void saveDebugAtlas(BufferedImage image)

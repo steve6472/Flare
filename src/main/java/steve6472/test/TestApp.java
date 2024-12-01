@@ -50,8 +50,8 @@ class TestApp extends FlareApp
     @Override
     protected void createRenderSystems()
     {
-        addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new PhysicsTestRender(), Pipelines.BLOCKBENCH_STATIC));
-        addRenderSystem(UIRenderSystem::new, Pipelines.UI_TEXTURE);
+        addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new EntityTestRender(), Pipelines.BLOCKBENCH_STATIC));
+        addRenderSystem(new UIRenderSystem(masterRenderer(), new TestUIRender()));
     }
 
     @Override
@@ -61,6 +61,9 @@ class TestApp extends FlareApp
     }
 
     float Y = 0;
+
+    public static int pixelW = 20;
+    public static int pixelH = 20;
 
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
@@ -84,6 +87,11 @@ class TestApp extends FlareApp
 
         if (TestKeybinds.BACK.isActive())
             Y -= frameInfo.frameTime() * speed;
+
+        if (TestKeybinds.TO_UP.isActive()) pixelH -= 1;
+        if (TestKeybinds.TO_DOWN.isActive()) pixelH += 1;
+        if (TestKeybinds.TO_LEFT.isActive()) pixelW -= 1;
+        if (TestKeybinds.TO_RIGHT.isActive()) pixelW += 1;
 
         Key sans = Key.withNamespace("test", "default_comic_sans");
         Key debug = Key.withNamespace("test", "debug");

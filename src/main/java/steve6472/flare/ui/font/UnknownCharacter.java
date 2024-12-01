@@ -14,8 +14,8 @@ import steve6472.flare.ui.font.style.FontStyleEntry;
 public class UnknownCharacter
 {
     private static final String UNKNOWN = "unknown";
-    public static final Key FONT_KEY = Key.withNamespace(FlareConstants.ENGINE_NAMESPACE, UNKNOWN);
-    public static final Key STYLE_KEY = Key.withNamespace(FlareConstants.ENGINE_NAMESPACE, UNKNOWN);
+    public static final Key FONT_KEY = Key.withNamespace(FlareConstants.NAMESPACE, UNKNOWN);
+    public static final Key STYLE_KEY = Key.withNamespace(FlareConstants.NAMESPACE, UNKNOWN);
 
     private static FontEntry fontEntry;
     private static FontStyleEntry styleEntry;

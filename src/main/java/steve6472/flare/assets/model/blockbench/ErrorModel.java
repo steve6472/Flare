@@ -27,7 +27,7 @@ public final class ErrorModel
 
     public static final String VERSION = "null";
 
-    public static final Key KEY = Key.withNamespace(FlareConstants.ENGINE_NAMESPACE, "error_model");
+    public static final Key KEY = Key.withNamespace(FlareConstants.NAMESPACE, "error_model");
 
     public static final LoadedModel INSTANCE = new LoadedModel(
         new ModelMeta(VERSION, ModelFormat.FREE, false),
@@ -50,7 +50,7 @@ public final class ErrorModel
                 FaceType.DOWN, new CubeFace(new Vector4f(0, 0, 2, 2), 0))
         )),
         List.of(new OutlinerUUID(CUBE_ELEMENT_UUID)),
-        List.of(new TextureData(0, 2, 2, 2, 2, FlareConstants.ERROR_TEXTURE)),
+        List.of(new TextureData(0, 2, 2, 2, 2, FlareConstants.ERROR_TEXTURE.toString())),
         List.of()
     );
 

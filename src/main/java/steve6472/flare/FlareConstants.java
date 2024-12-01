@@ -15,6 +15,9 @@ import java.io.File;
  */
 public class FlareConstants
 {
+    /// Used for code-generated resources
+    public static final String NAMESPACE = "flare";
+
     public static final Vector3f CAMERA_UP = new Vector3f(0, 1, 0);
 
     /// Global clear color
@@ -30,16 +33,13 @@ public class FlareConstants
     public static final float DEG_TO_RAD = 0.017453292519943295f;
 
     /// Blockbench texture atlas
-    public static final Key BLOCKBENCH_TEXTURE = Key.defaultNamespace("blockbench_main");
+    public static final Key BLOCKBENCH_TEXTURE = Key.withNamespace(NAMESPACE,"blockbench_main");
 
     /// UI Texture atlas
-    public static final Key UI_TEXTURE = Key.defaultNamespace("ui_texture");
-
-    /// Used for code-generated resources
-    public static final String ENGINE_NAMESPACE = "flare";
+    public static final Key UI_TEXTURE = Key.withNamespace(NAMESPACE,"ui_texture");
 
     /// Error texture id
-    public static final String ERROR_TEXTURE = "*error_texture*";
+    public static final Key ERROR_TEXTURE = Key.withNamespace(NAMESPACE, "error_texture");
 
     /*
      * File paths
@@ -52,7 +52,7 @@ public class FlareConstants
     public static final File GENERATED_FOLDER = new File("generated");
 
     /// Root folder for generated resources
-    public static final File GENERATED_FLARE = new File(GENERATED_FOLDER, ENGINE_NAMESPACE);
+    public static final File GENERATED_FLARE = new File(GENERATED_FOLDER, NAMESPACE);
 
     /// Folder for generated debug files
     public static final File FLARE_DEBUG_FOLDER = new File(GENERATED_FLARE, "debug");
@@ -63,5 +63,5 @@ public class FlareConstants
     /// Root folder for modules
     public static final File MODULES = new File("modules");
 
-    public static final File FLARE_MODULE = new File(MODULES, ENGINE_NAMESPACE);
+    public static final File FLARE_MODULE = new File(MODULES, NAMESPACE);
 }

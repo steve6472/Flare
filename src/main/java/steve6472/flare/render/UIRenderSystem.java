@@ -1,5 +1,6 @@
 package steve6472.flare.render;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 import steve6472.core.registry.Key;
@@ -11,21 +12,15 @@ import steve6472.flare.core.FrameInfo;
 import steve6472.flare.descriptors.DescriptorPool;
 import steve6472.flare.descriptors.DescriptorSetLayout;
 import steve6472.flare.descriptors.DescriptorWriter;
-import steve6472.flare.pipeline.builder.PipelineConstructor;
+import steve6472.flare.pipeline.Pipelines;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.struct.Struct;
-import steve6472.flare.struct.def.Push;
 import steve6472.flare.struct.def.SBO;
 import steve6472.flare.struct.def.UBO;
-import steve6472.flare.struct.def.Vertex;
 import steve6472.flare.ui.textures.UITextureEntry;
-import steve6472.flare.ui.textures.UITextureLoader;
-import steve6472.test.TestKeybinds;
 
 import java.nio.LongBuffer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static org.lwjgl.vulkan.VK10.*;
 import static steve6472.flare.SwapChain.MAX_FRAMES_IN_FLIGHT;
@@ -42,11 +37,13 @@ public final class UIRenderSystem extends RenderSystem
     private final List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
     private final VkBuffer buffer;
 
-    private static final Vector3f NO_TINT = new Vector3f(1.0f);
+    private final UIRender renderImpl;
 
-    public UIRenderSystem(MasterRenderer masterRenderer, PipelineConstructor pipeline)
+    public UIRenderSystem(MasterRenderer masterRenderer, @NonNull UIRender renderImpl)
     {
-        super(masterRenderer, pipeline);
+        super(masterRenderer, Pipelines.UI_TEXTURE);
+        Objects.requireNonNull(renderImpl);
+        this.renderImpl = renderImpl;
 
         globalSetLayout = DescriptorSetLayout
             .builder(device)
@@ -115,7 +112,9 @@ public final class UIRenderSystem extends RenderSystem
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
-        List<Struct> verticies = createVerticies();
+        List<Struct> verticies = new ArrayList<>();
+        renderImpl.setStructList(verticies);
+        renderImpl.render();
 
         if (verticies.isEmpty())
             return;
@@ -151,49 +150,8 @@ public final class UIRenderSystem extends RenderSystem
         LongBuffer offsets = stack.longs(0);
         vkCmdBindVertexBuffers(frameInfo.commandBuffer(), 0, vertexBuffers, offsets);
         vkCmdDraw(frameInfo.commandBuffer(), verticies.size(), 1, 0, 0);
-
-        if (TestKeybinds.TO_UP.isActive()) pixelH -= 1;
-        if (TestKeybinds.TO_DOWN.isActive()) pixelH += 1;
-        if (TestKeybinds.TO_LEFT.isActive()) pixelW -= 1;
-        if (TestKeybinds.TO_RIGHT.isActive()) pixelW += 1;
     }
 
-    int pixelW = 20;
-    int pixelH = 20;
-
-
-    private List<Struct> createVerticies()
-    {
-        List<Struct> structs = new ArrayList<>();
-        UITextureEntry uiTextureEntry = FlareRegistries.UI_TEXTURE.get(Key.withNamespace("test", "box"));
-        createSprite(structs, 0, 0, 0, pixelW * 10, pixelH * 10, uiTextureEntry);
-        return structs;
-    }
-
-    private void createSprite(List<Struct> structs, int x, int y, float zIndex, int width, int height, UITextureEntry texture)
-    {
-        createSprite(structs, x, y, zIndex, width, height, texture, NO_TINT);
-    }
-
-    private void createSprite(List<Struct> structs, int x, int y, float zIndex, int width, int height, UITextureEntry texture, Vector3f tint)
-    {
-        int index = texture.index();
-
-        // Define base vertices
-        Vector3f vtl = new Vector3f(x, y , zIndex);
-        Vector3f vbl = new Vector3f(x, y + height, zIndex);
-        Vector3f vbr = new Vector3f(x + width, y + height, zIndex);
-        Vector3f vtr = new Vector3f(x + width, y, zIndex);
-        Vector3f vertexData = new Vector3f(index, pixelW, pixelH);
-
-        structs.add(vertex().create(vtl, tint, vertexData));
-        structs.add(vertex().create(vbl, tint, vertexData));
-        structs.add(vertex().create(vbr, tint, vertexData));
-
-        structs.add(vertex().create(vbr, tint, vertexData));
-        structs.add(vertex().create(vtr, tint, vertexData));
-        structs.add(vertex().create(vtl, tint, vertexData));
-    }
 
     private Struct updateUITextures()
     {

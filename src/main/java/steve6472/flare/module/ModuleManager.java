@@ -60,7 +60,7 @@ public class ModuleManager
 
         for (Map.Entry<String, Module> module : modules)
         {
-            if (module.getKey().equals(FlareConstants.ENGINE_NAMESPACE))
+            if (module.getKey().equals(FlareConstants.NAMESPACE))
             {
                 flareModule = module;
                 break;

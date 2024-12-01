@@ -38,7 +38,7 @@ public final class PackerUtil
             {
                 try
                 {
-                    packer.insertImage(FlareConstants.ERROR_TEXTURE, ErrorModel.IMAGE);
+                    packer.insertImage(FlareConstants.ERROR_TEXTURE.toString(), ErrorModel.IMAGE);
                 } catch (RuntimeException ignored)
                 {
                     startingImageSize *= 2;

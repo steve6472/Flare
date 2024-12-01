@@ -18,7 +18,6 @@ import steve6472.flare.ui.font.style.FontStyleEntry;
 import steve6472.flare.ui.font.style.StyleLoader;
 import steve6472.flare.ui.textures.UITextureEntry;
 import steve6472.flare.ui.textures.UITextureLoader;
-import steve6472.flare.ui.textures.type.UITexture;
 import steve6472.flare.ui.textures.type.UITextureType;
 
 /**
@@ -48,6 +47,6 @@ public class FlareRegistries extends RegistryCreators
 
     private static Key id(String id)
     {
-        return Key.withNamespace(FlareConstants.ENGINE_NAMESPACE, id);
+        return Key.withNamespace(FlareConstants.NAMESPACE, id);
     }
 }
