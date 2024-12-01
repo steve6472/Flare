@@ -17,7 +17,7 @@ import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.SBO;
 import steve6472.flare.struct.def.UBO;
-import steve6472.flare.ui.textures.UITextureEntry;
+import steve6472.flare.ui.textures.SpriteEntry;
 
 import java.nio.LongBuffer;
 import java.util.*;
@@ -73,14 +73,14 @@ public final class UIRenderSystem extends RenderSystem
 
             VkBuffer textureSettings = new VkBuffer(
                 device,
-                SBO.UI_TEXTURE_ENTRIES.sizeof(),
+                SBO.SPRITE_ENTRIES.sizeof(),
                 1,
                 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
             textureSettings.map();
             frame.sboTextureSettings = textureSettings;
 
-            frame.sboTextureSettings.writeToBuffer(SBO.UI_TEXTURE_ENTRIES::memcpy, updateUITextures());
+            frame.sboTextureSettings.writeToBuffer(SBO.SPRITE_ENTRIES::memcpy, updateUITextures());
 
             try (MemoryStack stack = MemoryStack.stackPush())
             {
@@ -155,15 +155,15 @@ public final class UIRenderSystem extends RenderSystem
 
     private Struct updateUITextures()
     {
-        Collection<Key> keys = FlareRegistries.UI_TEXTURE.keys();
+        Collection<Key> keys = FlareRegistries.SPRITE.keys();
         Struct[] textureSettings = new Struct[keys.size()];
         keys.forEach(key ->
         {
-            UITextureEntry uiTextureEntry = FlareRegistries.UI_TEXTURE.get(key);
+            SpriteEntry uiTextureEntry = FlareRegistries.SPRITE.get(key);
             textureSettings[uiTextureEntry.index()] = uiTextureEntry.toStruct();
         });
 
-        return SBO.UI_TEXTURE_ENTRIES.create((Object) textureSettings);
+        return SBO.SPRITE_ENTRIES.create((Object) textureSettings);
     }
 
     @Override

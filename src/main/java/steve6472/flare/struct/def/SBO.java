@@ -52,9 +52,9 @@ public interface SBO
 
 
 
-    int MAX_UI_TEXTURE_ENTRIES = 1024;
+    int MAX_SPRITE_ENTRIES = 1024;
 
-    StructDef UI_TEXTURE_ENTRY = builder()
+    StructDef SPRITE_ENTRY = builder()
         .addMember(VEC_4F) // dimensions
         .addMember(VEC_4F) // border
 
@@ -75,7 +75,7 @@ public interface SBO
 
         .build();
 
-    StructDef UI_TEXTURE_ENTRIES = builder()
-        .addStructArray(UI_TEXTURE_ENTRY, MAX_UI_TEXTURE_ENTRIES)
+    StructDef SPRITE_ENTRIES = builder()
+        .addStructArray(SPRITE_ENTRY, MAX_SPRITE_ENTRIES)
         .build();
 }

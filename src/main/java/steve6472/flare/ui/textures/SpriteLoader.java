@@ -20,8 +20,6 @@ import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.core.Flare;
 import steve6472.flare.module.Module;
 import steve6472.flare.registry.FlareRegistries;
-import steve6472.flare.ui.textures.type.StretchTexture;
-import steve6472.flare.ui.textures.type.UITexture;
 import steve6472.flare.util.PackerUtil;
 import steve6472.flare.util.ResourceCrawl;
 
@@ -43,12 +41,12 @@ import static org.lwjgl.vulkan.VK10.*;
  * Date: 11/27/2024
  * Project: Flare <br>
  */
-public class UITextureLoader
+public class SpriteLoader
 {
-    private static final Logger LOGGER = Log.getLogger(UITextureLoader.class);
+    private static final Logger LOGGER = Log.getLogger(SpriteLoader.class);
     private static final int STARTING_IMAGE_SIZE = 512;
 
-    private static final File DEBUG_ATLAS = new File(FlareConstants.FLARE_DEBUG_FOLDER, "ui_texture_atlas.png");
+    private static final File DEBUG_ATLAS = new File(FlareConstants.FLARE_DEBUG_FOLDER, "sprite_atlas.png");
     private static final Map<Key, BufferedImage> IMAGES = new HashMap<>();
 
     private static final String PATH = "textures/ui";
@@ -71,18 +69,19 @@ public class UITextureLoader
                         return;
 
                     Key key = Key.withNamespace(namespace, id);
-                    LOGGER.finest("Loaded UI Texture " + key + " from " + module.name());
+                    LOGGER.finest("Loaded Sprite " + key + " from " + module.name());
                     uiTextures.put(key, filePath);
                 });
             });
         }
 
-        UITextureEntry errorEntry = new UITextureEntry(FlareConstants.ERROR_TEXTURE, StretchTexture.instance(), new Vector4f(), new Vector2i(2, 2), FlareRegistries.UI_TEXTURE.keys().size());
-        FlareRegistries.UI_TEXTURE.register(errorEntry);
+        SpriteEntry errorEntry = new SpriteEntry(FlareConstants.ERROR_TEXTURE, SpriteData.DEFAULT, new Vector4f(), new Vector2i(2, 2), FlareRegistries.SPRITE
+            .keys().size());
+        FlareRegistries.SPRITE.register(errorEntry);
 
         uiTextures.forEach((key, imageFile) ->
         {
-            UITexture texture = loadUITexture(imageFile);
+            SpriteData spriteData = loadSpriteData(imageFile);
             BufferedImage image;
             try
             {
@@ -91,14 +90,15 @@ public class UITextureLoader
             {
                 throw new RuntimeException(e);
             }
-            UITextureEntry entry = new UITextureEntry(key, texture, new Vector4f(), new Vector2i(image.getWidth(), image.getHeight()), FlareRegistries.UI_TEXTURE.keys().size());
-            FlareRegistries.UI_TEXTURE.register(entry);
+            SpriteEntry entry = new SpriteEntry(key, spriteData, new Vector4f(), new Vector2i(image.getWidth(), image.getHeight()), FlareRegistries.SPRITE
+                .keys().size());
+            FlareRegistries.SPRITE.register(entry);
 
             IMAGES.put(key, image);
         });
     }
 
-    private static UITexture loadUITexture(File imageFile)
+    private static SpriteData loadSpriteData(File imageFile)
     {
         for (String extension : EXTENSIONS)
         {
@@ -110,10 +110,10 @@ public class UITextureLoader
             if (optionFile.exists())
             {
                 JsonElement jsonElement = GsonUtil.loadJson(optionFile);
-                DataResult<Pair<UITexture, JsonElement>> decode;
+                DataResult<Pair<SpriteData, JsonElement>> decode;
                 try
                 {
-                    decode = UITexture.CODEC.decode(JsonOps.INSTANCE, jsonElement);
+                    decode = SpriteData.CODEC.decode(JsonOps.INSTANCE, jsonElement);
                 } catch (Exception ex)
                 {
                     LOGGER.severe("Error when decoding:\n" + jsonElement.toString());
@@ -124,7 +124,7 @@ public class UITextureLoader
             }
         }
 
-        return StretchTexture.instance();
+        return SpriteData.DEFAULT;
     }
 
     public static void createTexture(VkDevice device, Commands commands, VkQueue graphicsQueue)
@@ -147,10 +147,10 @@ public class UITextureLoader
     {
         float texel = 1f / packer.getImage().getWidth();
 
-        Collection<Key> keys = FlareRegistries.UI_TEXTURE.keys();
+        Collection<Key> keys = FlareRegistries.SPRITE.keys();
         for (Key key : keys)
         {
-            UITextureEntry uiTextureEntry = FlareRegistries.UI_TEXTURE.get(key);
+            SpriteEntry uiTextureEntry = FlareRegistries.SPRITE.get(key);
             Rectangle rectangle = packer.getRects().get(key.toString());
             Preconditions.checkNotNull(rectangle, "Texture data not found in ImagePacker, for " + key);
             uiTextureEntry.uv().set(

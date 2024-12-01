@@ -16,9 +16,9 @@ import steve6472.flare.ui.font.FontEntry;
 import steve6472.flare.ui.font.FontLoader;
 import steve6472.flare.ui.font.style.FontStyleEntry;
 import steve6472.flare.ui.font.style.StyleLoader;
-import steve6472.flare.ui.textures.UITextureEntry;
-import steve6472.flare.ui.textures.UITextureLoader;
-import steve6472.flare.ui.textures.type.UITextureType;
+import steve6472.flare.ui.textures.SpriteEntry;
+import steve6472.flare.ui.textures.SpriteLoader;
+import steve6472.flare.ui.textures.type.SpriteRenderType;
 
 /**
  * Created by steve6472
@@ -31,14 +31,14 @@ public class FlareRegistries extends RegistryCreators
 
     public static final Registry<ElementType<?>> MODEL_ELEMENT = createRegistry(id("model_element"), () -> ElementType.CUBE);
     public static final Registry<KeyframeType<?>> KEYFRAME_TYPE = createRegistry(id("keyframe_type"), () -> KeyframeType.ROTATION);
-    public static final Registry<UITextureType<?>> UI_TEXTURE_TYPE = createRegistry(id("ui_texture_type"), () -> UITextureType.STRETCH);
+    public static final Registry<SpriteRenderType<?>> SPRITE_RENDER_TYPE = createRegistry(id("sprite_render_type"), () -> SpriteRenderType.STRETCH);
 
     // Models have to load after the model types registries
     public static final ObjectRegistry<LoadedModel> STATIC_LOADED_MODEL = createObjectRegistry(id("static_loaded_model"), ErrorModel.INSTANCE, BlockbenchLoader::loadStaticModels);
     public static final ObjectRegistry<LoadedModel> ANIMATED_LOADED_MODEL = createObjectRegistry(id("animated_loaded_model"), ErrorModel.INSTANCE, BlockbenchLoader::loadAnimatedModels);
     public static final ObjectRegistry<FontEntry> FONT = createObjectRegistry(id("font"), FontLoader::bootstrap);
     public static final ObjectRegistry<FontStyleEntry> FONT_STYLE = createObjectRegistry(id("font_style"), StyleLoader::bootstrap);
-    public static final ObjectRegistry<UITextureEntry> UI_TEXTURE = createObjectRegistry(id("ui_texture"), UITextureLoader::bootstrap);
+    public static final ObjectRegistry<SpriteEntry> SPRITE = createObjectRegistry(id("sprite"), SpriteLoader::bootstrap);
 
     // VK Objects
     public static final ObjectRegistry<TextureSampler> SAMPLER = createVkObjectRegistry(id("sampler"), SamplerLoader::loadSamplers);

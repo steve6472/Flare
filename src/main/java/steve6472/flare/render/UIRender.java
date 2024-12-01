@@ -7,7 +7,7 @@ import steve6472.core.registry.Key;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.Vertex;
-import steve6472.flare.ui.textures.UITextureEntry;
+import steve6472.flare.ui.textures.SpriteEntry;
 
 import java.util.HashSet;
 import java.util.List;
@@ -22,9 +22,10 @@ import java.util.logging.Logger;
 public abstract class UIRender
 {
     private static final Logger LOGGER = Log.getLogger(UIRender.class);
-    private static final Vector3f NO_TINT = new Vector3f(1.0f);
     private static final Set<String> MISSING_TEXTURES = new HashSet<>(16);
     private List<Struct> structList;
+
+    protected static final Vector3f NO_TINT = new Vector3f(1.0f);
 
     public abstract void render();
 
@@ -38,9 +39,9 @@ public abstract class UIRender
         sprite( x, y, zIndex, width, height, pixelWidth, pixelHeight, NO_TINT, textureKey);
     }
 
-    protected final void sprite(int x, int y, float zIndex, int width, int height, int pixelWidth, int pixelHeight, Vector3f tint, @NotNull Key textureKey)
+    protected final SpriteEntry getTextureEntry(Key textureKey)
     {
-        UITextureEntry uiTextureEntry = FlareRegistries.UI_TEXTURE.get(textureKey);
+        SpriteEntry uiTextureEntry = FlareRegistries.SPRITE.get(textureKey);
         if (uiTextureEntry == null)
         {
             if (!MISSING_TEXTURES.contains(textureKey.toString()))
@@ -49,8 +50,12 @@ public abstract class UIRender
                 LOGGER.warning("Missing UI Texture for " + textureKey);
             }
         }
+        return uiTextureEntry;
+    }
 
-        createSprite(x, y, zIndex, width, height, pixelWidth, pixelHeight, tint, uiTextureEntry);
+    protected final void sprite(int x, int y, float zIndex, int width, int height, int pixelWidth, int pixelHeight, Vector3f tint, @NotNull Key textureKey)
+    {
+        createSprite(x, y, zIndex, width, height, pixelWidth, pixelHeight, tint, getTextureEntry(textureKey));
     }
 
     protected final void createSprite(
@@ -58,7 +63,7 @@ public abstract class UIRender
         int width, int height,
         int pixelWidth, int pixelHeight,
         Vector3f tint,
-        UITextureEntry texture)
+        SpriteEntry texture)
     {
         int index;
         if (texture == null)

@@ -8,15 +8,14 @@ import steve6472.core.registry.Keyable;
 import steve6472.core.util.BitUtil;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.SBO;
-import steve6472.flare.ui.textures.type.NineSliceTexture;
-import steve6472.flare.ui.textures.type.UITexture;
+import steve6472.flare.ui.textures.type.NineSlice;
 
 /**
  * Created by steve6472
  * Date: 11/27/2024
  * Project: Flare <br>
  */
-public record UITextureEntry(Key key, UITexture uiTexture, Vector4f uv, Vector2i pixelSize, int index) implements Keyable
+public record SpriteEntry(Key key, SpriteData data, Vector4f uv, Vector2i pixelSize, int index) implements Keyable
 {
     public Struct toStruct()
     {
@@ -24,14 +23,14 @@ public record UITextureEntry(Key key, UITexture uiTexture, Vector4f uv, Vector2i
 
         int flags = 0;
 
-        if (uiTexture instanceof NineSliceTexture nineSlice)
+        if (data.renderType() instanceof NineSlice nineSlice)
         {
             border.set(nineSlice.border());
             flags |= 0b1;
             flags = BitUtil.setBit(flags, 2, nineSlice.stretchInner());
         }
 
-        return SBO.UI_TEXTURE_ENTRY.create(
+        return SBO.SPRITE_ENTRY.create(
             uv,
             border,
 

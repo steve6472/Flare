@@ -9,7 +9,7 @@ import steve6472.flare.registry.FlareRegistries;
  * Date: 11/27/2024
  * Project: Flare <br>
  */
-public interface UITexture extends Typed<UITextureType<?>>
+public interface SpriteRender extends Typed<SpriteRenderType<?>>
 {
-    Codec<UITexture> CODEC = FlareRegistries.UI_TEXTURE_TYPE.byKeyCodec().dispatch("type", UITexture::getType, UITextureType::mapCodec);
+    Codec<SpriteRender> CODEC = FlareRegistries.SPRITE_RENDER_TYPE.byKeyCodec().dispatch("type", SpriteRender::getType, SpriteRenderType::mapCodec);
 }
