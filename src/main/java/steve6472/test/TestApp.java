@@ -1,9 +1,5 @@
 package steve6472.test;
 
-import com.jme3.bullet.PhysicsSpace;
-import com.jme3.bullet.objects.PhysicsRigidBody;
-import com.jme3.bullet.util.NativeLibrary;
-import com.jme3.system.NativeLibraryLoader;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
@@ -14,11 +10,10 @@ import steve6472.flare.core.FrameInfo;
 import steve6472.flare.core.FlareApp;
 import steve6472.flare.input.KeybindUpdater;
 import steve6472.flare.pipeline.Pipelines;
+import steve6472.flare.render.StaticModelRenderSystem;
 import steve6472.flare.render.UIRenderSystem;
-import steve6472.flare.ui.font.render.*;
 
 import java.io.File;
-import java.util.logging.Level;
 
 /**
  * Created by steve6472
@@ -32,12 +27,6 @@ class TestApp extends FlareApp
     @Override
     protected void preInit()
     {
-        PhysicsSpace.logger.setLevel(Level.WARNING);
-        PhysicsRigidBody.logger2.setLevel(Level.WARNING);
-        NativeLibraryLoader.logger.setLevel(Level.WARNING);
-        // TODO: remove bullet from Flare, use this exporting feature in Orbiter. Move the exporting into a separate util class
-        NativeLibraryLoader.loadLibbulletjme(true, new File("generated/flare"), "Debug", "Sp");
-        NativeLibrary.setStartupMessageEnabled(false);
     }
 
     @Override
@@ -61,7 +50,7 @@ class TestApp extends FlareApp
     @Override
     protected void createRenderSystems()
     {
-//        addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new PhysicsTestRender(), Pipelines.BLOCKBENCH_STATIC));
+        addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new PhysicsTestRender(), Pipelines.BLOCKBENCH_STATIC));
         addRenderSystem(UIRenderSystem::new, Pipelines.UI_TEXTURE);
     }
 

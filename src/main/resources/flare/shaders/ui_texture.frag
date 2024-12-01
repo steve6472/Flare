@@ -46,13 +46,6 @@ layout(std140, set = 0, binding = 2) readonly buffer UITextureSettings
     UITexture array[];
 } textures;
 
-layout(push_constant) uniform Push
-{
-    // Pixel width and height of the atlas
-    float textureWidth;
-    float textureHeight;
-} push;
-
 float map(float value, float inMin, float inMax, float outMin, float outMax)
 {
     return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);

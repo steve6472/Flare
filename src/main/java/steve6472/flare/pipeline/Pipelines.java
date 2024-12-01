@@ -193,7 +193,6 @@ public interface Pipelines
             .attachment(VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT, true)
             .done()
         .pushConstants()
-            .constant(VK_SHADER_STAGE_FRAGMENT_BIT, 0, Push.WINDOW_SIZE)
             .done()
         .build(renderPass, setLayouts);
 

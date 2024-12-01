@@ -87,85 +87,23 @@ public class Flare
 
     private void createGeneratedFolders()
     {
-        createFolderOrError(FlareConstants.GENERATED_FLARE);
-        createFolderOrError(FlareConstants.FLARE_DEBUG_FOLDER);
-        createFolderOrError(FlareConstants.MODULES);
-        createFolderOrError(FlareConstants.FLARE_MODULE);
-    }
-
-    private void createFolderOrError(File directory)
-    {
-        if (!directory.exists())
-        {
-            if (!directory.mkdirs())
-            {
-                LOGGER.severe("Could not create folder at " + directory.getAbsolutePath());
-                throw new RuntimeException("Could not geenrate generated folder");
-            }
-        }
+        FlareExport.createFolderOrError(FlareConstants.GENERATED_FLARE);
+        FlareExport.createFolderOrError(FlareConstants.FLARE_DEBUG_FOLDER);
+        FlareExport.createFolderOrError(FlareConstants.MODULES);
+        FlareExport.createFolderOrError(FlareConstants.FLARE_MODULE);
     }
 
     private void exportBuiltinResources()
     {
         try
         {
-            exportFolder("flare/export/msdf", FlareConstants.GENERATED_FLARE);
-            exportFolder("flare/export/bullet", FlareConstants.GENERATED_FLARE);
+            FlareExport.exportFolder("flare/export/msdf", FlareConstants.GENERATED_FLARE);
 
-            exportFolder("flare/module", FlareConstants.FLARE_MODULE);
+            FlareExport.exportFolder("flare/module", FlareConstants.FLARE_MODULE);
         } catch (IOException | URISyntaxException exception)
         {
             LOGGER.severe("Failed to export Flare Module! Stopping application.");
             throw new RuntimeException(exception);
-        }
-    }
-
-    /// This does not exactly work well, it works differently when ran from IDE and when ran as jar
-    /// For now it seems to work tho
-    private void exportFolder(String path, File destination) throws IOException, URISyntaxException
-    {
-        String pathForListing = path;
-        if (!pathForListing.endsWith("/"))
-            pathForListing = pathForListing + "/";
-
-        String[] resourceListing = ResourceListing.getResourceListing(Flare.class, pathForListing);
-//        System.out.println("pathForListing: " + pathForListing + " destination: " + destination + " listing: " + Arrays.toString(resourceListing) + " (" + (resourceListing == null ? "-1" : resourceListing.length) + ")");
-
-        if (resourceListing == null || resourceListing.length == 0)
-        {
-            exportFile(path, destination);
-            return;
-        }
-
-        if (!destination.exists())
-        {
-            if (!destination.mkdirs())
-            {
-                LOGGER.severe("Failed to create folder for export " + destination);
-                return;
-            }
-        }
-
-        for (String resource : resourceListing)
-        {
-            if (resource.isBlank())
-                continue;
-
-            exportFolder(path + "/" + resource, new File(destination, resource));
-        }
-    }
-
-    private void exportFile(String path, File destination) throws IOException
-    {
-//        System.out.println("Exporting file " + path + " to " + destination);
-        if (!destination.exists())
-        {
-            if (!path.startsWith("/"))
-                path = "/" + path;
-            InputStream link = Flare.class.getResourceAsStream(path);
-            Objects.requireNonNull(link, "Path '" + path + "' not found!");
-            Files.copy(link, destination.getAbsoluteFile().toPath());
-            link.close();
         }
     }
 

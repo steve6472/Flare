@@ -1,16 +1,8 @@
 package steve6472.test;
 
-import com.jme3.bullet.PhysicsSpace;
-import com.jme3.bullet.collision.shapes.BoxCollisionShape;
-import com.jme3.bullet.collision.shapes.CollisionShape;
-import com.jme3.bullet.collision.shapes.PlaneCollisionShape;
-import com.jme3.bullet.collision.shapes.SphereCollisionShape;
-import com.jme3.bullet.objects.PhysicsBody;
-import com.jme3.bullet.objects.PhysicsRigidBody;
-import com.jme3.math.Plane;
-import com.jme3.math.Transform;
-import com.jme3.math.Vector3f;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import steve6472.core.registry.Key;
 import steve6472.flare.assets.model.Model;
 import steve6472.flare.core.FrameInfo;
@@ -18,6 +10,7 @@ import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.render.SBOTransfromArray;
 import steve6472.flare.render.StaticModelRenderImpl;
 
+import javax.xml.crypto.dsig.Transform;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,34 +21,26 @@ import java.util.List;
  */
 class PhysicsTestRender extends StaticModelRenderImpl
 {
-    PhysicsSpace physicsSpace;
-    private final List<PhysicsRigidBody> objects = new ArrayList<>();
-
     @Override
     protected void init(SBOTransfromArray<Model> transfromArray)
     {
         createPhysics(transfromArray);
     }
 
+    private record Entity(int modelIndex, Vector3f position, Vector3f scale, Quaternionf rotation) {}
+    private final List<Entity> entities = new ArrayList<>(4);
+
     private void createPhysics(SBOTransfromArray<Model> transfromArray)
     {
-        physicsSpace = new PhysicsSpace(PhysicsSpace.BroadphaseType.DBVT);
+        var ball = transfromArray.addArea(FlareRegistries.STATIC_MODEL.get(Key.withNamespace("test", "blockbench/static/ball")));
+        var cube = transfromArray.addArea(FlareRegistries.STATIC_MODEL.get(Key.withNamespace("test", "blockbench/static/cube")));
+        var pebble = transfromArray.addArea(FlareRegistries.STATIC_MODEL.get(Key.withNamespace("test", "blockbench/static/mesh_pebble")));
+        var rainbowInAPot = transfromArray.addArea(FlareRegistries.STATIC_MODEL.get(Key.withNamespace("test", "blockbench/static/rainbow_in_a_pot")));
 
-        float scaleX = 4;
-
-        // Add a static horizontal plane at y=-1.
-        float mass = 1f;
-        addPlane(Vector3f.UNIT_Y, -0f);
-        addPlane(Vector3f.UNIT_Y.mult(-1), -64f);
-        addPlane(Vector3f.UNIT_X, -scaleX);
-        addPlane(Vector3f.UNIT_Z, -scaleX);
-        addPlane(Vector3f.UNIT_X.mult(-1), -scaleX);
-        addPlane(Vector3f.UNIT_Z.mult(-1), -scaleX);
-
-        var ball = transfromArray.addArea(FlareRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/ball")));
-        var cube = transfromArray.addArea(FlareRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/cube")));
-        var pebble = transfromArray.addArea(FlareRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/mesh_pebble")));
-        var rainbowInAPot = transfromArray.addArea(FlareRegistries.STATIC_MODEL.get(Key.defaultNamespace("blockbench/static/rainbow_in_a_pot")));
+        entities.add(new Entity(ball.index(), new Vector3f(2, 0, 0), new Vector3f(1.0f), new Quaternionf()));
+        entities.add(new Entity(cube.index(), new Vector3f(-2, 0, 0), new Vector3f(1.0f), new Quaternionf()));
+        entities.add(new Entity(pebble.index(), new Vector3f(0, 0, 2), new Vector3f(1.0f), new Quaternionf()));
+        entities.add(new Entity(rainbowInAPot.index(), new Vector3f(0, 0, 0), new Vector3f(1.0f), new Quaternionf()));
 
         /*
 
@@ -82,69 +67,24 @@ class PhysicsTestRender extends StaticModelRenderImpl
             body.setUserObject(new UserObj(cubeArea.index()));
             objects.add(body);
         }*/
-
-        float radius = 1;
-        CollisionShape shape = new BoxCollisionShape(radius);
-        PhysicsRigidBody body = new PhysicsRigidBody(shape, mass);
-        physicsSpace.add(body);
-        body.setPhysicsLocation(new Vector3f(0, 0, 0));
-        body.setUserObject(new UserObj(rainbowInAPot.index()));
-        objects.add(body);
-    }
-
-    private void addPlane(Vector3f normal, float constant)
-    {
-        Plane plane = new Plane(normal, constant);
-        CollisionShape planeShape = new PlaneCollisionShape(plane);
-        float mass = PhysicsBody.massForStatic;
-        PhysicsRigidBody floor = new PhysicsRigidBody(planeShape, mass);
-        physicsSpace.addCollisionObject(floor);
     }
 
     @Override
     public void updateTransformArray(SBOTransfromArray<Model> transfromArray, FrameInfo frameInfo)
     {
-        physicsSpace.update(frameInfo.frameTime(), 8);
-
-        transfromArray.sort(objects, a -> ((UserObj) a.getUserObject()).modelIndex);
+        transfromArray.sort(entities, a -> a.modelIndex);
         var lastArea = transfromArray.getAreaByIndex(0);
-        for (PhysicsRigidBody body : objects)
+        for (Entity entity : entities)
         {
-            UserObj userObject = (UserObj) body.getUserObject();
-            // Because the list is sorted, we can do this
-            if (lastArea == null || lastArea.index() != userObject.modelIndex)
-                lastArea = transfromArray.getAreaByIndex(userObject.modelIndex);
+            if (lastArea == null || lastArea.index() != entity.modelIndex)
+                lastArea = transfromArray.getAreaByIndex(entity.modelIndex);
 
-            Matrix4f jomlMat = toJomlMat(body);
-            lastArea.updateTransform(jomlMat);
+            Matrix4f mat = new Matrix4f();
+            mat.rotate(entity.rotation);
+            mat.translate(entity.position);
+            mat.scale(entity.scale);
+            lastArea.updateTransform(mat);
         }
-    }
-
-    private final Matrix4f STORE_MAT4F = new Matrix4f();
-    private final Vector3f STORE_VEC3F = new Vector3f();
-    private Matrix4f toJomlMat(PhysicsRigidBody body)
-    {
-        Transform transform = new Transform();
-        body.getTransform(transform);
-        com.jme3.math.Matrix4f t = transform.toTransformMatrix();
-        STORE_MAT4F.set(
-            t.m00, t.m10, t.m20, t.m30,   // First row
-            t.m01, t.m11, t.m21, t.m31,   // Second row
-            t.m02, t.m12, t.m22, t.m32,   // Third row
-            t.m03, t.m13, t.m23, t.m33    // Fourth row
-        );
-
-        if (body.getCollisionShape() instanceof SphereCollisionShape coll)
-        {
-            body.getPhysicsLocation(STORE_VEC3F);
-            STORE_MAT4F.scale(coll.getRadius() * 2f);
-        } else if (body.getCollisionShape() instanceof BoxCollisionShape coll)
-        {
-            coll.getHalfExtents(STORE_VEC3F);
-            STORE_MAT4F.scale(STORE_VEC3F.x * 2f, STORE_VEC3F.y * 2f, STORE_VEC3F.z * 2f);
-        }
-
-        return STORE_MAT4F;
     }
 
     static final class UserObj

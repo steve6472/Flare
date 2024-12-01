@@ -147,10 +147,6 @@ public final class UIRenderSystem extends RenderSystem
 
         buffer.writeToBuffer(vertex()::memcpy, verticies);
 
-//        Struct windowSize = Push.WINDOW_SIZE.create((float) getMasterRenderer().getWindow().getWidth(), (float) getMasterRenderer().getWindow().getHeight());
-        Struct windowSize = Push.WINDOW_SIZE.create((float) UITextureLoader.getAtlasWidth(), (float) UITextureLoader.getAtlasWidth());
-        Push.WINDOW_SIZE.push(windowSize, frameInfo.commandBuffer(), pipeline().pipelineLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0);
-
         LongBuffer vertexBuffers = stack.longs(buffer.getBuffer());
         LongBuffer offsets = stack.longs(0);
         vkCmdBindVertexBuffers(frameInfo.commandBuffer(), 0, vertexBuffers, offsets);

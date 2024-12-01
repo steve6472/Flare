@@ -19,9 +19,4 @@ public interface Push
     StructPush STATIC_TRANSFORM_OFFSET = builder()
         .addMember(INT) // offset
         .build(StructPush::new);
-
-    StructPush WINDOW_SIZE = builder()
-        .addMember(FLOAT) // width
-        .addMember(FLOAT) // height
-        .build(StructPush::new);
 }
