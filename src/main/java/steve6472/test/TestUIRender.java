@@ -14,5 +14,7 @@ public class TestUIRender extends UIRender
     public void render()
     {
         sprite(0, 0, 0, TestApp.pixelW * 10, TestApp.pixelH * 10, TestApp.pixelW, TestApp.pixelH, Key.withNamespace("test", "box"));
+
+        sprite(TestApp.instance.masterRenderer().getWindow().getWidth() - TestApp.pixelW * 10, 0, 0, TestApp.pixelW * 10, TestApp.pixelH * 10, TestApp.pixelW, TestApp.pixelH, Key.withNamespace("test", "box"));
     }
 }

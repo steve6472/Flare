@@ -25,7 +25,7 @@ const vec2 uvCoords[6] = vec2[](
 
 void main() {
     gl_Position = camera.projection * camera.view * vec4(inPosition, 1.0);
-    uv = uvCoords[gl_VertexIndex];
+    uv = uvCoords[gl_VertexIndex % 6];
     color = inColor;
     data = inData;
 }

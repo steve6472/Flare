@@ -23,10 +23,12 @@ import java.io.File;
 class TestApp extends FlareApp
 {
     private static final File TEST_SETTINGS = new File("settings/test_settings.json");
+    public static TestApp instance;
 
     @Override
     protected void preInit()
     {
+        instance = this;
     }
 
     @Override
