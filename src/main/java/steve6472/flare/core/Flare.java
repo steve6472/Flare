@@ -168,7 +168,7 @@ public class Flare
                         addDebugObjectForFrame(cross(new Vector3f(0, 0, 0), 0.5f, DARK_GRAY));
 
                     // Render
-                    renderer.totalRenderCount = 0;
+//                    renderer.totalRenderCount = 0;
 
                     app.render(frameInfo, stack);
 
@@ -177,7 +177,7 @@ public class Flare
                     renderer.endRenderPass(commandBuffer);
 
                     vrData.frame(device, instance, renderer, frameInfo);
-                    renderer.maxRenderCount = renderer.totalRenderCount;
+//                    renderer.maxRenderCount = renderer.totalRenderCount;
 
                     renderer.endFrame(stack, pImageIndex);
 
@@ -195,7 +195,7 @@ public class Flare
                 }
             }
 
-            renderer.clearText();
+            renderer.postFrame();
         }
 
         // Wait for the device to complete all operations before release resources

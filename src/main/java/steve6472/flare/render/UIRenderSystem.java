@@ -14,6 +14,7 @@ import steve6472.flare.descriptors.DescriptorSetLayout;
 import steve6472.flare.descriptors.DescriptorWriter;
 import steve6472.flare.pipeline.Pipelines;
 import steve6472.flare.registry.FlareRegistries;
+import steve6472.flare.render.impl.UIRenderImpl;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.SBO;
 import steve6472.flare.struct.def.UBO;
@@ -37,13 +38,15 @@ public final class UIRenderSystem extends RenderSystem
     private final List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
     private final VkBuffer buffer;
 
-    private final UIRender renderImpl;
+    private final UIRenderImpl renderImpl;
+    private final float far;
 
-    public UIRenderSystem(MasterRenderer masterRenderer, @NonNull UIRender renderImpl)
+    public UIRenderSystem(MasterRenderer masterRenderer, @NonNull UIRenderImpl renderImpl, float far)
     {
         super(masterRenderer, Pipelines.UI_TEXTURE);
         Objects.requireNonNull(renderImpl);
         this.renderImpl = renderImpl;
+        this.far = far;
 
         globalSetLayout = DescriptorSetLayout
             .builder(device)
@@ -125,7 +128,7 @@ public final class UIRenderSystem extends RenderSystem
         int windowWidth = getMasterRenderer().getWindow().getWidth();
         int windowHeight = getMasterRenderer().getWindow().getHeight();
 
-        camera.setOrthographicProjection(0, windowWidth, 0, windowHeight, 0f, 256f);
+        camera.setOrthographicProjection(0, windowWidth, 0, windowHeight, 0f, far);
         camera.setViewYXZ(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
 
         Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(camera.getProjectionMatrix(), camera.getViewMatrix());

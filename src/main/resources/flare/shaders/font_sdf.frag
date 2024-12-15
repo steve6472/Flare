@@ -2,6 +2,8 @@
 #extension GL_ARB_separate_shader_objects: enable
 #extension GL_EXT_nonuniform_qualifier : require
 
+#define DEBUG false
+
 layout (location = 0) in vec2 uv;
 layout (location = 1) flat in int index;
 
@@ -92,8 +94,10 @@ void main()
     vec4 finalImage = blendImages(shadowImage, mainImage);
 
     if (finalImage.a <= 0)
-//        outColor = vec4(1, 0, 1, 1);
-        discard;
+        if (DEBUG)
+            outColor = vec4(1, 0, 1, 1);
+        else
+            discard;
     else
         outColor = finalImage;
 

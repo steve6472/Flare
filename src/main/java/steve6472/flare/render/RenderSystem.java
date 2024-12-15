@@ -61,5 +61,6 @@ public abstract class RenderSystem
     public abstract long[] setLayouts();
 
     public abstract void render(FrameInfo frameInfo, MemoryStack stack);
+    public void postFrame() {}
     public abstract void cleanup();
 }

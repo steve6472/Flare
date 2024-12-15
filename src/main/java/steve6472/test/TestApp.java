@@ -1,5 +1,6 @@
 package steve6472.test;
 
+import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
@@ -11,9 +12,12 @@ import steve6472.flare.core.FlareApp;
 import steve6472.flare.input.KeybindUpdater;
 import steve6472.flare.pipeline.Pipelines;
 import steve6472.flare.render.StaticModelRenderSystem;
+import steve6472.flare.render.UIFontRender;
 import steve6472.flare.render.UIRenderSystem;
+import steve6472.flare.ui.font.render.*;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Created by steve6472
@@ -53,7 +57,8 @@ class TestApp extends FlareApp
     protected void createRenderSystems()
     {
         addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new EntityTestRender(), Pipelines.BLOCKBENCH_STATIC));
-        addRenderSystem(new UIRenderSystem(masterRenderer(), new TestUIRender()));
+//        addRenderSystem(new UIRenderSystem(masterRenderer(), new TestUIRender(), 256f));
+        addRenderSystem(new UIFontRender(masterRenderer(), new TestFontRender()));
     }
 
     @Override
@@ -100,7 +105,7 @@ class TestApp extends FlareApp
         Key digi = Key.withNamespace("test", "digi");
 
 
-//                text().line(TextLine.fromText("Rainbow in a Pot", 1f), new Matrix4f().translate(0, 0, 0));
+                text().line(TextLine.fromText("Rainbow in a Pot", 0.25f), new Matrix4f().translate(0, 0.5f, 0.2f));
 //        text().message(new TextMessage(List.of(TextLine.fromText("Rainbow in a Pot", 1f)), 1f, 4f, Anchor.CENTER, Billboard.FIXED, Align.CENTER));
 //        text().message(new TextMessage(List.of(
 //            TextLine.fromText("Rainbow ", -1f),
@@ -113,7 +118,7 @@ class TestApp extends FlareApp
 //            TextLine.fromText("Hello world Hello world", -1f)
 //        ), 0.5f, 3f, Anchor.CENTER, Billboard.FIXED, Align.CENTER));
 //        text().line(TextLine.fromText("Helloě world", 1f)); // ě is an unknown character in the digi font
-//        text().line(TextLine.fromText("Comic Sans MS", 1f, Key.defaultNamespace("default_comic_sans")));
+//        text().line(TextLine.fromText("Comic Sans MS", 1f, digi));
     }
 
     @Override

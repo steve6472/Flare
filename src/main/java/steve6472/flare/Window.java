@@ -17,6 +17,7 @@ public class Window
     boolean framebufferResize;
     private int currentWidth = WIDTH;
     private int currentHeight = HEIGHT;
+    private boolean closeWindow;
 
     public Window(String title)
     {
@@ -87,7 +88,12 @@ public class Window
 
     public boolean shouldWindowClose()
     {
-        return glfwWindowShouldClose(window);
+        return glfwWindowShouldClose(window) || closeWindow;
+    }
+
+    public void closeWindow()
+    {
+        closeWindow = true;
     }
 
     public boolean isFocused()

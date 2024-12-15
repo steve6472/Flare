@@ -95,6 +95,13 @@ public class DebugLineRenderSystem extends RenderSystem
             renderRotatingBuffer(frameInfo, stack);
     }
 
+    @Override
+    public void postFrame()
+    {
+        // TODO: check this with VR
+        DebugRender.getInstance().clearOldVerticies();
+    }
+
     private void renderSingleBuffer(FrameInfo frameInfo, MemoryStack stack)
     {
         List<Struct> verticies = DebugRender.getInstance().createVerticies();

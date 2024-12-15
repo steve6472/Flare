@@ -2,24 +2,29 @@ package steve6472.flare.render;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import org.joml.*;
 import org.joml.Math;
+import org.joml.Matrix4f;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 import steve6472.core.registry.Key;
 import steve6472.flare.Camera;
-import steve6472.flare.assets.TextureSampler;
-import steve6472.flare.struct.def.SBO;
-import steve6472.flare.ui.font.*;
 import steve6472.flare.MasterRenderer;
 import steve6472.flare.VkBuffer;
+import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.core.FrameInfo;
 import steve6472.flare.descriptors.DescriptorPool;
 import steve6472.flare.descriptors.DescriptorSetLayout;
 import steve6472.flare.descriptors.DescriptorWriter;
-import steve6472.flare.pipeline.builder.PipelineConstructor;
+import steve6472.flare.pipeline.Pipelines;
 import steve6472.flare.registry.FlareRegistries;
+import steve6472.flare.render.impl.UIFontRenderImpl;
 import steve6472.flare.struct.Struct;
+import steve6472.flare.struct.def.SBO;
 import steve6472.flare.struct.def.UBO;
+import steve6472.flare.ui.font.Font;
+import steve6472.flare.ui.font.FontEntry;
+import steve6472.flare.ui.font.UnknownCharacter;
 import steve6472.flare.ui.font.layout.GlyphInfo;
 import steve6472.flare.ui.font.render.*;
 import steve6472.flare.ui.font.style.FontStyleEntry;
@@ -30,25 +35,29 @@ import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import static org.lwjgl.vulkan.VK10.*;
 import static steve6472.flare.SwapChain.MAX_FRAMES_IN_FLIGHT;
 
 /**
  * Created by steve6472
- * Date: 8/31/2024
- * Project: Flare <br>
+ * Date: 12/11/2024
+ * Project: MoonDust <br>
  */
-public class FontRenderSystem extends RenderSystem
+public class UIFontRender extends RenderSystem
 {
     private final DescriptorPool globalPool;
     private final DescriptorSetLayout globalSetLayout;
     List<FlightFrame> frame = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
     private final VkBuffer buffer;
+    private final UIFontRenderImpl renderImpl;
 
-    public FontRenderSystem(MasterRenderer masterRenderer, PipelineConstructor pipeline)
+    public UIFontRender(MasterRenderer masterRenderer, UIFontRenderImpl renderImpl)
     {
-        super(masterRenderer, pipeline);
+        super(masterRenderer, Pipelines.FONT_SDF);
+        Objects.requireNonNull(renderImpl);
+        this.renderImpl = renderImpl;
 
         int fontCount = FlareRegistries.FONT.keys().size();
         TextureSampler[] fontSamplers = new TextureSampler[fontCount];
@@ -122,23 +131,33 @@ public class FontRenderSystem extends RenderSystem
         return new long[] {globalSetLayout.descriptorSetLayout};
     }
 
+    public int lastVertexCount = 0;
+
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
-        TextRender textRender = getMasterRenderer().textRender();
-        //noinspection deprecation
-        List<TextLineObject> lines = textRender.lines();
-        //noinspection deprecation
-        List<TextMessageObject> messages = textRender.messages();
+        List<Struct> verticies = null;
 
-        if (lines.isEmpty() && messages.isEmpty())
-            return;
+        if (frameInfo.camera().cameraIndex == 0)
+        {
+            verticies = new ArrayList<>();
+            renderImpl.setStructList(verticies);
+            renderImpl.render();
 
-        List<Struct> verticies = createFromChars(lines, messages, frameInfo.camera());
+            if (verticies.isEmpty())
+                return;
+
+            lastVertexCount = verticies.size();
+        }
 
         FlightFrame flightFrame = frame.get(frameInfo.frameIndex());
 
-        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(frameInfo.camera().getProjectionMatrix(), frameInfo.camera().getViewMatrix());
+        Camera camera = new Camera();
+        int windowWidth = this.getMasterRenderer().getWindow().getWidth();
+        int windowHeight = this.getMasterRenderer().getWindow().getHeight();
+        camera.setOrthographicProjection(0.0F, (float)windowWidth, 0.0F, (float)windowHeight, 0.0F, renderImpl.getFar());
+        camera.setViewYXZ(new Vector3f(0.0F, 0.0F, 0.0F), new Vector3f(0.0F, 0.0F, 0.0F));
+        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(camera.getProjectionMatrix(), camera.getViewMatrix());
         int singleInstanceSize = UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT;
 
         flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_CAMERA_UBO::memcpy, List.of(globalUBO), singleInstanceSize, singleInstanceSize * frameInfo.camera().cameraIndex);
@@ -154,32 +173,13 @@ public class FontRenderSystem extends RenderSystem
             stack.longs(flightFrame.descriptorSet),
             stack.ints(singleInstanceSize * frameInfo.camera().cameraIndex));
 
-        buffer.writeToBuffer(vertex()::memcpy, verticies);
+        if (verticies != null)
+            buffer.writeToBuffer(vertex()::memcpy, verticies);
 
         LongBuffer vertexBuffers = stack.longs(buffer.getBuffer());
         LongBuffer offsets = stack.longs(0);
         vkCmdBindVertexBuffers(frameInfo.commandBuffer(), 0, vertexBuffers, offsets);
-        vkCmdDraw(frameInfo.commandBuffer(), verticies.size(), 1, 0, 0);
-    }
-
-    @Override
-    public void postFrame()
-    {
-        clear();
-    }
-
-    public void clear()
-    {
-        TextRender textRender = getMasterRenderer().textRender();
-
-        //noinspection deprecation
-        List<TextLineObject> lines = textRender.lines();
-        //noinspection deprecation
-        List<TextMessageObject> messages = textRender.messages();
-
-        long currentTime = System.currentTimeMillis();
-        lines.removeIf(ren -> ren.endTime() <= currentTime || ren.endTime() == 0);
-        messages.removeIf(ren -> ren.endTime() <= currentTime || ren.endTime() == 0);
+        vkCmdDraw(frameInfo.commandBuffer(), lastVertexCount, 1, 0, 0);
     }
 
     private Struct updateFontStylesSBO()
@@ -285,11 +285,11 @@ public class FontRenderSystem extends RenderSystem
             current = breakIterator.next();
         }
 
-//        Vector2f alignOffset = new Vector2f();
-//        message.anchor().applyOffset(alignOffset, maxWidth, font.getMetrics().ascender() * messageSize, font.getMetrics().descender() * messageSize);
+        //        Vector2f alignOffset = new Vector2f();
+        //        message.anchor().applyOffset(alignOffset, maxWidth, font.getMetrics().ascender() * messageSize, font.getMetrics().descender() * messageSize);
 
         message.billboard().apply(camera, transform);
-//        transform.translate(alignOffset.x, alignOffset.y, 0);
+        //        transform.translate(alignOffset.x, alignOffset.y, 0);
 
         Vector2f offset = new Vector2f();
         int[] charIndex = {0};
@@ -311,7 +311,7 @@ public class FontRenderSystem extends RenderSystem
             {
                 int lineNum = (breakIndicies.indexOf(charIndex[0]) + 1);
                 float lineHeight = font.getMetrics().ascender() - font.getMetrics().descender() + 0;
-                offset.set(0, lineNum * lineHeight * character.size());
+                offset.set(0, lineNum * -lineHeight * character.size());
             }
 
             if (!character.glyph().isInvisible())
@@ -338,15 +338,15 @@ public class FontRenderSystem extends RenderSystem
         Vector2f br = new Vector2f(glyphInfo.atlasBounds().right(), glyphInfo.atlasBounds().bottom()).div(font.getAtlasData().width(), font.getAtlasData().height());
 
         float xpos = offset.x + glyphInfo.planeBounds().left() * size;
-        float ypos = offset.y - glyphInfo.planeBounds().bottom() * size;
+        float ypos = offset.y - glyphInfo.planeBounds().height() * size + font.getMetrics().lineHeight() * size;
 
         float w = glyphInfo.planeBounds().width() * size;
         float h = glyphInfo.planeBounds().height() * size;
 
-        Vector3f vtl = new Vector3f(xpos, ypos + h, 0).mulPosition(transform);
-        Vector3f vbl = new Vector3f(xpos, ypos, 0).mulPosition(transform);
-        Vector3f vbr = new Vector3f(xpos + w, ypos, 0).mulPosition(transform);
-        Vector3f vtr = new Vector3f(xpos + w, ypos + h, 0).mulPosition(transform);
+        Vector3f vtl = new Vector3f(xpos, ypos, 0).mulPosition(transform);
+        Vector3f vbl = new Vector3f(xpos, ypos + h, 0).mulPosition(transform);
+        Vector3f vbr = new Vector3f(xpos + w, ypos + h, 0).mulPosition(transform);
+        Vector3f vtr = new Vector3f(xpos + w, ypos, 0).mulPosition(transform);
 
         structs.add(vertex().create(vtl, new Vector2f(tl.x, tl.y), styleIndex));
         structs.add(vertex().create(vbl, new Vector2f(tl.x, br.y), styleIndex));

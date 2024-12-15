@@ -1,14 +1,14 @@
 package steve6472.test;
 
 import steve6472.core.registry.Key;
-import steve6472.flare.render.UIRender;
+import steve6472.flare.render.impl.UIRenderImpl;
 
 /**
  * Created by steve6472
  * Date: 12/1/2024
  * Project: Flare <br>
  */
-public class TestUIRender extends UIRender
+public class TestUIRender extends UIRenderImpl
 {
     @Override
     public void render()

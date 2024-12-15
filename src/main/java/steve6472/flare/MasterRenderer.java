@@ -42,7 +42,6 @@ public class MasterRenderer
     private boolean isFrameStarted;
 
     private final List<RenderSystem> renderSystems = new ArrayList<>();
-    private FontRenderSystem fontRenderSystem;
 
     public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, Commands commands, long surface, VrData vrData)
     {
@@ -60,7 +59,7 @@ public class MasterRenderer
     public void builtinLast()
     {
         addRenderSystem(new DebugLineRenderSystem(this, Pipelines.DEBUG_LINE));
-        addRenderSystem(fontRenderSystem = new FontRenderSystem(this, Pipelines.FONT_SDF));
+        addRenderSystem(new FontRenderSystem(this, Pipelines.FONT_SDF));
     }
 
     public void addRenderSystem(RenderSystem renderSystem)
@@ -185,8 +184,8 @@ public class MasterRenderer
         vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     }
 
-    public int totalRenderCount = 0;
-    public int maxRenderCount = 0;
+//    public int totalRenderCount = 0;
+//    public int maxRenderCount = 0;
 
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
@@ -198,16 +197,24 @@ public class MasterRenderer
             renderSystem.render(frameInfo, stack);
         }
 
-        if (VisualSettings.DEBUG_LINE_SINGLE_BUFFER.get())
-        {
-            totalRenderCount++;
-            if (totalRenderCount == maxRenderCount)
-            {
-                DebugRender.getInstance().clearOldVerticies();
-            }
-        }
+//        if (VisualSettings.DEBUG_LINE_SINGLE_BUFFER.get())
+//        {
+//            totalRenderCount++;
+//            if (totalRenderCount == maxRenderCount)
+//            {
+//                DebugRender.getInstance().clearOldVerticies();
+//            }
+//        }
 
         frameInfo.camera().cameraIndex++;
+    }
+
+    public void postFrame()
+    {
+        for (RenderSystem renderSystem : renderSystems)
+        {
+            renderSystem.postFrame();
+        }
     }
 
     public void endRenderPass(VkCommandBuffer commandBuffer)
@@ -219,11 +226,6 @@ public class MasterRenderer
             throw new RuntimeException("Can't end render pass on command buffer from a different frame");
 
         vkCmdEndRenderPass(commandBuffer);
-    }
-
-    public void clearText()
-    {
-        fontRenderSystem.clear();
     }
 
     public VkCommandBuffer getCurrentCommandBuffer()

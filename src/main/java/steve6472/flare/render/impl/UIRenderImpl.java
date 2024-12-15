@@ -1,4 +1,4 @@
-package steve6472.flare.render;
+package steve6472.flare.render.impl;
 
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
@@ -19,9 +19,9 @@ import java.util.logging.Logger;
  * Date: 12/1/2024
  * Project: Flare <br>
  */
-public abstract class UIRender
+public abstract class UIRenderImpl
 {
-    private static final Logger LOGGER = Log.getLogger(UIRender.class);
+    private static final Logger LOGGER = Log.getLogger(UIRenderImpl.class);
     private static final Set<String> MISSING_TEXTURES = new HashSet<>(16);
     private List<Struct> structList;
 

@@ -27,17 +27,25 @@ public record TextLine(char[] charEntries, float size, FontStyleEntry style, Anc
     public static final Codec<TextLine> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         Codec.STRING.xmap(String::toCharArray, String::valueOf).fieldOf("text").forGetter(TextLine::charEntries),
         Codec.FLOAT.optionalFieldOf("size", 1f)
-            .validate(f -> f > 0 ? DataResult.success(f) : DataResult.error(() -> "Size can not be smaller or equal to 0", 0.1f)).forGetter(TextLine::size),
+            .validate(f -> f > 0 ? DataResult.success(f) : DataResult.error(() -> "Size can not be smaller or equal to 0", 0.01f)).forGetter(TextLine::size),
         Key.CODEC.xmap(FlareRegistries.FONT_STYLE::get, FontStyleEntry::key).fieldOf("style").forGetter(TextLine::style),
         Anchor.CODEC.optionalFieldOf("anchor", DEFAULT_ANCHOR).forGetter(TextLine::anchor),
         Billboard.CODEC.optionalFieldOf("billboard", DEFAULT_BILLBOARD).forGetter(TextLine::billboard)
     ).apply(instance, TextLine::new));
 
+    public static final Codec<TextLine> CODEC_UI = RecordCodecBuilder.create(instance -> instance.group(
+        Codec.STRING.xmap(String::toCharArray, String::valueOf).fieldOf("text").forGetter(TextLine::charEntries),
+        Codec.FLOAT.optionalFieldOf("size", 1f)
+            .validate(f -> f > 0 ? DataResult.success(f) : DataResult.error(() -> "Size can not be smaller or equal to 0", 0.01f)).forGetter(TextLine::size),
+        Key.CODEC.xmap(FlareRegistries.FONT_STYLE::get, FontStyleEntry::key).fieldOf("style").forGetter(TextLine::style),
+        Anchor.CODEC.optionalFieldOf("anchor", DEFAULT_ANCHOR).forGetter(TextLine::anchor)
+    ).apply(instance, (chars, size, style, anchor) -> new TextLine(chars, size, style, anchor, Billboard.FIXED)));
+
     public static final float MESSAGE_SIZE = -1f;
     public static final Codec<TextLine> CODEC_MESSAGE = RecordCodecBuilder.create(instance -> instance.group(
         Codec.STRING.xmap(String::toCharArray, String::valueOf).fieldOf("text").forGetter(TextLine::charEntries),
         Codec.FLOAT.optionalFieldOf("size", MESSAGE_SIZE)
-            .validate(f -> f > 0 || f == MESSAGE_SIZE ? DataResult.success(f) : DataResult.error(() -> "Size can not be smaller or equal to 0", 0.1f)).forGetter(TextLine::size),
+            .validate(f -> f > 0 || f == MESSAGE_SIZE ? DataResult.success(f) : DataResult.error(() -> "Size can not be smaller or equal to 0", 0.01f)).forGetter(TextLine::size),
         Key.CODEC.xmap(FlareRegistries.FONT_STYLE::get, FontStyleEntry::key).fieldOf("style").forGetter(TextLine::style)
     ).apply(instance, (chars, size, style) -> new TextLine(chars, size, style, DEFAULT_ANCHOR, DEFAULT_BILLBOARD)));
 
