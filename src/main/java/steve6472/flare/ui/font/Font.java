@@ -52,25 +52,28 @@ public class Font
         Codec.STRING.fieldOf("path").forGetter(o -> o.fontPath),
         Codec.STRING.optionalFieldOf("charset", DEFAULT_CHARSET).forGetter(o -> o.charset),
         Codec.INT.optionalFieldOf("size", DEFAULT_SIZE).forGetter(o -> o.size),
-        Codec.INT.optionalFieldOf("px_padding", DEFAULT_PXPADDING).forGetter(o -> o.pxPadding)
+        Codec.INT.optionalFieldOf("px_padding", DEFAULT_PXPADDING).forGetter(o -> o.pxPadding),
+        AtlasType.CODEC.optionalFieldOf("type", AtlasType.MTSDF).forGetter(o -> o.type)
     ).apply(instance, Font::new));
 
     private final String charset;
     private final String fontPath;
     private final int size;
     private final int pxPadding;
+    private final AtlasType type;
 
     private final Long2ObjectMap<GlyphInfo> glyphs = new Long2ObjectOpenHashMap<>(1024);
     private final Long2ObjectMap<Long2FloatMap> kerning = new Long2ObjectOpenHashMap<>(1024);
     private AtlasData atlasData;
     private Metrics metrics;
 
-    private Font(String fontPath, String charset, int size, int pxPadding)
+    private Font(String fontPath, String charset, int size, int pxPadding, AtlasType type)
     {
         this.fontPath = fontPath;
         this.charset = charset;
         this.size = size;
         this.pxPadding = pxPadding;
+        this.type = type;
     }
 
     public void init(Module module, Key key)
@@ -141,7 +144,7 @@ public class Font
         Process process = new ProcessBuilder().command(
             FlareConstants.MSDF_EXE.getPath(),
             "-font", fontFile.getAbsolutePath(),
-            "-type", AtlasType.MTSDF.stringValue(),
+            "-type", type.stringValue(),
             "-potr",
             "-size", Integer.toString(size),
             "-format", "png",

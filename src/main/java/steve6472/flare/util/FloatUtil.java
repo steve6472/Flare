@@ -20,6 +20,7 @@ public final class FloatUtil
         float applyAsFloat(T value);
     }
 
+    /// `floatStream.collect(FloatUtil.summing(Float::floatValue))`
     public static <T> Collector<T, float[], Float> summing(ToFloatFunction<? super T> mapper)
     {
         return new Collector<>()

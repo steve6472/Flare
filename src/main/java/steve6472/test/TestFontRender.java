@@ -28,6 +28,9 @@ public class TestFontRender extends UIFontRenderImpl
 //        renderLine("Hello World!", 64f, arial, Anchor2D.TOP_LEFT, new Matrix4f().translate(0, 0, 0));
 //        renderMessage(new UITextMessage(List.of(new UITextLine("Hello world! How do you fare?", 64f, arial)), 64f, 128, Anchor2D.TOP_LEFT, Align.LEFT, NewLineType.MAX_HEIGHT, 0f), new Matrix4f());
 //        renderMessage(new UITextMessage(List.of(new UITextLine("Hello world! How do you fare?", arial)), 24f, 128, Anchor2D.TOP_LEFT, Align.LEFT, NewLineType.MAX_HEIGHT, 0), new Matrix4f());
-        renderMessage(new UITextMessage(List.of(new UITextLine("Hello world!", arial), new UITextLine("HOW", 32f * 2f, arial), new UITextLine(" do you fare?", arial)), 24f * 2f, 128 * 2f, Anchor2D.TOP_LEFT, Align.LEFT, NewLineType.MAX_HEIGHT, 0), new Matrix4f());
+//        renderMessage(new UITextMessage(List.of(new UITextLine("Hello world!", arial), new UITextLine("HOW", 32f * 2f, arial), new UITextLine(" do you fare?", arial)), 24f * 2f, 128 * 2f, Anchor2D.CENTER, Align.CENTER, NewLineType.MAX_HEIGHT, 0), new Matrix4f());
+        renderMessage(new UITextMessage(List.of(new UITextLine("Hello world!", arial)), 24f * 2f, 128 * 2f, Anchor2D.CENTER, Align.CENTER, NewLineType.MAX_HEIGHT, 0), new Matrix4f().translate(100, 100, 0));
+
+        renderMessage(new UITextMessage(List.of(new UITextLine(".", arial)), 24f * 2f, 128 * 2f, Anchor2D.CENTER, Align.CENTER, NewLineType.MAX_HEIGHT, 0), new Matrix4f().translate(100, 100, 0));
     }
 }

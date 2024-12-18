@@ -13,6 +13,7 @@ import steve6472.flare.ui.font.layout.GlyphInfo;
 import steve6472.flare.ui.font.render.*;
 import steve6472.flare.ui.font.style.FontStyle;
 import steve6472.flare.ui.font.style.FontStyleEntry;
+import steve6472.flare.util.FloatUtil;
 
 import java.util.List;
 
@@ -44,6 +45,7 @@ public abstract class UIFontRenderImpl extends RenderImpl
     {
         List<UIMessageSegment> messageSegments = message.createSegments();
         final float maxWidth = messageSegments.stream().map(s -> s.width).max(Float::compare).orElse(0f);
+        final float totalHeight = messageSegments.stream().map(s -> s.height).collect(FloatUtil.summing(Float::floatValue));
 
         Vector2f offset = new Vector2f();
         // charIndex, lineNumber
@@ -51,7 +53,12 @@ public abstract class UIFontRenderImpl extends RenderImpl
 
         if (message.align() == Align.RIGHT)
         {
-            offset.x = maxWidth - messageSegments.getFirst().width;
+            message.anchor().applyOffset(offset, maxWidth, 0, totalHeight);
+            offset.x += maxWidth - messageSegments.getFirst().width;
+        } else if (message.align() == Align.CENTER)
+        {
+            message.anchor().applyOffset(offset, maxWidth, 0, totalHeight);
+            offset.x += maxWidth / 2f - messageSegments.getFirst().width / 2f;
         }
 
         message.iterateCharacters((character, nextCharacter) ->
@@ -86,7 +93,16 @@ public abstract class UIFontRenderImpl extends RenderImpl
                 indicies[1]++;
                 if (message.align() == Align.RIGHT)
                 {
-                    offset.x = maxWidth - messageSegments.get(indicies[1]).width;
+                    Vector2f offTemp = new Vector2f();
+                    message.anchor().applyOffset(offTemp, maxWidth, 0, totalHeight);
+                    offset.x = offTemp.x;
+                    offset.x += maxWidth - messageSegments.get(indicies[1]).width;
+                } else if (message.align() == Align.CENTER)
+                {
+                    Vector2f offTemp = new Vector2f();
+                    message.anchor().applyOffset(offTemp, maxWidth, 0, totalHeight);
+                    offset.x = offTemp.x;
+                    offset.x += maxWidth / 2f - messageSegments.get(indicies[1]).width / 2f;
                 }
 
                 if (message.newLineType() == NewLineType.MAX_HEIGHT)

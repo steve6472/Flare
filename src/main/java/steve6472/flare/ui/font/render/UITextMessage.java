@@ -156,7 +156,7 @@ public record UITextMessage(List<UITextLine> lines, float textSize, float maxWid
             float trimmedWidth = getWidth(previous, trimmedCurrent);
             float width = getWidth(previous, current);
 
-            if ((totalWidth + trimmedWidth) > maxWidth())
+            if ((totalWidth + trimmedWidth) > maxWidth() && maxWidth() != -1)
             {
                 breakIndicies.add(previous);
                 totalWidth = width;

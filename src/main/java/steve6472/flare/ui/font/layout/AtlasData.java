@@ -12,8 +12,8 @@ public record AtlasData(AtlasType type, int distanceRange, int distanceRangeMidd
 {
     public static final Codec<AtlasData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         AtlasType.CODEC.fieldOf("type").forGetter(AtlasData::type),
-        Codec.INT.fieldOf("distanceRange").forGetter(AtlasData::distanceRange),
-        Codec.INT.fieldOf("distanceRangeMiddle").forGetter(AtlasData::distanceRangeMiddle),
+        Codec.INT.optionalFieldOf("distanceRange", 0).forGetter(AtlasData::distanceRange),
+        Codec.INT.optionalFieldOf("distanceRangeMiddle", 0).forGetter(AtlasData::distanceRangeMiddle),
         Codec.FLOAT.fieldOf("size").forGetter(AtlasData::size),
         Codec.INT.fieldOf("width").forGetter(AtlasData::width),
         Codec.INT.fieldOf("height").forGetter(AtlasData::height),
