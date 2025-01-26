@@ -96,6 +96,7 @@ public class MasterRenderer
         renderSystems.forEach(RenderSystem::cleanup);
 
         vkDestroyCommandPool(device, commands.commandPool, null);
+        window.cleanup();
     }
 
     public VkCommandBuffer beginFrame(MemoryStack stack, IntBuffer pImageIndex)

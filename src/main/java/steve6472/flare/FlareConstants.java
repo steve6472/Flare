@@ -64,4 +64,10 @@ public class FlareConstants
     public static final File MODULES = new File("modules");
 
     public static final File FLARE_MODULE = new File(MODULES, NAMESPACE);
+
+    // TODO: replace all instances of flare key creation
+    public static Key flareKey(String id)
+    {
+        return Key.withNamespace(NAMESPACE, id);
+    }
 }

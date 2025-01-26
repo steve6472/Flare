@@ -12,11 +12,22 @@ import java.util.List;
 public abstract class RenderImpl
 {
     protected List<Struct> structList;
+    protected float far = 256;
 
     public abstract void render();
 
     public final void setStructList(List<Struct> structs)
     {
         structList = structs;
+    }
+
+    public void setFar(float far)
+    {
+        this.far = far;
+    }
+
+    public float getFar()
+    {
+        return far;
     }
 }
