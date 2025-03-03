@@ -58,10 +58,10 @@ public class Window
     {
         callbacks = new WindowCallbacks();
 
-        callbacks.addFramebufferSizeCallback(FlareConstants.flareKey("main"), this::framebufferResizeCallback);
-        callbacks.addErrorCallback(FlareConstants.flareKey("main"), (error, description) -> LOGGER.severe("GLFW Error: " + error + " -> " + description));
+        callbacks.addFramebufferSizeCallback(FlareConstants.key("main"), this::framebufferResizeCallback);
+        callbacks.addErrorCallback(FlareConstants.key("main"), (error, description) -> LOGGER.severe("GLFW Error: " + error + " -> " + description));
 
-        callbacks.addDropCallback(FlareConstants.flareKey("debug"), (_, count, names) -> {
+        callbacks.addDropCallback(FlareConstants.key("debug"), (_, count, names) -> {
             PointerBuffer charPointers = MemoryUtil.memPointerBuffer(names, count);
             LOGGER.finest("Drop " + count + " items:");
             for (int i = 0; i < count; i++)

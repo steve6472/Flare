@@ -13,6 +13,10 @@ import steve6472.flare.registry.RegistryCreators;
  */
 class TestRegistries extends RegistryCreators
 {
+    static {
+        NAMESPACE = TestApp.instance.defaultNamespace();
+    }
+
     public static final Registry<Rarity> RARITY = createRegistry("rarity", () -> Rarities.COMMON);
     public static final ObjectRegistry<Setting<?, ?>> SETTING = createObjectRegistry("setting", () -> TestSettings.CUBE_AMOUNT);
     public static final Registry<Keybind> KEYBIND = createRegistry("keybind", () -> TestKeybinds.FORWARD);

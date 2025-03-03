@@ -1,6 +1,5 @@
 package steve6472.flare.util;
 
-import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;

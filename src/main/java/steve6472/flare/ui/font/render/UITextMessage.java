@@ -5,9 +5,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import steve6472.flare.ui.font.Font;
 import steve6472.flare.ui.font.layout.GlyphInfo;
+import steve6472.flare.ui.font.layout.Metrics;
 import steve6472.flare.ui.font.style.FontStyleEntry;
-import steve6472.flare.util.FloatUtil;
 
 import java.text.BreakIterator;
 import java.util.*;
@@ -108,25 +109,58 @@ public record UITextMessage(List<UITextLine> lines, float textSize, float maxWid
         return null;
     }
 
-    // TODO: this is incorrect, it does not take descent into account
-    public float getMaxHeight(int start, int end)
+    /*
+    public float getMaxFontHeight(int start, int end)
     {
-        return characterStream(start, end).map(c -> c.glyph().planeBounds().height() * c.size()).max(Float::compare).orElse(0f);
+        return characterStream(start, end).map(c -> c.style().style().font().getMetrics().lineHeight() * c.size()).max(Float::compare).orElse(0f);
     }
 
-    public float getWidth(int start, int end)
+    public float getMinFontAscender(int start, int end)
     {
-        return characterStream(start, end).collect(FloatUtil.summing(c -> c.glyph().advance() * c.size()));
+        return characterStream(start, end).map(c -> c.style().style().font().getMetrics().ascender() * c.size()).min(Float::compare).orElse(0f);
+    }
+
+    public float getMaxFontLineHeight(int start, int end)
+    {
+        return characterStream(start, end).map(c -> c.style().style().font().getMetrics().lineHeight() * c.size()).max(Float::compare).orElse(0f);
     }
 
     public float getMinDescent(int start, int end)
     {
-        return characterStream(start, end).filter(c -> !c.glyph().isInvisible()).map(c -> c.glyph().planeBounds().bottom() * c.size()).min(Float::compare).orElse(0f);
+        return characterStream(start, end).filter(c -> !c.glyph().isInvisible() && c.glyph().planeBounds().bottom() >= 0).map(c -> c.glyph().planeBounds().bottom() * c.size()).min(Float::compare).orElse(0f);
     }
 
     public float getMaxDescent(int start, int end)
     {
         return characterStream(start, end).filter(c -> !c.glyph().isInvisible()).map(c -> c.glyph().planeBounds().bottom() * c.size()).max(Float::compare).orElse(0f);
+    }
+    */
+
+    public float getWidth(int start, int end)
+    {
+        float[] tempWidthSum = {0};
+        MessageChar[] tempLastChar = {null};
+
+        iterateCharacters(start, end, nextChar -> {
+            if (tempLastChar[0] == null)
+            {
+                tempLastChar[0] = nextChar;
+                tempWidthSum[0] += nextChar.glyph().advance() * nextChar.size();
+                return;
+            }
+
+            MessageChar lastChar = tempLastChar[0];
+            Font font = lastChar.style().style().font();
+
+            if (font == nextChar.style().style().font())
+            {
+                tempWidthSum[0] += font.kerningAdvance((char) lastChar.glyph().index(), (char) nextChar.glyph().index()) * nextChar.size();
+            }
+
+            tempLastChar[0] = nextChar;
+            tempWidthSum[0] += nextChar.glyph().advance() * nextChar.size();
+        });
+        return tempWidthSum[0];
     }
 
     public String rawString(int start, int end)
@@ -169,7 +203,9 @@ public record UITextMessage(List<UITextLine> lines, float textSize, float maxWid
             current = breakIterator.next();
         }
 
-        breakIndicies.addFirst(0);
+        // Fixes the "new line when just one long word is over lenght" problem
+        if (breakIndicies.isEmpty() || breakIndicies.getInt(0) != 0)
+            breakIndicies.addFirst(0);
         breakIndicies.add(bobTheBuilder.length());
 
         // Calculate message segment values for rendering
@@ -182,10 +218,25 @@ public record UITextMessage(List<UITextLine> lines, float textSize, float maxWid
             String string = rawString(segment.start, segment.end).stripTrailing();
             int strippedEnd = segment.start + string.length();
             segment.width = getWidth(segment.start, strippedEnd);
-            segment.height = getMaxHeight(segment.start, strippedEnd);
 
-            segment.minDescent = getMinDescent(segment.start, strippedEnd);
-            segment.maxDescent = getMaxDescent(segment.start, strippedEnd);
+            characterStream(segment.start, strippedEnd).forEach(ch ->
+            {
+                Metrics metrics = ch.style().style().font().getMetrics();
+                float size = ch.size();
+
+                segment.fontHeight = Math.max(segment.fontHeight, metrics.lineHeight() * size);
+                segment.minAscender = Math.min(segment.minAscender, metrics.ascender() * size);
+                segment.maxLineHeight = Math.max(segment.maxLineHeight, metrics.lineHeight() * size);
+
+                if (!ch.glyph().isInvisible())
+                {
+                    if (ch.glyph().planeBounds().bottom() >= 0)
+                    {
+                        segment.minDescent = Math.min(segment.minDescent, ch.glyph().planeBounds().bottom() * size);
+                    }
+                    segment.maxDescent = Math.max(segment.maxDescent, ch.glyph().planeBounds().bottom() * size);
+                }
+            });
 
             messageSegments.add(segment);
         }

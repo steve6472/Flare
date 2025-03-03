@@ -1,15 +1,15 @@
 {
-  "base_test:debug_line_single_buffer": true,
-  "base_test:enable_wide_lines": true,
-  "base_test:font_gen_logs": false,
-  "base_test:font_generate_timeout": 15,
-  "base_test:global_camera_count": 3,
-  "base_test:line_width": 4.0,
-  "base_test:present_mode": "Mailbox",
-  "base_test:render_center_point": true,
-  "base_test:title_fps": true,
-  "base_test:username": "Steve",
-  "base_test:validation_level": "Info",
-  "base_test:vr": false,
-  "base_test:vr_action_manifest_path": "settings/vr_actions.json"
+  "flare:debug_line_single_buffer": true,
+  "flare:enable_wide_lines": true,
+  "flare:font_gen_logs": false,
+  "flare:font_generate_timeout": 15,
+  "flare:global_camera_count": 3,
+  "flare:line_width": 4.0,
+  "flare:present_mode": "FIFO",
+  "flare:render_center_point": false,
+  "flare:title_fps": true,
+  "flare:username": "Steve",
+  "flare:validation_level": "Info",
+  "flare:vr": false,
+  "flare:vr_action_manifest_path": "settings/vr_actions.json"
 }

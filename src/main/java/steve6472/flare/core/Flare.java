@@ -8,7 +8,6 @@ import org.lwjgl.vulkan.*;
 import steve6472.core.SteveCore;
 import steve6472.core.log.Log;
 import steve6472.core.setting.SettingsLoader;
-import steve6472.core.util.ResourceListing;
 import steve6472.flare.*;
 import steve6472.flare.input.UserInput;
 import steve6472.flare.module.ModuleManager;
@@ -19,13 +18,10 @@ import steve6472.flare.settings.VisualSettings;
 import steve6472.flare.vr.VrData;
 import steve6472.flare.vr.VrUtil;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -117,6 +113,7 @@ public class Flare
 
         RegistryCreators.createContents();
         SettingsLoader.loadFromJsonFile(FlareRegistries.VISUAL_SETTINGS, FlareConstants.VISUAL_SETTINGS_FILE);
+        SettingsLoader.loadFromJsonFile(FlareRegistries.FONT_DEBUG_SETTINGS, FlareConstants.FONT_DEBUG_SETTINGS_FILE);
         app.loadSettings();
     }
 
@@ -209,6 +206,7 @@ public class Flare
         app.saveSettings();
         // Save settings
         SettingsLoader.saveToJsonFile(FlareRegistries.VISUAL_SETTINGS, FlareConstants.VISUAL_SETTINGS_FILE);
+        SettingsLoader.saveToJsonFile(FlareRegistries.FONT_DEBUG_SETTINGS, FlareConstants.FONT_DEBUG_SETTINGS_FILE);
 
         LOGGER.fine("Cleanup");
 

@@ -11,6 +11,7 @@ import steve6472.flare.assets.model.blockbench.ErrorModel;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
 import steve6472.flare.assets.model.blockbench.BlockbenchLoader;
 import steve6472.flare.assets.model.blockbench.anim.KeyframeType;
+import steve6472.flare.settings.FontDebugSettings;
 import steve6472.flare.settings.VisualSettings;
 import steve6472.flare.ui.font.FontEntry;
 import steve6472.flare.ui.font.FontLoader;
@@ -27,26 +28,26 @@ import steve6472.flare.ui.textures.type.SpriteRenderType;
  */
 public class FlareRegistries extends RegistryCreators
 {
-    public static final ObjectRegistry<Setting<?, ?>> VISUAL_SETTINGS = createObjectRegistry(key("visual_settings"), () -> VisualSettings.USERNAME);
+    static {
+        NAMESPACE = FlareConstants.NAMESPACE;
+    }
 
-    public static final Registry<ElementType<?>> MODEL_ELEMENT = createRegistry(key("model_element"), () -> ElementType.CUBE);
-    public static final Registry<KeyframeType<?>> KEYFRAME_TYPE = createRegistry(key("keyframe_type"), () -> KeyframeType.ROTATION);
-    public static final Registry<SpriteRenderType<?>> SPRITE_RENDER_TYPE = createRegistry(key("sprite_render_type"), () -> SpriteRenderType.STRETCH);
+    public static final ObjectRegistry<Setting<?, ?>> VISUAL_SETTINGS = createObjectRegistry("visual_settings", () -> VisualSettings.USERNAME);
+    public static final ObjectRegistry<Setting<?, ?>> FONT_DEBUG_SETTINGS = createObjectRegistry("font_debug_settings", () -> FontDebugSettings.BASELINE);
+
+    public static final Registry<ElementType<?>> MODEL_ELEMENT = createRegistry("model_element", () -> ElementType.CUBE);
+    public static final Registry<KeyframeType<?>> KEYFRAME_TYPE = createRegistry("keyframe_type", () -> KeyframeType.ROTATION);
+    public static final Registry<SpriteRenderType<?>> SPRITE_RENDER_TYPE = createRegistry("sprite_render_type", () -> SpriteRenderType.STRETCH);
 
     // Models have to load after the model types registries
-    public static final ObjectRegistry<LoadedModel> STATIC_LOADED_MODEL = createObjectRegistry(key("static_loaded_model"), ErrorModel.INSTANCE, BlockbenchLoader::loadStaticModels);
-    public static final ObjectRegistry<LoadedModel> ANIMATED_LOADED_MODEL = createObjectRegistry(key("animated_loaded_model"), ErrorModel.INSTANCE, BlockbenchLoader::loadAnimatedModels);
-    public static final ObjectRegistry<FontEntry> FONT = createObjectRegistry(key("font"), FontLoader::bootstrap);
-    public static final ObjectRegistry<FontStyleEntry> FONT_STYLE = createObjectRegistry(key("font_style"), StyleLoader::bootstrap);
-    public static final ObjectRegistry<SpriteEntry> SPRITE = createObjectRegistry(key("sprite"), SpriteLoader::bootstrap);
+    public static final ObjectRegistry<LoadedModel> STATIC_LOADED_MODEL = createObjectRegistry("static_loaded_model", ErrorModel.INSTANCE, BlockbenchLoader::loadStaticModels);
+    public static final ObjectRegistry<LoadedModel> ANIMATED_LOADED_MODEL = createObjectRegistry("animated_loaded_model", ErrorModel.INSTANCE, BlockbenchLoader::loadAnimatedModels);
+    public static final ObjectRegistry<FontEntry> FONT = createObjectRegistry("font", FontLoader::bootstrap);
+    public static final ObjectRegistry<FontStyleEntry> FONT_STYLE = createObjectRegistry("font_style", StyleLoader::bootstrap);
+    public static final ObjectRegistry<SpriteEntry> SPRITE = createObjectRegistry("sprite", SpriteLoader::bootstrap);
 
     // VK Objects
-    public static final ObjectRegistry<TextureSampler> SAMPLER = createVkObjectRegistry(key("sampler"), SamplerLoader::loadSamplers);
-    public static final ObjectRegistry<Model> STATIC_MODEL = createVkObjectRegistry(key("static_model"), ErrorModel.VK_STATIC_INSTANCE, BlockbenchLoader::createStaticModels);
-    public static final ObjectRegistry<Model> ANIMATED_MODEL = createVkObjectRegistry(key("animated_model"), ErrorModel.VK_ANIMATED_INSTANCE, BlockbenchLoader::createAnimatedModels);
-
-    private static Key key(String id)
-    {
-        return Key.withNamespace(FlareConstants.NAMESPACE, id);
-    }
+    public static final ObjectRegistry<TextureSampler> SAMPLER = createVkObjectRegistry("sampler", SamplerLoader::loadSamplers);
+    public static final ObjectRegistry<Model> STATIC_MODEL = createVkObjectRegistry("static_model", ErrorModel.VK_STATIC_INSTANCE, BlockbenchLoader::createStaticModels);
+    public static final ObjectRegistry<Model> ANIMATED_MODEL = createVkObjectRegistry("animated_model", ErrorModel.VK_ANIMATED_INSTANCE, BlockbenchLoader::createAnimatedModels);
 }

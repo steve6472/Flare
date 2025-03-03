@@ -10,8 +10,11 @@ import java.lang.reflect.Field;
 public class UIMessageSegment
 {
     public int start, end;
-    public float width, height;
+    public float width, fontHeight;
+    /// These two seem useless for text rendering
     public float minDescent, maxDescent;
+    public float minAscender;
+    public float maxLineHeight;
 
 
     // Yes, chatGPT wrote this, I was too lazy and quite tired lul

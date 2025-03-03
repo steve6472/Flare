@@ -3,6 +3,7 @@ package steve6472.test;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 import steve6472.core.registry.Key;
 import steve6472.core.setting.SettingsLoader;
@@ -13,6 +14,7 @@ import steve6472.flare.input.KeybindUpdater;
 import steve6472.flare.pipeline.Pipelines;
 import steve6472.flare.render.StaticModelRenderSystem;
 import steve6472.flare.render.UIFontRender;
+import steve6472.flare.render.UILineRender;
 import steve6472.flare.render.UIRenderSystem;
 import steve6472.flare.ui.font.render.*;
 
@@ -56,9 +58,27 @@ class TestApp extends FlareApp
     @Override
     protected void createRenderSystems()
     {
-        addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new EntityTestRender(), Pipelines.BLOCKBENCH_STATIC));
+//        addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new EntityTestRender(), Pipelines.BLOCKBENCH_STATIC));
 //        addRenderSystem(new UIRenderSystem(masterRenderer(), new TestUIRender(), 256f));
         addRenderSystem(new UIFontRender(masterRenderer(), new TestFontRender()));
+        addRenderSystem(new UILineRender(masterRenderer(), new DebugUILines()));
+
+        window().callbacks().addCharCallback(key("char_input"), (_, codepoint) ->
+        {
+            TestFontRender.editableText += Character.toString(codepoint);
+        });
+
+        window().callbacks().addKeyCallback(key("key_input"), (_, key, scancode, action, mods) ->
+        {
+            if (action == GLFW.GLFW_RELEASE)
+                return;
+
+            if (key == GLFW.GLFW_KEY_BACKSPACE)
+            {
+                if (!TestFontRender.editableText.isEmpty())
+                    TestFontRender.editableText = TestFontRender.editableText.substring(0, TestFontRender.editableText.length() - 1);
+            }
+        });
     }
 
     @Override
@@ -74,7 +94,7 @@ class TestApp extends FlareApp
 
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
-    {
+    {/*
         frameInfo.camera().setViewTarget(new Vector3f(-0.5f, 1.0f, 1), new Vector3f(0, 0.5f, 0));
         Vector2i mousePos = input().getMousePositionRelativeToTopLeftOfTheWindow();
         frameInfo.camera().setPerspectiveProjection(TestSettings.FOV.get(), aspectRatio(), 0.1f, 1024f);
@@ -102,10 +122,10 @@ class TestApp extends FlareApp
 
         Key sans = Key.withNamespace("test", "default_comic_sans");
         Key debug = Key.withNamespace("test", "debug");
-        Key digi = Key.withNamespace("test", "digi");
+        Key digi = Key.withNamespace("test", "digi");*/
 
 
-                text().line(TextLine.fromText("Rainbow in a Pot", 0.25f), new Matrix4f().translate(0, 0.5f, 0.2f));
+//                text().line(TextLine.fromText("Rainbow in a Pot", 0.25f), new Matrix4f().translate(0, 0.5f, 0.2f));
 //        text().message(new TextMessage(List.of(TextLine.fromText("Rainbow in a Pot", 1f)), 1f, 4f, Anchor.CENTER, Billboard.FIXED, Align.CENTER));
 //        text().message(new TextMessage(List.of(
 //            TextLine.fromText("Rainbow ", -1f),
@@ -143,5 +163,10 @@ class TestApp extends FlareApp
     public String defaultNamespace()
     {
         return "base_test";
+    }
+
+    public static Key key(String key)
+    {
+        return Key.withNamespace(instance.defaultNamespace(), key);
     }
 }

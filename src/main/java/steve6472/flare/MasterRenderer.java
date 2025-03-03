@@ -5,8 +5,6 @@ import org.lwjgl.vulkan.*;
 import steve6472.flare.core.FrameInfo;
 import steve6472.flare.pipeline.Pipelines;
 import steve6472.flare.render.*;
-import steve6472.flare.render.debug.DebugRender;
-import steve6472.flare.settings.VisualSettings;
 import steve6472.flare.struct.def.UBO;
 import steve6472.flare.ui.font.render.TextRender;
 import steve6472.flare.vr.VrData;

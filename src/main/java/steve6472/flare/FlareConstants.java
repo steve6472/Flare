@@ -48,6 +48,9 @@ public class FlareConstants
     /// File to save visual settings
     public static final File VISUAL_SETTINGS_FILE = new File("settings" + File.separator + "flare_visual_settings.json");
 
+    /// File to save visual settings
+    public static final File FONT_DEBUG_SETTINGS_FILE = new File("settings" + File.separator + "font_debug_settings.json");
+
     /// Root folder for generated resources
     public static final File GENERATED_FOLDER = new File("generated");
 
@@ -66,7 +69,7 @@ public class FlareConstants
     public static final File FLARE_MODULE = new File(MODULES, NAMESPACE);
 
     // TODO: replace all instances of flare key creation
-    public static Key flareKey(String id)
+    public static Key key(String id)
     {
         return Key.withNamespace(NAMESPACE, id);
     }

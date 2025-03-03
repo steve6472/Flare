@@ -4,6 +4,8 @@ import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
 import steve6472.core.log.Log;
 import steve6472.core.registry.*;
+import steve6472.core.setting.Setting;
+import steve6472.core.util.Preconditions;
 import steve6472.flare.Commands;
 
 import java.util.LinkedHashMap;
@@ -22,10 +24,16 @@ public class RegistryCreators
     protected static Map<Key, Runnable> LOADERS = new LinkedHashMap<>();
     protected static Map<Key, VkContent<?>> VK_LOADERS = new LinkedHashMap<>();
 
+    protected static String NAMESPACE;
+
     /// This method simply ensures that the fields in a static class are loaded.
     public static void init(@SuppressWarnings("unused") Registry<?> dummyRegistry) { }
     /// This method simply ensures that the fields in a static class are loaded.
     public static void init(@SuppressWarnings("unused") ObjectRegistry<?> dummyRegistry) { }
+
+    private static void checkValidity() {
+        Preconditions.checkNotNull(NAMESPACE, "Create a static block and assign a String to NAMESPACE");
+    }
 
     /*
      * Creators
@@ -33,7 +41,8 @@ public class RegistryCreators
 
     protected static <T extends Keyable & Serializable<?>> Registry<T> createRegistry(String id, Runnable bootstrap)
     {
-        Key key = Key.defaultNamespace(id);
+        checkValidity();
+        Key key = Key.withNamespace(NAMESPACE, id);
         LOGGER.finest("Creating Registry " + key);
         LOADERS.put(key, bootstrap);
         return new Registry<>(key);
@@ -58,7 +67,8 @@ public class RegistryCreators
 
     protected static <T extends Keyable> ObjectRegistry<T> createObjectRegistry(String id, Runnable bootstrap)
     {
-        Key key = Key.defaultNamespace(id);
+        checkValidity();
+        Key key = Key.withNamespace(NAMESPACE, id);
         LOGGER.finest("Creating Object Registry " + key);
         LOADERS.put(key, bootstrap);
         return new ObjectRegistry<>(key);
@@ -83,7 +93,8 @@ public class RegistryCreators
 
     protected static <T extends Keyable> ObjectRegistry<T> createObjectRegistry(String id, T defaultValue, Runnable bootstrap)
     {
-        Key key = Key.defaultNamespace(id);
+        checkValidity();
+        Key key = Key.withNamespace(NAMESPACE, id);
         LOGGER.finest("Creating Object Registry " + key);
         LOADERS.put(key, bootstrap);
         return new ObjectRegistry<>(key, defaultValue);
@@ -108,7 +119,8 @@ public class RegistryCreators
 
     protected static <T extends Keyable> ObjectRegistry<T> createVkObjectRegistry(String id, VkContent<T> bootstrap)
     {
-        Key key = Key.defaultNamespace(id);
+        checkValidity();
+        Key key = Key.withNamespace(NAMESPACE, id);
         LOGGER.finest("Creating Vk Object Registry " + key);
         VK_LOADERS.put(key, bootstrap);
         return new ObjectRegistry<>(key);
@@ -123,7 +135,8 @@ public class RegistryCreators
 
     protected static <T extends Keyable> ObjectRegistry<T> createVkObjectRegistry(String id, T defaultValue, VkContent<T> bootstrap)
     {
-        Key key = Key.defaultNamespace(id);
+        checkValidity();
+        Key key = Key.withNamespace(NAMESPACE, id);
         LOGGER.finest("Creating Vk Object Registry " + key);
         VK_LOADERS.put(key, bootstrap);
         return new ObjectRegistry<>(key, defaultValue);

@@ -1,6 +1,7 @@
 package steve6472.flare.settings;
 
 import steve6472.core.setting.*;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.registry.FlareRegistries;
 
 /**
@@ -10,7 +11,10 @@ import steve6472.flare.registry.FlareRegistries;
  */
 public class VisualSettings extends SettingRegister
 {
-    static { REGISTRY = FlareRegistries.VISUAL_SETTINGS; }
+    static {
+        REGISTRY = FlareRegistries.VISUAL_SETTINGS;
+        NAMESPACE = FlareConstants.NAMESPACE;
+    }
 
     /// Dummy value mainly for bootstrap
     public static StringSetting USERNAME = registerString("username", "Steve");
