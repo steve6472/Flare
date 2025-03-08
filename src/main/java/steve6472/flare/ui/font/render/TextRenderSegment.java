@@ -7,7 +7,7 @@ import java.lang.reflect.Field;
  * Date: 12/13/2024
  * Project: Flare <br>
  */
-public class UIMessageSegment
+public class TextRenderSegment
 {
     public int start, end;
     public float width, fontHeight;

@@ -36,72 +36,159 @@ public abstract class UIFontRenderImpl extends RenderImpl
         structList.add(Vertex.POS3F_UV_INDEX.create(position, uv, index));
     }
 
-    protected void renderLine(UITextLine line, int x, int y)
+    protected void debugSegment(List<TextRenderSegment> messageSegments, int lineNumber, Vector3f origin, Vector2f offset)
     {
-        renderLine(line, new Matrix4f().translate(x, y, 0));
+        TextRenderSegment segment = messageSegments.get(lineNumber);
+
+        // Box pointing up for Max Descent
+        Vector2f v = new Vector2f(origin).add(offset).add(0, segment.maxDescent);
+        Vector2i r = new Vector2i(v, RoundingMode.TRUNCATE);
+        if (DebugUILines.SEGMENT_MAX_DESCENT.get())
+        {
+            DebugUILines.SEGMENT_MAX_DESCENT.rectangle(r, new Vector2i(r).add((int) (segment.width), 4));
+            DebugUILines.SEGMENT_MAX_DESCENT.rectangle(new Vector2i(r).add(0, -4), new Vector2i(r).add(4, 4));
+        }
+
+        if (DebugUILines.SEGMENT_MIN_DESCENT.get())
+        {
+            // Box pointing down for Min Descent
+            v = new Vector2f(origin).add(offset).add(0, segment.minDescent);
+            r = new Vector2i(v, RoundingMode.TRUNCATE);
+            DebugUILines.SEGMENT_MIN_DESCENT.rectangle(r, new Vector2i(r).add((int) (segment.width), 4));
+            DebugUILines.SEGMENT_MIN_DESCENT.rectangle(r, new Vector2i(r).add(4, 8));
+        }
+
+        if (DebugUILines.SEGMENT.get())
+        {
+            // Segment bounding box
+            v = new Vector2f(origin).add(offset);
+            DebugUILines.SEGMENT.rectangle(new Vector2i(v, RoundingMode.TRUNCATE), new Vector2i(v, RoundingMode.TRUNCATE).add((int) segment.width, (int) segment.fontHeight));
+        }
     }
 
-    protected void renderMessage(UITextMessage message, Matrix4f transform)
+    protected void debugMessageAnchors(TextRenderSegment first, Vector3f origin, float width, float height)
     {
+        // TOP_LEFT
+        DebugUILines.MESSAGE_ANCHORS.recrangleAround(origin.x, origin.y, 1);
+        // MIDDLE_LEFT
+        DebugUILines.MESSAGE_ANCHORS.recrangleAround(origin.x, origin.y + height / 2f, 1);
+        // BOTTOM_LEFT
+        DebugUILines.MESSAGE_ANCHORS.recrangleAround(origin.x, origin.y + height, 1);
+
+        // TOP_CENTER
+        DebugUILines.MESSAGE_ANCHORS.recrangleAround(origin.x + width / 2f, origin.y, 1);
+        // MIDDLE_CENTER
+        DebugUILines.MESSAGE_ANCHORS.recrangleAround(origin.x + width / 2f, origin.y + height / 2f, 1);
+        // BOTTOM_CENTER
+        DebugUILines.MESSAGE_ANCHORS.recrangleAround(origin.x + width / 2f, origin.y + height, 1);
+
+        // TOP_RIGHT
+        DebugUILines.MESSAGE_ANCHORS.recrangleAround(origin.x + width, origin.y, 1);
+        // MIDDLE_RIGHT
+        DebugUILines.MESSAGE_ANCHORS.recrangleAround(origin.x + width, origin.y + height / 2f, 1);
+        // BOTTOM_RIGHT
+        DebugUILines.MESSAGE_ANCHORS.recrangleAround(origin.x + width, origin.y + height, 1);
+
+        float minAscender = first.minAscender;
+
+        // BASELINE_LEFT
+        DebugUILines.MESSAGE_ANCHORS.recrangleAround(origin.x, origin.y - minAscender, 3);
+        // BASELINE_CENTER
+        DebugUILines.MESSAGE_ANCHORS.recrangleAround(origin.x + width / 2f, origin.y - minAscender, 3);
+        // BASELINE_RIGHT
+        DebugUILines.MESSAGE_ANCHORS.recrangleAround(origin.x + width, origin.y - minAscender, 3);
+    }
+
+    protected void applyAlign(Align align, TextRenderSegment segment, Vector2f offset, float maxWidth)
+    {
+        if (align == Align.RIGHT)
+        {
+            offset.x += maxWidth - segment.width;
+        } else if (align == Align.CENTER)
+        {
+            offset.x += maxWidth / 2f - segment.width / 2f;
+        }
+    }
+
+    protected Vector2f createAnchorOffset(Anchor2D anchor, float width, float height, float minAscender)
+    {
+        return switch (anchor)
+        {
+            // TOP_LEFT handled by default
+            case MIDDLE_LEFT -> new Vector2f(0, height / 2f);
+            case BOTTOM_LEFT -> new Vector2f(0, height);
+
+            case TOP_CENTER -> new Vector2f(width / 2f, 0);
+            case MIDDLE_CENTER -> new Vector2f(width / 2f, height / 2f);
+            case BOTTOM_CENTER -> new Vector2f(width / 2f, height);
+
+            case TOP_RIGHT -> new Vector2f(width, 0);
+            case MIDDLE_RIGHT -> new Vector2f(width, height / 2f);
+            case BOTTOM_RIGHT -> new Vector2f(width, height);
+
+            case BASELINE_LEFT -> new Vector2f(0, -minAscender);
+            case BASELINE_CENTER -> new Vector2f(width / 2f, -minAscender);
+            case BASELINE_RIGHT -> new Vector2f(width, -minAscender);
+
+            default -> new Vector2f();
+        };
+    }
+
+    protected boolean isNewLine(List<TextRenderSegment> messageSegments, int charIndex)
+    {
+        for (TextRenderSegment messageSegment : messageSegments)
+        {
+            if (messageSegment.end == charIndex)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected void renderText(Text message, Matrix4f transform)
+    {
+        List<TextRenderSegment> messageSegments = message.createSegments();
+        final float totalHeight = messageSegments.stream().map(s -> s.fontHeight).collect(FloatUtil.summing(Float::floatValue));
+        final float heightForAnchor = message.verticalAnchor() == VerticalAnchorMode.TEXT_HEIGHT ? totalHeight : message.maxHeight();
         Vector3f origin = transform.transformPosition(new Vector3f());
+        Vector2f anchorOffset = createAnchorOffset(message.anchor(), message.maxWidth(), heightForAnchor, messageSegments.getFirst().minAscender);
+        Vector3f anchorOrigin = transform.transformPosition(new Vector3f()).sub(anchorOffset.x, anchorOffset.y, 0);
+
         if (DebugUILines.MESSAGE_ORIGIN.get())
         {
-            DebugUILines.MESSAGE_ORIGIN.rectangle(new Vector2i((int) origin.x - 1, (int) origin.y - 1), new Vector2i((int) origin.x + 1, (int) origin.y + 1));
+            DebugUILines.MESSAGE_ORIGIN.recrangleAround((int) origin.x, (int) origin.y, 2);
         }
 
         if (DebugUILines.MESSAGE_MAX_WIDTH.get())
         {
-            DebugUILines.MESSAGE_MAX_WIDTH.line(new Vector2i((int) origin.x, (int) origin.y - 2), new Vector2i((int) (origin.x + message.maxWidth()), (int) origin.y - 2));
+            DebugUILines.MESSAGE_MAX_WIDTH.line(new Vector2f(anchorOrigin.x, anchorOrigin.y - 2), new Vector2f(anchorOrigin.x + message.maxWidth(), anchorOrigin.y - 2));
         }
 
-        List<UIMessageSegment> messageSegments = message.createSegments();
-        final float maxWidth = messageSegments.stream().map(s -> s.width).max(Float::compare).orElse(0f);
-        final float totalHeight = messageSegments.stream().map(s -> s.fontHeight).collect(FloatUtil.summing(Float::floatValue));
+        if (DebugUILines.MESSAGE_MAX_HEIGHT.get())
+        {
+            DebugUILines.MESSAGE_MAX_HEIGHT.line(new Vector2f(anchorOrigin.x - 2, anchorOrigin.y), new Vector2f(anchorOrigin.x - 2, anchorOrigin.y + message.maxHeight()));
+        }
+
+        if (DebugUILines.MESSAGE_ANCHORS.get())
+        {
+            debugMessageAnchors(messageSegments.getFirst(), new Vector3f(anchorOrigin), message.maxWidth(), heightForAnchor);
+        }
 
         Vector2f offset = new Vector2f();
-        // charIndex, lineNumber
+        offset.x -= anchorOffset.x;
+        offset.y -= anchorOffset.y;
+
+        final int CHAR_INDEX = 0;
+        final int LINE_NUMBER = 1;
         int[] indicies = {0, 0};
 
-//        if (message.align() == Align.RIGHT)
-//        {
-//            message.anchor().applyOffset(offset, maxWidth, 0, totalHeight);
-//            offset.x += maxWidth - messageSegments.getFirst().width;
-//        } else if (message.align() == Align.CENTER)
-//        {
-//            message.anchor().applyOffset(offset, maxWidth, 0, totalHeight);
-//            offset.x += maxWidth / 2f - messageSegments.getFirst().width / 2f;
-//        }
+        // Apply align for the first line
+        if (!message.forceSingleLine())
+            applyAlign(message.align(), messageSegments.getFirst(), offset, message.maxWidth());
 
-        Runnable debugSegment = () ->
-        {
-            UIMessageSegment segment = messageSegments.get(indicies[1]);
-
-            // Box pointing up for Max Descent
-            Vector2f v = new Vector2f(origin).add(offset).add(0, segment.maxDescent);
-            Vector2i r = new Vector2i(v, RoundingMode.TRUNCATE);
-            if (DebugUILines.SEGMENT_MAX_DESCENT.get())
-            {
-                DebugUILines.SEGMENT_MAX_DESCENT.rectangle(r, new Vector2i(r).add((int) (segment.width), 4));
-                DebugUILines.SEGMENT_MAX_DESCENT.rectangle(new Vector2i(r).add(0, -4), new Vector2i(r).add(4, 4));
-            }
-
-            if (DebugUILines.SEGMENT_MIN_DESCENT.get())
-            {
-                // Box pointing down for Min Descent
-                v = new Vector2f(origin).add(offset).add(0, segment.minDescent);
-                r = new Vector2i(v, RoundingMode.TRUNCATE);
-                DebugUILines.SEGMENT_MIN_DESCENT.rectangle(r, new Vector2i(r).add((int) (segment.width), 4));
-                DebugUILines.SEGMENT_MIN_DESCENT.rectangle(r, new Vector2i(r).add(4, 8));
-            }
-
-            if (DebugUILines.SEGMENT.get())
-            {
-                // Segment bounding box
-                v = new Vector2f(origin).add(offset);
-                DebugUILines.SEGMENT.rectangle(new Vector2i(v, RoundingMode.TRUNCATE), new Vector2i(v, RoundingMode.TRUNCATE).add((int) segment.width, (int) segment.fontHeight));
-            }
-        };
-        debugSegment.run();
+        debugSegment(messageSegments, indicies[LINE_NUMBER], origin, offset);
 
         message.iterateCharacters((character, nextCharacter) ->
         {
@@ -119,57 +206,27 @@ public abstract class UIFontRenderImpl extends RenderImpl
                 kerningAdvance = font.kerningAdvance((char) glyph.index(), (char) nextCharacter.glyph().index());
             }
 
-            // Todo: somehow handle breakIndicies of 0 at index 0
-            boolean newLine = false;
-            for (UIMessageSegment messageSegment : messageSegments)
-            {
-                if (messageSegment.end == indicies[0])
-                {
-                    newLine = true;
-                    break;
-                }
-            }
+            boolean newLine = isNewLine(messageSegments, indicies[CHAR_INDEX]);
             if (newLine)
             {
                 offset.x = 0;
-                indicies[1]++;
-//                if (message.align() == Align.RIGHT)
-//                {
-//                    Vector2f offTemp = new Vector2f();
-//                    message.anchor().applyOffset(offTemp, maxWidth, 0, totalHeight);
-//                    offset.x = offTemp.x;
-//                    offset.x += maxWidth - messageSegments.get(indicies[1]).width;
-//                } else if (message.align() == Align.CENTER)
-//                {
-//                    Vector2f offTemp = new Vector2f();
-//                    message.anchor().applyOffset(offTemp, maxWidth, 0, totalHeight);
-//                    offset.x = offTemp.x;
-//                    offset.x += maxWidth / 2f - messageSegments.get(indicies[1]).width / 2f;
-//                }
+                indicies[LINE_NUMBER]++;
+                if (!message.forceSingleLine())
+                    applyAlign(message.align(), messageSegments.get(indicies[1]), offset, message.maxWidth());
+                offset.x -= anchorOffset.x;
 
-//                if (message.newLineType() == NewLineType.MAX_HEIGHT)
-//                    offset.y += messageSegments.get(indicies[1] - 1).height + messageSegments.get(indicies[1] - 1).maxDescent - messageSegments.get(indicies[1]).minDescent;
-//                else if (message.newLineType() == NewLineType.FIXED)
-                offset.y += messageSegments.get(indicies[1] - 1).maxLineHeight + message.lineGapOffset() * size;
+                offset.y += messageSegments.get(indicies[LINE_NUMBER] - 1).maxLineHeight + message.lineGapOffset() * size;
 
-                debugSegment.run();
+                debugSegment(messageSegments, indicies[LINE_NUMBER], origin, offset);
             }
 
-
-            // TODO: underline rendering has to work even with invisible characters.. I think
-//            if (!glyph.isInvisible())
+            if (!glyph.isInvisible() || DebugUILines.anyCharacterDebugOn())
             {
-                UIMessageSegment segment = messageSegments.get(indicies[1]);
+                TextRenderSegment segment = messageSegments.get(indicies[LINE_NUMBER]);
                 float offsetY = 0;
                 // Moves the font so that the baseline is in line with the origin
                 offsetY += glyph.planeBounds().top() * size;
-//                offsetY -= font.getMetrics().ascender() * size;
                 offsetY -= segment.minAscender;
-//                offsetY = segment.fontHeight - glyph.planeBounds().height() * size;
-//                offsetY += glyph.planeBounds().bottom() * size;
-//                offsetY += -segment.maxDescent;
-                //                offsetY -= seg1ment.minDescent - glyph.planeBounds().bottom() * size;
-//                offsetY -= glyph.planeBounds().bottom() * size;
                 renderChar(font, glyph, new Vector2f(offset).add(0, offsetY), size, character.style().index(), transform);
             }
 
@@ -178,41 +235,14 @@ public abstract class UIFontRenderImpl extends RenderImpl
 
             if (DebugUILines.CHARACTER_KERN.get() && kerningAdvance != 0.0f)
             {
-//                System.out.printf("Kerning for %s - %s : %s%n", (char) glyph.index(), (char) nextCharacter.glyph().index(), kerningAdvance);
                 int h = (int) ((glyph.planeBounds().height() + nextCharacter.glyph().planeBounds().height()) * size / 4f);
 
                 Vector2f v = new Vector2f(origin).add(offset);
                 DebugUILines.CHARACTER_KERN.rectangle(new Vector2i(v, RoundingMode.TRUNCATE).add(0, h + 6), new Vector2i(v, RoundingMode.TRUNCATE).add((int) (-kerningAdvance * size), h + 8));
             }
 
-            indicies[0]++;
+            indicies[CHAR_INDEX]++;
         });
-    }
-
-    protected void renderLine(UITextLine text, Matrix4f transform)
-    {
-        renderLine(text.text(), text.size(), text.style(), text.anchor(), transform);
-    }
-
-    protected void renderLine(String text, float size, FontStyleEntry style, Anchor2D anchor, Matrix4f transform)
-    {
-        Font font = style.style().font();
-        float maxHeight = font.getMaxHeight(text, size);
-        float textWidth = font.getWidth(text, size);
-
-        Vector2f alignOffset = new Vector2f();
-        anchor.applyOffset(alignOffset, textWidth, 0, maxHeight);
-        Matrix4f mat = new Matrix4f(transform);
-        mat.translate(alignOffset.x, alignOffset.y, 0);
-
-        float cumAdvance = 0;
-        for (char c : text.toCharArray())
-        {
-            GlyphInfo glyphInfo = font.glyphInfo(c);
-            float offsetY = maxHeight - glyphInfo.planeBounds().height() * size;
-            renderChar(font, glyphInfo, new Vector2f(cumAdvance, offsetY), size, style.index(), new Matrix4f().mul(mat));
-            cumAdvance += glyphInfo.advance() * size;
-        }
     }
 
     protected void renderChar(Font font, GlyphInfo glyphInfo, Vector2f offset, float size, int styleIndex, Matrix4f transform)

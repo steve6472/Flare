@@ -1,8 +1,5 @@
 package steve6472.flare.ui.font.render;
 
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import steve6472.flare.ui.font.Font;
@@ -20,30 +17,16 @@ import java.util.stream.Stream;
  * Date: 11/17/2024
  * Project: Flare <br>
  */
-public record UITextMessage(List<UITextLine> lines, float textSize, float maxWidth, Anchor2D anchor, Align align, NewLineType newLineType, float lineGapOffset)
+public record Text(List<TextPart> lines, float textSize, float maxWidth, float maxHeight, Anchor2D anchor, Align align, float lineGapOffset, boolean forceSingleLine, VerticalAnchorMode verticalAnchor)
 {
-    private static final Anchor2D DEFAULT_ANCHOR = Anchor2D.CENTER;
-    private static final Align DEFAULT_ALIGN = Align.CENTER;
-    private static final NewLineType DEFAULT_NEW_LINE = NewLineType.MAX_HEIGHT;
-
-    public static final Codec<UITextMessage> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-        UITextLine.CODEC_MESSAGE.listOf().fieldOf("text").forGetter(UITextMessage::lines),
-        Codec.FLOAT.optionalFieldOf("text_size", 12f).forGetter(UITextMessage::textSize),  // in pixels
-        Codec.FLOAT.optionalFieldOf("max_width", 192f).forGetter(UITextMessage::maxWidth), // in pixels
-        Anchor2D.CODEC.optionalFieldOf("anchor", DEFAULT_ANCHOR).forGetter(UITextMessage::anchor),
-        Align.CODEC.optionalFieldOf("align", DEFAULT_ALIGN).forGetter(UITextMessage::align),
-        NewLineType.CODEC.optionalFieldOf("new_line_type", DEFAULT_NEW_LINE).forGetter(UITextMessage::newLineType),
-        Codec.FLOAT.optionalFieldOf("line_gap_offset", 0f).forGetter(UITextMessage::lineGapOffset)
-    ).apply(instance, UITextMessage::new));
-
     public void iterateCharacters(MessageCharIterator info)
     {
         int lineIndex = 0;
         int indexWithinLine = 0;
         for (int i = 0; i < len(); i++)
         {
-            UITextLine textLine = lines.get(lineIndex);
-            float glyphSize = textLine.size() == UITextLine.MESSAGE_SIZE ? textSize : textLine.size();
+            TextPart textLine = lines.get(lineIndex);
+            float glyphSize = textLine.size() == TextPart.MESSAGE_SIZE ? textSize : textLine.size();
 
             char c = textLine.text().charAt(indexWithinLine);
             MessageChar nextChar = null;
@@ -54,10 +37,10 @@ public record UITextMessage(List<UITextLine> lines, float textSize, float maxWid
                 nextChar = new MessageChar(style.style().font().glyphInfo(nextC), style, glyphSize);
             } else if (lines.size() < lineIndex + 1 && !lines.get(lineIndex + 1).text().isEmpty())
             {
-                UITextLine nextLine = lines.get(lineIndex + 1);
+                TextPart nextLine = lines.get(lineIndex + 1);
                 char nextC = nextLine.text().charAt(0);
                 FontStyleEntry style = nextLine.style();
-                float nextGlyphSize = nextLine.size() == UITextLine.MESSAGE_SIZE ? textSize : nextLine.size();
+                float nextGlyphSize = nextLine.size() == TextPart.MESSAGE_SIZE ? textSize : nextLine.size();
                 nextChar = new MessageChar(style.style().font().glyphInfo(nextC), style, nextGlyphSize);
             }
 
@@ -77,64 +60,6 @@ public record UITextMessage(List<UITextLine> lines, float textSize, float maxWid
     {
         return lines.stream().mapToInt(line -> line.text().length()).sum();
     }
-
-    public float maxHeight()
-    {
-        Optional<Float> max = lines
-            .stream()
-            .map(line -> line
-                .style()
-                .style()
-                .font()
-                .getMaxHeight(line.text(), line.size() == UITextLine.MESSAGE_SIZE ? textSize : line.size()))
-            .max(Float::compare);
-        return max.orElse(0f);
-    }
-
-    public Pair<Character, FontStyleEntry> getChar(int index)
-    {
-        int totalLen = 0;
-        for (UITextLine line : lines)
-        {
-            if (index < line.text().length() + totalLen)
-            {
-                char c = line.text().charAt(index - totalLen);
-                return Pair.of(c, line.style());
-            } else
-            {
-                totalLen += line.text().length();
-            }
-        }
-
-        return null;
-    }
-
-    /*
-    public float getMaxFontHeight(int start, int end)
-    {
-        return characterStream(start, end).map(c -> c.style().style().font().getMetrics().lineHeight() * c.size()).max(Float::compare).orElse(0f);
-    }
-
-    public float getMinFontAscender(int start, int end)
-    {
-        return characterStream(start, end).map(c -> c.style().style().font().getMetrics().ascender() * c.size()).min(Float::compare).orElse(0f);
-    }
-
-    public float getMaxFontLineHeight(int start, int end)
-    {
-        return characterStream(start, end).map(c -> c.style().style().font().getMetrics().lineHeight() * c.size()).max(Float::compare).orElse(0f);
-    }
-
-    public float getMinDescent(int start, int end)
-    {
-        return characterStream(start, end).filter(c -> !c.glyph().isInvisible() && c.glyph().planeBounds().bottom() >= 0).map(c -> c.glyph().planeBounds().bottom() * c.size()).min(Float::compare).orElse(0f);
-    }
-
-    public float getMaxDescent(int start, int end)
-    {
-        return characterStream(start, end).filter(c -> !c.glyph().isInvisible()).map(c -> c.glyph().planeBounds().bottom() * c.size()).max(Float::compare).orElse(0f);
-    }
-    */
 
     public float getWidth(int start, int end)
     {
@@ -170,15 +95,16 @@ public record UITextMessage(List<UITextLine> lines, float textSize, float maxWid
         return bob.toString();
     }
 
-    public List<UIMessageSegment> createSegments()
+    public List<TextRenderSegment> createSegments()
     {
         BreakIterator breakIterator = BreakIterator.getLineInstance();
         StringBuilder bobTheBuilder = new StringBuilder();
         lines().forEach(l -> bobTheBuilder.append(l.text()));
         breakIterator.setText(bobTheBuilder.toString());
 
-        List<UIMessageSegment> messageSegments = new ArrayList<>();
+        List<TextRenderSegment> messageSegments = new ArrayList<>();
 
+        // TODO: optimize this when forceSingleLine == true
         // Calculate break indicies - character after which new line should be created
         int current = breakIterator.next();
         IntList breakIndicies = new IntArrayList(8);
@@ -190,7 +116,7 @@ public record UITextMessage(List<UITextLine> lines, float textSize, float maxWid
             float trimmedWidth = getWidth(previous, trimmedCurrent);
             float width = getWidth(previous, current);
 
-            if ((totalWidth + trimmedWidth) > maxWidth() && maxWidth() != -1)
+            if (!forceSingleLine && (totalWidth + trimmedWidth) > maxWidth())
             {
                 breakIndicies.add(previous);
                 totalWidth = width;
@@ -211,7 +137,7 @@ public record UITextMessage(List<UITextLine> lines, float textSize, float maxWid
         // Calculate message segment values for rendering
         for (int i = 0; i < breakIndicies.size() - 1; i++)
         {
-            UIMessageSegment segment = new UIMessageSegment();
+            TextRenderSegment segment = new TextRenderSegment();
             segment.start = breakIndicies.getInt(i);
             segment.end = breakIndicies.getInt(i + 1);
 
@@ -254,7 +180,7 @@ public record UITextMessage(List<UITextLine> lines, float textSize, float maxWid
         int indexWithinLine = -1;
         for (int i = 0; i < lines.size(); i++)
         {
-            UITextLine line = lines.get(i);
+            TextPart line = lines.get(i);
             if (start < line.text().length() + totalLen)
             {
                 lineIndex = i;
@@ -271,8 +197,8 @@ public record UITextMessage(List<UITextLine> lines, float textSize, float maxWid
 
         for (int i = 0; i < end - start; i++)
         {
-            UITextLine textLine = lines.get(lineIndex);
-            float glyphSize = textLine.size() == UITextLine.MESSAGE_SIZE ? textSize : textLine.size();
+            TextPart textLine = lines.get(lineIndex);
+            float glyphSize = textLine.size() == TextPart.MESSAGE_SIZE ? textSize : textLine.size();
 
             char c = textLine.text().charAt(indexWithinLine);
             GlyphInfo glyphInfo = textLine.style().style().font().glyphInfo(c);
@@ -300,7 +226,7 @@ public record UITextMessage(List<UITextLine> lines, float textSize, float maxWid
         int indexWithinLine = -1;
         for (int i = 0; i < lines.size(); i++)
         {
-            UITextLine line = lines.get(i);
+            TextPart line = lines.get(i);
             if (start < line.text().length() + totalLen)
             {
                 lineIndex = i;
@@ -319,8 +245,8 @@ public record UITextMessage(List<UITextLine> lines, float textSize, float maxWid
 
         for (int i = 0; i < end - start; i++)
         {
-            UITextLine textLine = lines.get(lineIndex);
-            float glyphSize = textLine.size() == UITextLine.MESSAGE_SIZE ? textSize : textLine.size();
+            TextPart textLine = lines.get(lineIndex);
+            float glyphSize = textLine.size() == TextPart.MESSAGE_SIZE ? textSize : textLine.size();
 
             char c = textLine.text().charAt(indexWithinLine);
             GlyphInfo glyphInfo = textLine.style().style().font().glyphInfo(c);

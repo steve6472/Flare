@@ -32,5 +32,6 @@ public class FontDebugSettings extends SettingRegister
 
     public static BoolSetting MESSAGE_ORIGIN = registerBool("message_origin", false);
     public static BoolSetting MESSAGE_MAX_WIDTH = registerBool("message_max_width", false);
+    public static BoolSetting MESSAGE_MAX_HEIGHT = registerBool("message_max_height", false);
     public static BoolSetting MESSAGE_ANCHORS = registerBool("message_anchors", false);
 }

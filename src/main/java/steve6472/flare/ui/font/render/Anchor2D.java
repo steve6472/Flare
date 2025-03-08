@@ -13,28 +13,33 @@ import java.util.Locale;
  */
 public enum Anchor2D implements StringValue
 {
-    CENTER((o, w, _, b) -> o.set(-w / 2f, -b / 2f)),
-    LEFT((o, _, t, b) -> o.set(0, (t + b) / 2f)),
-    RIGHT((o, w, t, b) -> o.set(-w, (t + b) / 2f)),
-    TOP((o, w, _, b) -> o.set(-w / 2f, b)),
-    BOTTOM((o, w, t, _) -> o.set(-w / 2f, t)),
-    TOP_LEFT((o, _, _, _) -> o.set(0, 0)),
-    TOP_RIGHT((o, w, _, b) -> o.set(-w, b)),
-    BOTTOM_LEFT((o, _, t, b) -> o.set(0, b)),
-    BOTTOM_RIGHT((o, w, t, _) -> o.set(-w, t));
+    TOP_LEFT,
+    MIDDLE_LEFT,
+    BOTTOM_LEFT,
+
+    TOP_CENTER,
+    MIDDLE_CENTER,
+    BOTTOM_CENTER,
+
+    TOP_RIGHT,
+    MIDDLE_RIGHT,
+    BOTTOM_RIGHT,
+
+    BASELINE_LEFT(true),
+    BASELINE_CENTER(true),
+    BASELINE_RIGHT(true);
 
     public static final Codec<Anchor2D> CODEC = StringValue.fromValues(Anchor2D::values);
+    public final boolean singleLine;
 
-    private final AnchorOffset offset;
-
-    Anchor2D(AnchorOffset offset)
+    Anchor2D()
     {
-        this.offset = offset;
+        singleLine = false;
     }
 
-    public void applyOffset(Vector2f offset, float width, float top, float bottom)
+    Anchor2D(boolean singleLine)
     {
-        this.offset.apply(offset, width, top, bottom);
+        this.singleLine = singleLine;
     }
 
     @Override

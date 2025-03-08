@@ -6,10 +6,11 @@
   "flare:character_descent": false,
   "flare:character_kern": false,
   "flare:character_underline": false,
-  "flare:message_anchors": true,
-  "flare:message_max_width": true,
-  "flare:message_origin": true,
-  "flare:segment": true,
+  "flare:message_anchors": false,
+  "flare:message_max_height": false,
+  "flare:message_max_width": false,
+  "flare:message_origin": false,
+  "flare:segment": false,
   "flare:segment_max_descent": false,
   "flare:segment_min_descent": false
 }

@@ -7,19 +7,19 @@ import java.util.Locale;
 
 /**
  * Created by steve6472
- * Date: 12/12/2024
+ * Date: 3/8/2025
  * Project: Flare <br>
  */
-public enum NewLineType implements StringValue
+public enum VerticalAnchorMode implements StringValue
 {
-    MAX_HEIGHT,
-    FIXED;
+    TEXT_HEIGHT,
+    MAX_HEIGHT;
 
-    public static final Codec<NewLineType> CODEC = StringValue.fromValues(NewLineType::values);
+    public static Codec<VerticalAnchorMode> CODEC = StringValue.fromValues(VerticalAnchorMode::values);
 
     @Override
     public String stringValue()
     {
-        return name().toLowerCase(Locale.ROOT);
+        return this.name().toLowerCase(Locale.ROOT);
     }
 }

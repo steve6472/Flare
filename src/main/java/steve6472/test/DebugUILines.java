@@ -1,5 +1,6 @@
 package steve6472.test;
 
+import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -35,7 +36,13 @@ public class DebugUILines extends UILineRenderImpl
 
     public static final DebugOption MESSAGE_ORIGIN = new DebugOption(FontDebugSettings.MESSAGE_ORIGIN, DebugRender.GREEN);
     public static final DebugOption MESSAGE_MAX_WIDTH = new DebugOption(FontDebugSettings.MESSAGE_MAX_WIDTH, DebugRender.KHAKI);
-    public static final DebugOption MESSAGE_ANCHORS = new DebugOption(FontDebugSettings.MESSAGE_ANCHORS, DebugRender.DARK_GREEN);
+    public static final DebugOption MESSAGE_MAX_HEIGHT = new DebugOption(FontDebugSettings.MESSAGE_MAX_HEIGHT, DebugRender.TOMATO);
+    public static final DebugOption MESSAGE_ANCHORS = new DebugOption(FontDebugSettings.MESSAGE_ANCHORS, DebugRender.PEACH);
+
+    public static boolean anyCharacterDebugOn()
+    {
+        return CHARACTER.get() || CHARACTER_ASCENT.get() || CHARACTER_DESCENT.get() || BASELINE.get() || CHARACTER_ADVANCE.get() || CHARACTER_UNDERLINE.get();
+    }
 
     private void render(DebugOption option)
     {
@@ -83,6 +90,16 @@ public class DebugUILines extends UILineRenderImpl
             return setting().get();
         }
 
+        public void recrangleAround(int x, int y, int size)
+        {
+            rectangle(new Vector2i(x - size, y - size), new Vector2i(x + size, y + size));
+        }
+
+        public void recrangleAround(float x, float y, int size)
+        {
+            recrangleAround((int) x, (int) y, size);
+        }
+
         public void rectangle(Vector2i start, Vector2i end)
         {
             if (!get()) return;
@@ -102,6 +119,14 @@ public class DebugUILines extends UILineRenderImpl
             // RIGHT
             vertexList.add(new Vector2i(end.x, start.y));
             vertexList.add(new Vector2i(end.x, end.y));
+        }
+
+        public void line(Vector2f start, Vector2f end)
+        {
+            if (!get()) return;
+
+            vertexList.add(new Vector2i((int) start.x, (int) start.y));
+            vertexList.add(new Vector2i((int) end.x, (int) end.y));
         }
 
         public void line(Vector2i start, Vector2i end)
