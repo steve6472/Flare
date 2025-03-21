@@ -14,13 +14,13 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
 import steve6472.core.log.Log;
+import steve6472.core.module.Module;
 import steve6472.core.registry.Key;
 import steve6472.flare.Commands;
 import steve6472.flare.FlareConstants;
 import steve6472.flare.SamplerLoader;
 import steve6472.flare.assets.Texture;
 import steve6472.flare.assets.TextureSampler;
-import steve6472.flare.module.Module;
 import steve6472.flare.settings.VisualSettings;
 import steve6472.flare.ui.font.layout.*;
 

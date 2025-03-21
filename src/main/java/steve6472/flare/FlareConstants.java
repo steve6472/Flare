@@ -3,6 +3,7 @@ package steve6472.flare;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.vulkan.VkExtent2D;
+import steve6472.core.SteveCore;
 import steve6472.core.registry.Key;
 import steve6472.flare.pipeline.Pipeline;
 
@@ -63,10 +64,7 @@ public class FlareConstants
     /// Folder for generated debug files
     public static final File MSDF_EXE = new File(GENERATED_FLARE, "msdf_atlas_gen.exe");
 
-    /// Root folder for modules
-    public static final File MODULES = new File("modules");
-
-    public static final File FLARE_MODULE = new File(MODULES, NAMESPACE);
+    public static final File FLARE_MODULE = new File(SteveCore.MODULES, NAMESPACE);
 
     // TODO: replace all instances of flare key creation
     public static Key key(String id)

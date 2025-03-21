@@ -7,11 +7,13 @@ import org.lwjgl.vulkan.VkDescriptorBufferInfo;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkMappedMemoryRange;
 import org.lwjgl.vulkan.VkQueue;
+import steve6472.core.log.Log;
 import steve6472.flare.struct.Memcpy;
 
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.util.Collection;
+import java.util.logging.Logger;
 
 import static org.lwjgl.vulkan.VK13.*;
 
@@ -123,6 +125,19 @@ public class VkBuffer
         }
     }
 
+    private static long roundUpToNearestPowerOfTwo(long number)
+    {
+        number--;
+        number |= number >> 1;
+        number |= number >> 2;
+        number |= number >> 4;
+        number |= number >> 8;
+        number |= number >> 16;
+        number |= number >> 32;
+
+        return number + 1;
+    }
+
     public int flush(long size, long offset)
     {
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -131,7 +146,7 @@ public class VkBuffer
             mappedRange.sType(VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE);
             mappedRange.memory(memory);
             mappedRange.offset(offset);
-            mappedRange.size(size);
+            mappedRange.size(Math.max(roundUpToNearestPowerOfTwo(size), PhysicalDevicePicker.limits.nonCoherentAtomSize()));
             return vkFlushMappedMemoryRanges(device, mappedRange);
         }
     }

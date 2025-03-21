@@ -1,15 +1,13 @@
 package steve6472.flare.ui.font.style;
 
 import steve6472.core.log.Log;
+import steve6472.core.module.ModuleUtil;
 import steve6472.core.registry.Key;
 import steve6472.flare.core.Flare;
-import steve6472.flare.module.Module;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.ui.font.FontEntry;
 import steve6472.flare.ui.font.UnknownCharacter;
-import steve6472.flare.util.ResourceCrawl;
 
-import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -29,22 +27,11 @@ public class StyleLoader
     {
         Map<Key, FontStyleEntry> styles = new LinkedHashMap<>();
 
-        for (Module module : Flare.getModuleManager().getModules())
-        {
-            module.iterateNamespaces((folder, namespace) ->
-            {
-                File file = new File(folder, PATH);
-
-                ResourceCrawl.crawlAndLoadJsonCodec(file, FontStyle.CODEC, (style, id) ->
-                {
-                    Key key = Key.withNamespace(namespace, id);
-                    int index = styles.containsKey(key) ? styles.get(key).index() : styles.size();
-                    FontStyleEntry entry = new FontStyleEntry(key, style, index);
-                    LOGGER.finest("Loaded font style " + entry.key() + " from " + module.name());
-                    styles.put(key, entry);
-                });
-            });
-        }
+        ModuleUtil.loadModuleJsonCodecsDebug(Flare.getModuleManager(), PATH, FontStyle.CODEC, LOGGER, "font style", (_, _, key, object) -> {
+            int index = styles.containsKey(key) ? styles.get(key).index() : styles.size();
+            FontStyleEntry entry = new FontStyleEntry(key, object, index);
+            styles.put(key, entry);
+        });
 
         styles.forEach(FlareRegistries.FONT_STYLE::register);
 

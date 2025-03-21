@@ -58,8 +58,8 @@ class TestApp extends FlareApp
     @Override
     protected void createRenderSystems()
     {
-//        addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new EntityTestRender(), Pipelines.BLOCKBENCH_STATIC));
-//        addRenderSystem(new UIRenderSystem(masterRenderer(), new TestUIRender(), 256f));
+        addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new EntityTestRender(), Pipelines.BLOCKBENCH_STATIC));
+        addRenderSystem(new UIRenderSystem(masterRenderer(), new TestUIRender(), 256f));
         addRenderSystem(new UIFontRender(masterRenderer(), new TestFontRender()));
         addRenderSystem(new UILineRender(masterRenderer(), new DebugUILines()));
 
@@ -94,7 +94,7 @@ class TestApp extends FlareApp
 
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
-    {/*
+    {
         frameInfo.camera().setViewTarget(new Vector3f(-0.5f, 1.0f, 1), new Vector3f(0, 0.5f, 0));
         Vector2i mousePos = input().getMousePositionRelativeToTopLeftOfTheWindow();
         frameInfo.camera().setPerspectiveProjection(TestSettings.FOV.get(), aspectRatio(), 0.1f, 1024f);
@@ -122,7 +122,7 @@ class TestApp extends FlareApp
 
         Key sans = Key.withNamespace("test", "default_comic_sans");
         Key debug = Key.withNamespace("test", "debug");
-        Key digi = Key.withNamespace("test", "digi");*/
+        Key digi = Key.withNamespace("test", "digi");
 
 
 //                text().line(TextLine.fromText("Rainbow in a Pot", 0.25f), new Matrix4f().translate(0, 0.5f, 0.2f));

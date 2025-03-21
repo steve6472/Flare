@@ -152,7 +152,7 @@ public class FrameBuffer
             depthAttachment.format(VK_FORMAT_D32_SFLOAT); // should use the findFormat func from swapchain
             depthAttachment.samples(VK_SAMPLE_COUNT_1_BIT); // variable
             depthAttachment.loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR);
-            depthAttachment.storeOp(VK_ATTACHMENT_STORE_OP_DONT_CARE);
+            depthAttachment.storeOp(VK_ATTACHMENT_STORE_OP_STORE);
             depthAttachment.stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE);
             depthAttachment.stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE);
             depthAttachment.initialLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
@@ -171,20 +171,32 @@ public class FrameBuffer
             subpass.pColorAttachments(VkAttachmentReference.calloc(1, stack).put(0, colorAttachmentRef));
             subpass.pDepthStencilAttachment(depthAttachmentRef);
 
-            VkSubpassDependency.Buffer dependency = VkSubpassDependency.calloc(1, stack);
-            dependency.srcSubpass(VK_SUBPASS_EXTERNAL);
-            dependency.dstSubpass(0);
-            dependency.srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-            dependency.srcAccessMask(0);
-            dependency.dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-            dependency.dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+            VkSubpassDependency.Buffer dependencies = VkSubpassDependency.calloc(2, stack);
+
+            // First dependency (External -> Subpass)
+            VkSubpassDependency dependency1 = dependencies.get(0);
+            dependency1.srcSubpass(VK_SUBPASS_EXTERNAL);
+            dependency1.dstSubpass(0);
+            dependency1.srcStageMask(VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+            dependency1.srcAccessMask(VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+            dependency1.dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT);
+            dependency1.dstAccessMask(VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+
+            // Second dependency (Subpass -> External)
+            VkSubpassDependency dependency2 = dependencies.get(1);
+            dependency2.srcSubpass(0);
+            dependency2.dstSubpass(VK_SUBPASS_EXTERNAL);
+            dependency2.srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT);
+            dependency2.srcAccessMask(VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+            dependency2.dstStageMask(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT);
+            dependency2.dstAccessMask(VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT);
 
             VkRenderPassCreateInfo renderPassInfo = VkRenderPassCreateInfo.calloc(stack);
             renderPassInfo.sType(VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO);
             renderPassInfo.flags(0);
             renderPassInfo.pAttachments(attachments);
             renderPassInfo.pSubpasses(subpass);
-            renderPassInfo.pDependencies(dependency);
+            renderPassInfo.pDependencies(dependencies);
 
             LongBuffer pRenderPass = stack.mallocLong(1);
 

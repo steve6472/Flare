@@ -4,20 +4,19 @@ import com.mojang.datafixers.util.Pair;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
 import steve6472.core.log.Log;
+import steve6472.core.module.ModuleUtil;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.ObjectRegistry;
 import steve6472.core.util.ImagePacker;
 import steve6472.flare.Commands;
 import steve6472.flare.FlareConstants;
 import steve6472.flare.core.Flare;
-import steve6472.flare.module.Module;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.assets.Texture;
 import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.assets.model.Model;
 import steve6472.flare.assets.model.primitive.PrimitiveModel;
 import steve6472.flare.util.PackerUtil;
-import steve6472.flare.util.ResourceCrawl;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -135,21 +134,12 @@ public class BlockbenchLoader
     {
         Map<Key, Pair<LoadedModel, String>> models = new LinkedHashMap<>();
 
-        for (Module module : Flare.getModuleManager().getModules())
-        {
-            module.iterateNamespaces((folder, namespace) ->
-            {
-                File file = new File(folder, "model/blockbench/" + path);
-
-                ResourceCrawl.crawlAndLoadJsonCodec(file, LoadedModel.CODEC, (loadedModel, id) ->
-                {
-                    Key key = Key.withNamespace(namespace, "blockbench/" + path + "/" + id);
-                    loadedModel = overrideKey(loadedModel, key);
-                    LOGGER.finest("Loaded model " + key + " from " + module.name());
-                    models.put(key, Pair.of(loadedModel, file.getAbsolutePath()));
-                });
-            });
-        }
+        ModuleUtil.loadModuleJsonCodecs(Flare.getModuleManager(), "model/blockbench/" + path, LoadedModel.CODEC, (module, file, key, loadedModel) -> {
+            key = Key.withNamespace(key.namespace(), "blockbench/" + path + "/" + key.id());
+            loadedModel = overrideKey(loadedModel, key);
+            LOGGER.finest("Loaded %s '%s' from module '%s'".formatted("model", key, module.name()));
+            models.put(key, Pair.of(loadedModel, file.getAbsolutePath()));
+        });
 
         for (Pair<LoadedModel, String> value : models.values())
         {

@@ -1,5 +1,7 @@
 package steve6472.flare.ui.font.render;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import steve6472.flare.ui.font.Font;
@@ -17,15 +19,27 @@ import java.util.stream.Stream;
  * Date: 11/17/2024
  * Project: Flare <br>
  */
-public record Text(List<TextPart> lines, float textSize, float maxWidth, float maxHeight, Anchor2D anchor, Align align, float lineGapOffset, boolean forceSingleLine, VerticalAnchorMode verticalAnchor)
+public record Text(List<TextPart> parts, float textSize, float maxWidth, float maxHeight, Anchor2D anchor, Align align, float lineGapOffset, boolean forceSingleLine, VerticalAnchorMode verticalAnchor)
 {
+    public static final Codec<Text> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+        TextPart.CODEC.listOf().optionalFieldOf("parts", List.of()).forGetter(Text::parts),
+        Codec.FLOAT.optionalFieldOf("text_size", 8f).forGetter(Text::textSize),
+        Codec.FLOAT.optionalFieldOf("max_width", 0f).forGetter(Text::maxWidth),
+        Codec.FLOAT.optionalFieldOf("max_height", 0f).forGetter(Text::maxHeight),
+        Anchor2D.CODEC.optionalFieldOf("anchor", Anchor2D.MIDDLE_CENTER).forGetter(Text::anchor),
+        Align.CODEC.optionalFieldOf("align", Align.LEFT).forGetter(Text::align),
+        Codec.FLOAT.optionalFieldOf("line_gap_offset", 0f).forGetter(Text::lineGapOffset),
+        Codec.BOOL.optionalFieldOf("force_single_line", false).forGetter(Text::forceSingleLine),
+        VerticalAnchorMode.CODEC.optionalFieldOf("vertical_anchor", VerticalAnchorMode.MAX_HEIGHT).forGetter(Text::verticalAnchor)
+    ).apply(instance, Text::new));
+
     public void iterateCharacters(MessageCharIterator info)
     {
         int lineIndex = 0;
         int indexWithinLine = 0;
         for (int i = 0; i < len(); i++)
         {
-            TextPart textLine = lines.get(lineIndex);
+            TextPart textLine = parts.get(lineIndex);
             float glyphSize = textLine.size() == TextPart.MESSAGE_SIZE ? textSize : textLine.size();
 
             char c = textLine.text().charAt(indexWithinLine);
@@ -35,9 +49,9 @@ public record Text(List<TextPart> lines, float textSize, float maxWidth, float m
                 char nextC = textLine.text().charAt(indexWithinLine + 1);
                 FontStyleEntry style = textLine.style();
                 nextChar = new MessageChar(style.style().font().glyphInfo(nextC), style, glyphSize);
-            } else if (lines.size() < lineIndex + 1 && !lines.get(lineIndex + 1).text().isEmpty())
+            } else if (parts.size() < lineIndex + 1 && !parts.get(lineIndex + 1).text().isEmpty())
             {
-                TextPart nextLine = lines.get(lineIndex + 1);
+                TextPart nextLine = parts.get(lineIndex + 1);
                 char nextC = nextLine.text().charAt(0);
                 FontStyleEntry style = nextLine.style();
                 float nextGlyphSize = nextLine.size() == TextPart.MESSAGE_SIZE ? textSize : nextLine.size();
@@ -58,7 +72,7 @@ public record Text(List<TextPart> lines, float textSize, float maxWidth, float m
 
     public int len()
     {
-        return lines.stream().mapToInt(line -> line.text().length()).sum();
+        return parts.stream().mapToInt(line -> line.text().length()).sum();
     }
 
     public float getWidth(int start, int end)
@@ -97,9 +111,12 @@ public record Text(List<TextPart> lines, float textSize, float maxWidth, float m
 
     public List<TextRenderSegment> createSegments()
     {
+        if (parts.isEmpty())
+            return List.of();
+
         BreakIterator breakIterator = BreakIterator.getLineInstance();
         StringBuilder bobTheBuilder = new StringBuilder();
-        lines().forEach(l -> bobTheBuilder.append(l.text()));
+        parts().forEach(l -> bobTheBuilder.append(l.text()));
         breakIterator.setText(bobTheBuilder.toString());
 
         List<TextRenderSegment> messageSegments = new ArrayList<>();
@@ -178,9 +195,9 @@ public record Text(List<TextPart> lines, float textSize, float maxWidth, float m
         int totalLen = 0;
         int lineIndex = -1;
         int indexWithinLine = -1;
-        for (int i = 0; i < lines.size(); i++)
+        for (int i = 0; i < parts.size(); i++)
         {
-            TextPart line = lines.get(i);
+            TextPart line = parts.get(i);
             if (start < line.text().length() + totalLen)
             {
                 lineIndex = i;
@@ -197,7 +214,7 @@ public record Text(List<TextPart> lines, float textSize, float maxWidth, float m
 
         for (int i = 0; i < end - start; i++)
         {
-            TextPart textLine = lines.get(lineIndex);
+            TextPart textLine = parts.get(lineIndex);
             float glyphSize = textLine.size() == TextPart.MESSAGE_SIZE ? textSize : textLine.size();
 
             char c = textLine.text().charAt(indexWithinLine);
@@ -211,7 +228,7 @@ public record Text(List<TextPart> lines, float textSize, float maxWidth, float m
                 lineIndex++;
             }
 
-            if (lineIndex > lines.size())
+            if (lineIndex > parts.size())
                 throw new RuntimeException("Out of bounds!");
         }
     }
@@ -224,9 +241,9 @@ public record Text(List<TextPart> lines, float textSize, float maxWidth, float m
         int totalLen = 0;
         int lineIndex = -1;
         int indexWithinLine = -1;
-        for (int i = 0; i < lines.size(); i++)
+        for (int i = 0; i < parts.size(); i++)
         {
-            TextPart line = lines.get(i);
+            TextPart line = parts.get(i);
             if (start < line.text().length() + totalLen)
             {
                 lineIndex = i;
@@ -245,7 +262,7 @@ public record Text(List<TextPart> lines, float textSize, float maxWidth, float m
 
         for (int i = 0; i < end - start; i++)
         {
-            TextPart textLine = lines.get(lineIndex);
+            TextPart textLine = parts.get(lineIndex);
             float glyphSize = textLine.size() == TextPart.MESSAGE_SIZE ? textSize : textLine.size();
 
             char c = textLine.text().charAt(indexWithinLine);
@@ -259,10 +276,69 @@ public record Text(List<TextPart> lines, float textSize, float maxWidth, float m
                 lineIndex++;
             }
 
-            if (lineIndex > lines.size())
+            if (lineIndex > parts.size())
                 throw new RuntimeException("Out of bounds!");
         }
 
         return Stream.of(characters);
+    }
+
+    /*
+     * Builder
+     */
+
+    public Text copy()
+    {
+        return new Text(parts(), textSize(), maxWidth(), maxHeight(), anchor(), align(), lineGapOffset(), forceSingleLine(), verticalAnchor());
+    }
+
+    public Text withMutableParts()
+    {
+        return new Text(new ArrayList<>(parts()), textSize(), maxWidth(), maxHeight(), anchor(), align(), lineGapOffset(), forceSingleLine(), verticalAnchor());
+    }
+
+    public Text withParts(List<TextPart> parts)
+    {
+        return new Text(parts, textSize(), maxWidth(), maxHeight(), anchor(), align(), lineGapOffset(), forceSingleLine(), verticalAnchor());
+    }
+
+    public Text withTextSize(float textSize)
+    {
+        return new Text(parts(), textSize, maxWidth(), maxHeight(), anchor(), align(), lineGapOffset(), forceSingleLine(), verticalAnchor());
+    }
+
+    public Text withMaxWidth(float maxWidth)
+    {
+        return new Text(parts(), textSize(), maxWidth, maxHeight(), anchor(), align(), lineGapOffset(), forceSingleLine(), verticalAnchor());
+    }
+
+    public Text withMaxHeight(float maxHeight)
+    {
+        return new Text(parts(), textSize(), maxWidth(), maxHeight, anchor(), align(), lineGapOffset(), forceSingleLine(), verticalAnchor());
+    }
+
+    public Text withAnchor(Anchor2D anchor)
+    {
+        return new Text(parts(), textSize(), maxWidth(), maxHeight(), anchor, align(), lineGapOffset(), forceSingleLine(), verticalAnchor());
+    }
+
+    public Text withAlign(Align align)
+    {
+        return new Text(parts(), textSize(), maxWidth(), maxHeight(), anchor(), align, lineGapOffset(), forceSingleLine(), verticalAnchor());
+    }
+
+    public Text withLineGapOffset(float lineGapOffset)
+    {
+        return new Text(parts(), textSize(), maxWidth(), maxHeight(), anchor(), align(), lineGapOffset, forceSingleLine(), verticalAnchor());
+    }
+
+    public Text withForceSingleLine(boolean forceSingleLine)
+    {
+        return new Text(parts(), textSize(), maxWidth(), maxHeight(), anchor(), align(), lineGapOffset(), forceSingleLine, verticalAnchor());
+    }
+
+    public Text withVerticalAnchor(VerticalAnchorMode verticalAnchor)
+    {
+        return new Text(parts(), textSize(), maxWidth(), maxHeight(), anchor(), align(), lineGapOffset(), forceSingleLine(), verticalAnchor);
     }
 }

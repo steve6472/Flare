@@ -28,6 +28,8 @@ public class PhysicalDevicePicker
     public static final Set<String> DEVICE_EXTENSIONS = Stream.of(VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME)
         .collect(Collectors.toSet());
 
+    public static VkPhysicalDeviceLimits limits;
+
     public static VkPhysicalDevice pickPhysicalDevice(VkInstance instance, long surface, Collection<String> deviceExtensions)
     {
         try (MemoryStack stack = MemoryStack.stackPush())
@@ -53,10 +55,12 @@ public class PhysicalDevicePicker
 
                 if (isDeviceSuitable(device, surface, deviceExtensions))
                 {
-                    VkPhysicalDeviceProperties deviceProperties = VkPhysicalDeviceProperties.calloc(stack);
+                    VkPhysicalDeviceProperties deviceProperties = VkPhysicalDeviceProperties.malloc();
                     VK13.vkGetPhysicalDeviceProperties(device, deviceProperties);
+                    limits = deviceProperties.limits();
                     // TODO: actually use the value, don't hardcode stuff man...
-//                    LOGGER.warning("alignment: " + deviceProperties.limits().minUniformBufferOffsetAlignment()); // returns 64 on my device :)
+//                    LOGGER.warning("alignment: " + limits.minUniformBufferOffsetAlignment()); // returns 64 on my device :)
+//                    LOGGER.warning("nonCoherentAtomSize: " + limits.nonCoherentAtomSize()); // Returns 256 on my device
                     LOGGER.finer("Selected GPU: " + deviceProperties.deviceNameString());
                     return device;
                 }

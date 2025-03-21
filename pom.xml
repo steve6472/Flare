@@ -73,11 +73,6 @@
             <artifactId>joml</artifactId>
             <version>${joml.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>24.0.0</version>
-        </dependency>
 
         <!-- LWJGL (Vulkan) -->
         <dependency>

@@ -2,13 +2,12 @@ package steve6472.flare.ui.font;
 
 import com.mojang.datafixers.util.Pair;
 import steve6472.core.log.Log;
+import steve6472.core.module.ModuleUtil;
 import steve6472.core.registry.Key;
+import steve6472.core.module.Module;
 import steve6472.flare.core.Flare;
-import steve6472.flare.module.Module;
 import steve6472.flare.registry.FlareRegistries;
-import steve6472.flare.util.ResourceCrawl;
 
-import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -28,22 +27,12 @@ public class FontLoader
     {
         Map<Key, Pair<FontEntry, Module>> fonts = new LinkedHashMap<>();
 
-        for (Module module : Flare.getModuleManager().getModules())
-        {
-            module.iterateNamespaces((folder, namespace) ->
-            {
-                File file = new File(folder, PATH);
+        ModuleUtil.loadModuleJsonCodecsDebug(Flare.getModuleManager(), PATH, Font.CODEC, LOGGER, "font", (module, _, key, object) -> {
 
-                ResourceCrawl.crawlAndLoadJsonCodec(file, Font.CODEC, (info, id) ->
-                {
-                    Key key = Key.withNamespace(namespace, id);
-                    int index = fonts.containsKey(key) ? fonts.get(key).getFirst().index() : fonts.size();
-                    FontEntry entry = new FontEntry(key, info, index);
-                    LOGGER.finest("Loaded font " + entry.key() + " from " + module.name());
-                    fonts.put(key, Pair.of(entry, module));
-                });
-            });
-        }
+            int index = fonts.containsKey(key) ? fonts.get(key).getFirst().index() : fonts.size();
+            FontEntry entry = new FontEntry(key, object, index);
+            fonts.put(key, Pair.of(entry, module));
+        });
 
         for (Pair<FontEntry, Module> pair : fonts.values())
         {

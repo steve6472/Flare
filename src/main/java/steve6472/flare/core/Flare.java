@@ -7,10 +7,10 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 import steve6472.core.SteveCore;
 import steve6472.core.log.Log;
+import steve6472.core.module.ModuleManager;
 import steve6472.core.setting.SettingsLoader;
 import steve6472.flare.*;
 import steve6472.flare.input.UserInput;
-import steve6472.flare.module.ModuleManager;
 import steve6472.flare.registry.RegistryCreators;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.settings.ValidationLevel;
@@ -61,6 +61,7 @@ public class Flare
 
         Flare Flare = new Flare();
         SteveCore.DEFAULT_KEY_NAMESPACE = app.defaultNamespace();
+        SteveCore.CORE_MODULE = FlareConstants.NAMESPACE;
         INSTANCE = Flare;
         Flare.app = app;
         Flare.start();
@@ -85,7 +86,7 @@ public class Flare
     {
         FlareExport.createFolderOrError(FlareConstants.GENERATED_FLARE);
         FlareExport.createFolderOrError(FlareConstants.FLARE_DEBUG_FOLDER);
-        FlareExport.createFolderOrError(FlareConstants.MODULES);
+        FlareExport.createFolderOrError(SteveCore.MODULES);
         FlareExport.createFolderOrError(FlareConstants.FLARE_MODULE);
     }
 
