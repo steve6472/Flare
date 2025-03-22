@@ -69,7 +69,7 @@ public class SpriteLoader
                         return;
 
                     Key key = Key.withNamespace(namespace, id);
-                    LOGGER.finest("Loaded Sprite " + key + " from " + module.name());
+                    LOGGER.finest("Loaded Sprite '" + key + "' from '" + module.name() + "'");
                     uiTextures.put(key, filePath);
                 });
             });

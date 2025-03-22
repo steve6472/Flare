@@ -151,7 +151,7 @@ public class BlockbenchLoader
 
     private static void loadTextures(LoadedModel model, String modelPath)
     {
-        LOGGER.finest("Loading textures for model " + model.key());
+        LOGGER.finest("Loading textures for model '" + model.key() + "'");
         try
         {
             List<TextureData> textures = model.textures();

@@ -9,6 +9,7 @@ import steve6472.core.SteveCore;
 import steve6472.core.log.Log;
 import steve6472.core.module.ModuleManager;
 import steve6472.core.setting.SettingsLoader;
+import steve6472.core.util.JarExport;
 import steve6472.flare.*;
 import steve6472.flare.input.UserInput;
 import steve6472.flare.registry.RegistryCreators;
@@ -84,19 +85,19 @@ public class Flare
 
     private void createGeneratedFolders()
     {
-        FlareExport.createFolderOrError(FlareConstants.GENERATED_FLARE);
-        FlareExport.createFolderOrError(FlareConstants.FLARE_DEBUG_FOLDER);
-        FlareExport.createFolderOrError(SteveCore.MODULES);
-        FlareExport.createFolderOrError(FlareConstants.FLARE_MODULE);
+        JarExport.createFolderOrError(FlareConstants.GENERATED_FLARE);
+        JarExport.createFolderOrError(FlareConstants.FLARE_DEBUG_FOLDER);
+        JarExport.createFolderOrError(SteveCore.MODULES);
+        JarExport.createFolderOrError(FlareConstants.FLARE_MODULE);
     }
 
     private void exportBuiltinResources()
     {
         try
         {
-            FlareExport.exportFolder("flare/export/msdf", FlareConstants.GENERATED_FLARE);
+            JarExport.exportFolder("flare/export/msdf", FlareConstants.GENERATED_FLARE);
 
-            FlareExport.exportFolder("flare/module", FlareConstants.FLARE_MODULE);
+            JarExport.exportFolder("flare/module", FlareConstants.FLARE_MODULE);
         } catch (IOException | URISyntaxException exception)
         {
             LOGGER.severe("Failed to export Flare Module! Stopping application.");
