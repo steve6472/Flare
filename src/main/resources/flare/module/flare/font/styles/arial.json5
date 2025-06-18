@@ -2,7 +2,7 @@
     font: "flare:arial",
     base: {
         color: [0.8, 0.8, 0.8, 1.0],
-        softness: 0,
+        softness: 0.35,
         thickness: 0.7
     },
     outline: {

@@ -18,14 +18,14 @@ import steve6472.flare.ui.font.layout.AtlasData;
  * Date: 11/10/2024
  * Project: Flare <br>
  */
-public record FontStyle(FontEntry fontEntry, ColorSoftThick base, ColorSoftThick outline, ColorSoftThick shadow, boolean soft, Vector2f shadowOffset)
+public record FontStyle(FontEntry fontEntry, ColorSoftThick base, ColorSoftThick outline, ColorSoftThick shadow, Flags flags, Vector2f shadowOffset)
 {
     public static final Codec<FontStyle> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         ExtraCodecs.keyedFromRegistry(FlareRegistries.FONT).fieldOf("font").forGetter(FontStyle::fontEntry),
         ColorSoftThick.CODEC.optionalFieldOf("base", ColorSoftThick.EMPTY).forGetter(FontStyle::base),
         ColorSoftThick.CODEC.optionalFieldOf("outline", ColorSoftThick.EMPTY).forGetter(FontStyle::outline),
         ColorSoftThick.CODEC.optionalFieldOf("shadow", ColorSoftThick.EMPTY).forGetter(FontStyle::shadow),
-        Codec.BOOL.optionalFieldOf("soft", false).forGetter(FontStyle::soft),
+        Flags.CODEC.optionalFieldOf("flags", Flags.DEFAULT).forGetter(FontStyle::flags),
         ExtraCodecs.VEC_2F.fieldOf("shadow_offset").forGetter(FontStyle::shadowOffset)
     ).apply(instance, FontStyle::new));
 
@@ -34,7 +34,7 @@ public record FontStyle(FontEntry fontEntry, ColorSoftThick base, ColorSoftThick
         return fontEntry.font();
     }
 
-    public static final Key DEFAULT = Key.withNamespace(FlareConstants.NAMESPACE, "arial");
+    public static final Key DEFAULT = FlareConstants.key("arial");
 
     public Struct toStruct(FontEntry font)
     {
@@ -48,7 +48,7 @@ public record FontStyle(FontEntry fontEntry, ColorSoftThick base, ColorSoftThick
             base.softness(),
             outline.softness(),
             shadow.softness(),
-            soft ? 1 : 0,
+            flags.compressFlags(),
 
             base.thickness(),
             outline.thickness(),
@@ -58,5 +58,25 @@ public record FontStyle(FontEntry fontEntry, ColorSoftThick base, ColorSoftThick
             shadowOffset,
             new Vector2f(atlasData.width() / atlasData.size(), atlasData.height() / atlasData.size())
         );
+    }
+
+    public record Flags(boolean soft)
+    {
+        public static final Codec<Flags> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.BOOL.optionalFieldOf("soft", false).forGetter(Flags::soft)
+        ).apply(instance, Flags::new));
+
+        public static final Flags DEFAULT = new Flags(false);
+
+        public int compressFlags()
+        {
+            return
+//                (false ? 1 << 5 : 0) |
+//                (false ? 1 << 4 : 0) |
+//                (false ? 1 << 3 : 0) |
+//                (false ? 1 << 2 : 0) |
+//                (false ? 1 << 1 : 0) |
+                (soft  ? 1      : 0);
+        }
     }
 }

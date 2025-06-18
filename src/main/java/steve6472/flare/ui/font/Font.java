@@ -53,7 +53,8 @@ public class Font
         Codec.STRING.optionalFieldOf("charset", DEFAULT_CHARSET).forGetter(o -> o.charset),
         Codec.INT.optionalFieldOf("size", DEFAULT_SIZE).forGetter(o -> o.size),
         Codec.INT.optionalFieldOf("px_padding", DEFAULT_PXPADDING).forGetter(o -> o.pxPadding),
-        AtlasType.CODEC.optionalFieldOf("type", AtlasType.MTSDF).forGetter(o -> o.type)
+        AtlasType.CODEC.optionalFieldOf("type", AtlasType.MTSDF).forGetter(o -> o.type),
+        Filtering.CODEC.optionalFieldOf("filtering", Filtering.LINEAR).forGetter(o -> o.filtering)
     ).apply(instance, Font::new));
 
     private final String charset;
@@ -61,19 +62,21 @@ public class Font
     private final int size;
     private final int pxPadding;
     private final AtlasType type;
+    private final Filtering filtering;
 
     private final Long2ObjectMap<GlyphInfo> glyphs = new Long2ObjectOpenHashMap<>(1024);
     private final Long2ObjectMap<Long2FloatMap> kerning = new Long2ObjectOpenHashMap<>(1024);
     private AtlasData atlasData;
     private Metrics metrics;
 
-    private Font(String fontPath, String charset, int size, int pxPadding, AtlasType type)
+    private Font(String fontPath, String charset, int size, int pxPadding, AtlasType type, Filtering filtering)
     {
         this.fontPath = fontPath;
         this.charset = charset;
         this.size = size;
         this.pxPadding = pxPadding;
         this.type = type;
+        this.filtering = filtering;
     }
 
     public void init(Module module, Key key)
@@ -222,7 +225,7 @@ public class Font
 
         Texture texture = new Texture();
         texture.createTextureImageFromBufferedImage(device, fontTexture, commands.commandPool, graphicsQueue);
-        return new TextureSampler(texture, device, key, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR, true);
+        return new TextureSampler(texture, device, key, filtering.vkCode, filtering.vkCodeMipmap, true);
     }
 
     /*

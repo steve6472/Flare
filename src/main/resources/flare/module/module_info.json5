@@ -7,5 +7,6 @@
         " - unknown",
         " - arial"
     ],
-    authors: "steve6472"
+    authors: "steve6472",
+    version: 1
 }

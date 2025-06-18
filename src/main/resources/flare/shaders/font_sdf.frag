@@ -21,7 +21,8 @@ struct FontStyle
     float softness;
     float outlineSoftness;
     float shadowSoftness;
-    int soft; // 1 - true, 0 - false
+    // (in bit order) soft
+    int flags;
 
     float thickness;
     float outlineThickness;
@@ -35,6 +36,13 @@ struct FontStyle
 layout(std140, set = 0, binding = 2) readonly buffer FontSBO {
     FontStyle array[];
 } styles;
+
+#define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
+
+bool isSoft(int flags)
+{
+    return CHECK_BIT(flags, 0) == 1;
+}
 
 vec4 blendImages(vec4 colorA, vec4 colorB)
 {
@@ -74,7 +82,7 @@ void main()
     FontStyle style = styles.array[index];
 
     float sdf = 0;
-    if (style.soft == 1)
+    if (isSoft(style.flags))
     {
         sdf = texture(image, uv).a;
     } else
