@@ -43,14 +43,21 @@ public class TestFontRender extends UIFontRenderImpl
         Align align = Align.LEFT;
 
 //        renderMessage(new UITextMessage(List.of(new UITextLine(editableText, arial)), 24f * 4f, 128 * 4f, anchor, align, NewLineType.MAX_HEIGHT, 0), new Matrix4f().translate(20, 50, 0));
+//        renderText(
+//            new Text(
+//                List.of(
+//                    new TextPart("I ", 24f * 2f, arial),
+//                    new TextPart("have  ", 24f * 2f, digi),
+//                    new TextPart("FAILED", 24f * 4f, arial),
+//                    new TextPart(" this ", 24f * 2f, arial),
+//                    new TextPart("SPECTACULARLY", 24f * 2f, comicSans)
+//                ), 24f, 128 * 5f, 128f * 2f, anchor, align, 0, false, VerticalAnchorMode.MAX_HEIGHT),
+//            new Matrix4f().translate(20, 20, 0));
+
         renderText(
             new Text(
                 List.of(
-                    new TextPart("I ", 24f * 2f, arial),
-                    new TextPart("have  ", 24f * 2f, digi),
-                    new TextPart("FAILED", 24f * 4f, arial),
-                    new TextPart(" this ", 24f * 2f, arial),
-                    new TextPart("SPECTACULARLY", 24f * 2f, comicSans)
+                    new TextPart("A\nB\n\nC", 24f * 2f, comicSans)
                 ), 24f, 128 * 5f, 128f * 2f, anchor, align, 0, false, VerticalAnchorMode.MAX_HEIGHT),
             new Matrix4f().translate(20, 20, 0));
 //        renderMessage(new UITextMessage(List.of(new UITextLine(editableText, arial)), 24f * 16f, 128 * 6f, anchor, align, NewLineType.MAX_HEIGHT, 0), new Matrix4f().translate(20, 20, 0));

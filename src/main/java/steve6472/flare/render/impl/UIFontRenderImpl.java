@@ -215,7 +215,7 @@ public abstract class UIFontRenderImpl extends RenderImpl
                     applyAlign(message.align(), messageSegments.get(indicies[1]), offset, message.maxWidth());
                 offset.x -= anchorOffset.x;
 
-                offset.y += messageSegments.get(indicies[LINE_NUMBER] - 1).maxLineHeight + message.lineGapOffset() * size;
+                offset.y += messageSegments.get(indicies[LINE_NUMBER] - 1).maxLineHeight + message.lineGapOffset();
 
                 debugSegment(messageSegments, indicies[LINE_NUMBER], origin, offset);
             }

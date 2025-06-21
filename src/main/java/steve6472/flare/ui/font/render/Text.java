@@ -12,6 +12,7 @@ import steve6472.flare.ui.font.style.FontStyleEntry;
 import java.text.BreakIterator;
 import java.util.*;
 import java.util.function.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -32,6 +33,11 @@ public record Text(List<TextPart> parts, float textSize, float maxWidth, float m
         Codec.BOOL.optionalFieldOf("force_single_line", false).forGetter(Text::forceSingleLine),
         VerticalAnchorMode.CODEC.optionalFieldOf("vertical_anchor", VerticalAnchorMode.MAX_HEIGHT).forGetter(Text::verticalAnchor)
     ).apply(instance, Text::new));
+
+    public Text
+    {
+        parts = new ArrayList<>(parts);
+    }
 
     public void iterateCharacters(MessageCharIterator info)
     {
@@ -89,6 +95,10 @@ public record Text(List<TextPart> parts, float textSize, float maxWidth, float m
             }
 
             MessageChar lastChar = tempLastChar[0];
+            if (lastChar.glyph().index() == '\n')
+            {
+                tempWidthSum[0] = 0;
+            }
             Font font = lastChar.style().style().font();
 
             if (font == nextChar.style().style().font())
@@ -109,17 +119,10 @@ public record Text(List<TextPart> parts, float textSize, float maxWidth, float m
         return bob.toString();
     }
 
-    public List<TextRenderSegment> createSegments()
+    private IntList createBreakIndicies(String text)
     {
-        if (parts.isEmpty())
-            return List.of();
-
         BreakIterator breakIterator = BreakIterator.getLineInstance();
-        StringBuilder bobTheBuilder = new StringBuilder();
-        parts().forEach(l -> bobTheBuilder.append(l.text()));
-        breakIterator.setText(bobTheBuilder.toString());
-
-        List<TextRenderSegment> messageSegments = new ArrayList<>();
+        breakIterator.setText(text);
 
         // TODO: optimize this when forceSingleLine == true
         // Calculate break indicies - character after which new line should be created
@@ -127,13 +130,17 @@ public record Text(List<TextPart> parts, float textSize, float maxWidth, float m
         IntList breakIndicies = new IntArrayList(8);
         int previous = 0;
         float totalWidth = 0;
+        boolean lastHadLineBreak = false;
         while (current != BreakIterator.DONE)
         {
-            int trimmedCurrent = previous + rawString(previous, current).stripTrailing().length();
+            String currentSection = rawString(previous, current);
+            int trimmedCurrent = previous + currentSection.stripTrailing().length();
             float trimmedWidth = getWidth(previous, trimmedCurrent);
             float width = getWidth(previous, current);
 
-            if (!forceSingleLine && (totalWidth + trimmedWidth) > maxWidth())
+            String substring = text.substring(previous, current);
+
+            if (!forceSingleLine && ((totalWidth + trimmedWidth) > maxWidth() || lastHadLineBreak))
             {
                 breakIndicies.add(previous);
                 totalWidth = width;
@@ -144,12 +151,31 @@ public record Text(List<TextPart> parts, float textSize, float maxWidth, float m
 
             previous = current;
             current = breakIterator.next();
+
+            if (current != BreakIterator.DONE)
+                lastHadLineBreak = substring.endsWith("\n");
+
         }
 
         // Fixes the "new line when just one long word is over lenght" problem
         if (breakIndicies.isEmpty() || breakIndicies.getInt(0) != 0)
             breakIndicies.addFirst(0);
-        breakIndicies.add(bobTheBuilder.length());
+        breakIndicies.add(text.length());
+
+        return breakIndicies;
+    }
+
+    public List<TextRenderSegment> createSegments()
+    {
+        if (parts.isEmpty())
+            return List.of();
+
+        StringBuilder bobTheBuilder = new StringBuilder();
+        parts().forEach(l -> bobTheBuilder.append(l.text()));
+        String rawText = bobTheBuilder.toString();
+        IntList breakIndicies = createBreakIndicies(rawText);
+
+        List<TextRenderSegment> messageSegments = new ArrayList<>();
 
         // Calculate message segment values for rendering
         for (int i = 0; i < breakIndicies.size() - 1; i++)
@@ -161,6 +187,20 @@ public record Text(List<TextPart> parts, float textSize, float maxWidth, float m
             String string = rawString(segment.start, segment.end).stripTrailing();
             int strippedEnd = segment.start + string.length();
             segment.width = getWidth(segment.start, strippedEnd);
+
+            if (segment.start == strippedEnd)
+            {
+                characterStream(segment.start, segment.end).findFirst().ifPresent(msgChar -> {
+                    Metrics metrics = msgChar.style().style().font().getMetrics();
+                    float size = msgChar.size();
+
+                    segment.fontHeight = Math.max(segment.fontHeight, metrics.lineHeight() * size);
+                    segment.minAscender = Math.min(segment.minAscender, metrics.ascender() * size);
+                    segment.maxLineHeight = Math.max(segment.maxLineHeight, metrics.lineHeight() * size);
+                });
+                messageSegments.add(segment);
+                continue;
+            }
 
             characterStream(segment.start, strippedEnd).forEach(ch ->
             {

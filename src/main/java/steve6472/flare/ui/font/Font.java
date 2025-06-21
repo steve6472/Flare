@@ -247,8 +247,16 @@ public class Font
         return charset;
     }
 
+    private GlyphInfo newLine = null;
+
     public GlyphInfo glyphInfo(long character)
     {
+        if (character == '\n')
+        {
+            if (newLine == null)
+                newLine = new GlyphInfo('\n', 0, GlyphBounds.EMPTY, GlyphBounds.EMPTY);
+            return newLine;
+        }
         GlyphInfo glyphInfo = glyphs.get(character);
         if (glyphInfo == null)
             return UnknownCharacter.unknownGlyph();
