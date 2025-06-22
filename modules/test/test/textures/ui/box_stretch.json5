@@ -1,0 +1,13 @@
+{
+    render: {
+        type: "nine_slice",
+        stretch: {
+            inner: true,
+            left: true,
+            right: true,
+            top: true,
+            bottom: true
+        },
+        border: 3
+    }
+}

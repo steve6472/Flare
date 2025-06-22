@@ -18,6 +18,7 @@
 #define TEXTURE 0
 #define UV 1
 
+// Change this to choose the Render mode
 #define RENDER_MODE TEXTURE
 
 layout (location = 0) in vec2 uv;
@@ -51,10 +52,11 @@ float map(float value, float inMin, float inMax, float outMin, float outMax)
     return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
 }
 
-bool isStretchInner(int flags)
-{
-    return ((flags >> 2) & 0x01) == 1;
-}
+bool isStretchInner(int flags)  { return ((flags >> 2) & 0x01) == 1; }
+bool isStretchLeft(int flags)   { return ((flags >> 3) & 0x01) == 1; }
+bool isStretchRight(int flags)  { return ((flags >> 4) & 0x01) == 1; }
+bool isStretchTop(int flags)    { return ((flags >> 5) & 0x01) == 1; }
+bool isStretchBottom(int flags) { return ((flags >> 6) & 0x01) == 1; }
 
 int getTextureType(int flags)
 {
@@ -111,7 +113,13 @@ vec2 calculateNineSliceUV(UITexture uiTexture)
         // Middle
         else if (texturePixelUV.x > borderLeft && texturePixelUV.x < borderRight)
         {
-            spriteUV.x = mappedSides.x;
+            if (isStretchTop(uiTexture.flags))
+            {
+                spriteUV.x = map(spriteUV.x, spriteLeft, spriteRight, textureLeft, textureRight);
+            } else
+            {
+                spriteUV.x = mappedSides.x;
+            }
             spriteUV.y *= spritePixelSize.y / texturePixelSize.y;
         }
         // Right
@@ -129,7 +137,13 @@ vec2 calculateNineSliceUV(UITexture uiTexture)
         {
             spriteUV.x *= spritePixelSize.x / texturePixelSize.x;
 
-            spriteUV.y = mappedSides.y;
+            if (isStretchLeft(uiTexture.flags))
+            {
+                spriteUV.y = map(spriteUV.y, spriteTop, spriteBottom, textureTop, textureBottom);
+            } else
+            {
+                spriteUV.y = mappedSides.y;
+            }
         }
         // Middle
         else if (texturePixelUV.x > borderLeft && texturePixelUV.x < borderRight)
@@ -147,7 +161,13 @@ vec2 calculateNineSliceUV(UITexture uiTexture)
         else if (texturePixelUV.x > borderRight)
         {
             spriteUV.x = map(spriteUV.x, spriteRight, 1.0, textureRight, 1.0);
-            spriteUV.y = mappedSides.y;
+            if (isStretchRight(uiTexture.flags))
+            {
+                spriteUV.y = map(spriteUV.y, spriteTop, spriteBottom, textureTop, textureBottom);
+            } else
+            {
+                spriteUV.y = mappedSides.y;
+            }
         }
     }
     // BOTTOM
@@ -162,7 +182,13 @@ vec2 calculateNineSliceUV(UITexture uiTexture)
         // Middle
         else if (texturePixelUV.x > borderLeft && texturePixelUV.x < borderRight)
         {
-            spriteUV.x = mappedSides.x;
+            if (isStretchTop(uiTexture.flags))
+            {
+                spriteUV.x = map(spriteUV.x, spriteLeft, spriteRight, textureLeft, textureRight);
+            } else
+            {
+                spriteUV.x = mappedSides.x;
+            }
             spriteUV.y = map(spriteUV.y, spriteBottom, 1.0, textureBottom, 1.0);
         }
         // Right

@@ -10,7 +10,7 @@
   "flare:message_max_height": false,
   "flare:message_max_width": false,
   "flare:message_origin": false,
-  "flare:segment": true,
+  "flare:segment": false,
   "flare:segment_max_descent": false,
   "flare:segment_min_descent": false
 }

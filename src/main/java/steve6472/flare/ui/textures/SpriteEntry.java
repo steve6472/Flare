@@ -27,7 +27,11 @@ public record SpriteEntry(Key key, SpriteData data, Vector4f uv, Vector2i pixelS
         {
             border.set(nineSlice.border());
             flags |= 0b1;
-            flags = BitUtil.setBit(flags, 2, nineSlice.stretchInner());
+            flags = BitUtil.setBit(flags, 2, nineSlice.stretch().inner());
+            flags = BitUtil.setBit(flags, 3, nineSlice.stretch().left());
+            flags = BitUtil.setBit(flags, 4, nineSlice.stretch().right());
+            flags = BitUtil.setBit(flags, 5, nineSlice.stretch().top());
+            flags = BitUtil.setBit(flags, 6, nineSlice.stretch().bottom());
         }
 
         return SBO.SPRITE_ENTRY.create(

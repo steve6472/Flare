@@ -54,12 +54,12 @@ public class TestFontRender extends UIFontRenderImpl
 //                ), 24f, 128 * 5f, 128f * 2f, anchor, align, 0, false, VerticalAnchorMode.MAX_HEIGHT),
 //            new Matrix4f().translate(20, 20, 0));
 
-        renderText(
-            new Text(
-                List.of(
-                    new TextPart("A\nB\n\nC", 24f * 2f, comicSans)
-                ), 24f, 128 * 5f, 128f * 2f, anchor, align, 0, false, VerticalAnchorMode.MAX_HEIGHT),
-            new Matrix4f().translate(20, 20, 0));
+//        renderText(
+//            new Text(
+//                List.of(
+//                    new TextPart("A\nB\n\nC", 24f * 2f, comicSans)
+//                ), 24f, 128 * 5f, 128f * 2f, anchor, align, 0, false, VerticalAnchorMode.MAX_HEIGHT),
+//            new Matrix4f().translate(20, 20, 0));
 //        renderMessage(new UITextMessage(List.of(new UITextLine(editableText, arial)), 24f * 16f, 128 * 6f, anchor, align, NewLineType.MAX_HEIGHT, 0), new Matrix4f().translate(20, 20, 0));
 
 //        renderMessage(new UITextMessage(List.of(new UITextLine(".", arial)), 24f * 2f, 128 * 2f, Anchor2D.CENTER, Align.CENTER, NewLineType.MAX_HEIGHT, 0), new Matrix4f().translate(200, 100, 0));

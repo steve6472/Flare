@@ -1,7 +1,6 @@
 {
     render: {
         type: "nine_slice",
-        stretch_inner: false,
         border: 3
     },
     animation: {

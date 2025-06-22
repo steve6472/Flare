@@ -83,7 +83,7 @@ public record Text(List<TextPart> parts, float textSize, float maxWidth, float m
 
     public float getWidth(int start, int end)
     {
-        float[] tempWidthSum = {0};
+        float[] tempWidthSum = {0, 0};
         MessageChar[] tempLastChar = {null};
 
         iterateCharacters(start, end, nextChar -> {
@@ -97,6 +97,7 @@ public record Text(List<TextPart> parts, float textSize, float maxWidth, float m
             MessageChar lastChar = tempLastChar[0];
             if (lastChar.glyph().index() == '\n')
             {
+                tempWidthSum[1] = Math.max(tempWidthSum[0], tempWidthSum[1]);
                 tempWidthSum[0] = 0;
             }
             Font font = lastChar.style().style().font();
@@ -109,7 +110,7 @@ public record Text(List<TextPart> parts, float textSize, float maxWidth, float m
             tempLastChar[0] = nextChar;
             tempWidthSum[0] += nextChar.glyph().advance() * nextChar.size();
         });
-        return tempWidthSum[0];
+        return Math.max(tempWidthSum[0], tempWidthSum[1]);
     }
 
     public String rawString(int start, int end)
