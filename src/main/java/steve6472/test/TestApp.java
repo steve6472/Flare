@@ -1,12 +1,16 @@
 package steve6472.test;
 
+import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
+import steve6472.core.log.Log;
 import steve6472.core.registry.Key;
 import steve6472.core.setting.SettingsLoader;
 import steve6472.flare.Camera;
+import steve6472.flare.FlareConstants;
+import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.core.FrameInfo;
 import steve6472.flare.core.FlareApp;
 import steve6472.flare.input.KeybindUpdater;
@@ -18,6 +22,7 @@ import steve6472.flare.render.UILineRender;
 import steve6472.flare.render.UIRenderSystem;
 
 import java.io.File;
+import java.util.logging.Logger;
 
 /**
  * Created by steve6472
@@ -26,8 +31,10 @@ import java.io.File;
  */
 class TestApp extends FlareApp
 {
+    private static final Logger LOGGER = Log.getLogger(TestApp.class);
     private static final File TEST_SETTINGS = new File("settings/test_settings.json");
     public static TestApp instance;
+    public static boolean DUMP_SAMPLERS = false;
 
     @Override
     protected void preInit()
@@ -83,12 +90,56 @@ class TestApp extends FlareApp
     public void postInit()
     {
         KeybindUpdater.updateKeybinds(TestRegistries.KEYBIND, input());
+
+        dumpSamplers();
+    }
+
+    private void dumpSamplers()
+    {
+        if (!DUMP_SAMPLERS)
+            return;
+
+        LOGGER.info("Dumping samplers");
+        File file = getFile("/sampler");
+
+        LOGGER.info("Generating new samplers");
+        for (Key key : FlareRegistries.SAMPLER.keys())
+        {
+            File dumpFile = new File(file, key.namespace() + "-" + key.id().replaceAll("/", "__") + ".png");
+            TextureSampler textureSampler = FlareRegistries.SAMPLER.get(key);
+            textureSampler.texture.saveTextureAsPNG(device(), masterRenderer().getCommands(), masterRenderer().getGraphicsQueue(), dumpFile);
+        }
+        LOGGER.info("Finished dumping samplers");
+    }
+
+    private static @NotNull File getFile(String suffix)
+    {
+        File file = new File(FlareConstants.FLARE_DEBUG_FOLDER, "dumped" + suffix);
+        if (file.exists())
+        {
+            LOGGER.info("Removing old textures");
+            File[] files = file.listFiles();
+            if (files != null)
+            {
+                for (File listFile : files)
+                {
+                    if (!listFile.delete())
+                    {
+                        LOGGER.severe("Could not delete " + listFile.getAbsolutePath());
+                    }
+                }
+            }
+        } else
+        {
+            if (!file.mkdirs())
+            {
+                LOGGER.severe("Could not create " + file.getAbsolutePath());
+            }
+        }
+        return file;
     }
 
     float Y = 0;
-
-    public static int pixelW = 20;
-    public static int pixelH = 20;
 
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
@@ -112,11 +163,6 @@ class TestApp extends FlareApp
 
         if (TestKeybinds.BACK.isActive())
             Y -= frameInfo.frameTime() * speed;
-
-        if (TestKeybinds.TO_UP.isActive()) pixelH -= 1;
-        if (TestKeybinds.TO_DOWN.isActive()) pixelH += 1;
-        if (TestKeybinds.TO_LEFT.isActive()) pixelW -= 1;
-        if (TestKeybinds.TO_RIGHT.isActive()) pixelW += 1;
 
         Key sans = Key.withNamespace("test", "default_comic_sans");
         Key debug = Key.withNamespace("test", "debug");

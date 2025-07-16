@@ -16,6 +16,7 @@ public final class SourceType<T extends Source> extends Type<T>
 {
     public static final SourceType<DirectorySource> DIRECTORY = register("directory", DirectorySource.CODEC);
     public static final SourceType<SingleSource> SINGLE = register("single", SingleSource.CODEC);
+    public static final SourceType<FilterSource> FILTER = register("filter", FilterSource.CODEC);
 
     public SourceType(Key key, MapCodec<T> codec)
     {

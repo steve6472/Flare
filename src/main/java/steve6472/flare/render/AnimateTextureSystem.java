@@ -93,7 +93,7 @@ public class AnimateTextureSystem extends RenderSystem
                 DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
                 frame.descriptorSet = descriptorWriter
                     .writeBuffer(0, stack, frame.uboBuffer, UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT)
-                    .writeImage(1, stack, FlareRegistries.SAMPLER.get(FlareConstants.UI_TEXTURE))
+                    .writeImage(1, stack, FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).getSampler())
                     .writeBuffer(2, stack, frame.sboTextureSettings)
                     .build();
             }
@@ -161,15 +161,16 @@ public class AnimateTextureSystem extends RenderSystem
 
     private Struct updateUITextures()
     {
-        Collection<Key> keys = FlareRegistries.SPRITE.keys();
-        Struct[] textureSettings = new Struct[keys.size()];
-        keys.forEach(key ->
-        {
-            SpriteEntry uiTextureEntry = FlareRegistries.SPRITE.get(key);
-            textureSettings[uiTextureEntry.index()] = uiTextureEntry.toStruct();
-        });
-
-        return SBO.SPRITE_ENTRIES.create((Object) textureSettings);
+        return null;
+//        Collection<Key> keys = FlareRegistries.SPRITE.keys();
+//        Struct[] textureSettings = new Struct[keys.size()];
+//        keys.forEach(key ->
+//        {
+//            SpriteEntry uiTextureEntry = FlareRegistries.SPRITE.get(key);
+//            textureSettings[uiTextureEntry.index()] = uiTextureEntry.toStruct();
+//        });
+//
+//        return SBO.SPRITE_ENTRIES.create((Object) textureSettings);
     }
 
     @Override

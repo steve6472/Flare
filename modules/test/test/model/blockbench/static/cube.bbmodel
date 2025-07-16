@@ -63,7 +63,7 @@
     "textures": [
         {
             "path": "C:\\storage\\Flare\\modules\\test\\test\\textures\\model\\white_cube.png",
-            "name": "white_cube.png",
+            "name": "test:white_cube",
             "folder": "block",
             "namespace": "",
             "id": "0",

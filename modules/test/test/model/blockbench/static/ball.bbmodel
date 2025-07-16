@@ -12568,7 +12568,7 @@
     "textures": [
         {
             "path": "C:\\storage\\Flare\\modules\\test\\test\\textures\\model\\white_ball.png",
-            "name": "white_ball.png",
+            "name": "test:white_ball",
             "folder": "block",
             "namespace": "",
             "id": "0",

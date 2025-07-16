@@ -20,8 +20,6 @@ import steve6472.flare.ui.font.FontEntry;
 import steve6472.flare.ui.font.FontLoader;
 import steve6472.flare.ui.font.style.FontStyleEntry;
 import steve6472.flare.ui.font.style.StyleLoader;
-import steve6472.flare.ui.textures.SpriteEntry;
-import steve6472.flare.ui.textures.SpriteLoader;
 import steve6472.flare.ui.textures.type.SpriteUIType;
 
 /**
@@ -43,11 +41,8 @@ public class FlareRegistries extends RegistryCreators
     public static final Registry<SpriteUIType<?>> SPRITE_UI_TYPE = createNamespacedRegistry(FlareConstants.NAMESPACE, "sprite_ui_type", () -> SpriteUIType.STRETCH);
     public static final Registry<SourceType<?>> ATLAS_SOURCE_TYPE = createNamespacedRegistry(FlareConstants.NAMESPACE, "atlas_source_type", () -> SourceType.DIRECTORY);
 
+    // Atlas also holds sprites and the data. It has a duplicate TextureSampler for easier access.
     public static final ObjectRegistry<Atlas> ATLAS = createObjectRegistry("atlas", AtlasLoader::boostrap);
-
-    // TODO: do better lzl
-    // Load sprites before models and after atlas source type
-    public static final ObjectRegistry<SpriteEntry> SPRITE = createObjectRegistry("sprite", SpriteLoader::bootstrap);
 
     // Models have to load after the model types registries
     public static final ObjectRegistry<LoadedModel> STATIC_LOADED_MODEL = createObjectRegistry("static_loaded_model", ErrorModel.INSTANCE, BlockbenchLoader::loadStaticModels);

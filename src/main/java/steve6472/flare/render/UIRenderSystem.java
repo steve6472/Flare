@@ -90,7 +90,7 @@ public final class UIRenderSystem extends RenderSystem
                 DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
                 frame.descriptorSet = descriptorWriter
                     .writeBuffer(0, stack, frame.uboBuffer, UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT)
-                    .writeImage(1, stack, FlareRegistries.SAMPLER.get(FlareConstants.UI_TEXTURE))
+                    .writeImage(1, stack, FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).getSampler())
                     .writeBuffer(2, stack, frame.sboTextureSettings)
                     .build();
             }
@@ -155,14 +155,14 @@ public final class UIRenderSystem extends RenderSystem
         vkCmdDraw(frameInfo.commandBuffer(), verticies.size(), 1, 0, 0);
     }
 
-
     private Struct updateUITextures()
     {
-        Collection<Key> keys = FlareRegistries.SPRITE.keys();
+        Map<Key, SpriteEntry> sprites = FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).getSprites();
+        Collection<Key> keys = sprites.keySet();
         Struct[] textureSettings = new Struct[keys.size()];
         keys.forEach(key ->
         {
-            SpriteEntry uiTextureEntry = FlareRegistries.SPRITE.get(key);
+            SpriteEntry uiTextureEntry = sprites.get(key);
             textureSettings[uiTextureEntry.index()] = uiTextureEntry.toStruct();
         });
 

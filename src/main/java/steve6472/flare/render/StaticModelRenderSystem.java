@@ -81,7 +81,7 @@ public final class StaticModelRenderSystem extends RenderSystem
                 DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
                 frame.descriptorSet = descriptorWriter
                     .writeBuffer(0, stack, frame.uboBuffer, UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT)
-                    .writeImage(1, stack, FlareRegistries.SAMPLER.get(FlareConstants.BLOCKBENCH_TEXTURE))
+                    .writeImage(1, stack, FlareRegistries.ATLAS.get(FlareConstants.ATLAS_BLOCKBENCH).getSampler())
                     .writeBuffer(2, stack, frame.sboBuffer)
                     .build();
             }

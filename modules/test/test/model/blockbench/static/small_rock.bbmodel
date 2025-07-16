@@ -252,7 +252,7 @@
     "textures": [
         {
             "path": "C:\\storage\\Flare\\modules\\test\\test\\textures\\model\\small_rock.png",
-            "name": "small_rock.png",
+            "name": "test:small_rock",
             "folder": "block",
             "namespace": "",
             "id": "0",

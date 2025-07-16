@@ -254,7 +254,7 @@
     "textures": [
         {
             "path": "C:\\storage\\Flare\\modules\\test\\test\\textures\\model\\mesh_pebble.png",
-            "name": "mesh_pebble.png",
+            "name": "test:mesh_pebble",
             "folder": "block",
             "namespace": "",
             "id": "0",

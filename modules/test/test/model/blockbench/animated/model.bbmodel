@@ -635,7 +635,7 @@
     "textures": [
         {
             "path": "C:\\storage\\Flare\\modules\\test\\test\\textures\\model\\loony.png",
-            "name": "loony.png",
+            "name": "test:loony",
             "folder": "",
             "namespace": "",
             "id": "0",

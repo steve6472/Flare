@@ -8,6 +8,7 @@ import org.lwjgl.vulkan.*;
 import steve6472.core.SteveCore;
 import steve6472.core.log.Log;
 import steve6472.core.module.ModuleManager;
+import steve6472.core.registry.Key;
 import steve6472.core.setting.SettingsLoader;
 import steve6472.core.util.JarExport;
 import steve6472.flare.*;
@@ -16,6 +17,9 @@ import steve6472.flare.registry.RegistryCreators;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.settings.ValidationLevel;
 import steve6472.flare.settings.VisualSettings;
+import steve6472.flare.ui.font.FontEntry;
+import steve6472.flare.ui.font.UnknownCharacter;
+import steve6472.flare.ui.font.style.FontStyleEntry;
 import steve6472.flare.vr.VrData;
 import steve6472.flare.vr.VrUtil;
 
@@ -124,6 +128,39 @@ public class Flare
         SettingsLoader.loadFromJsonFile(FlareRegistries.VISUAL_SETTINGS, FlareConstants.VISUAL_SETTINGS_FILE);
         SettingsLoader.loadFromJsonFile(FlareRegistries.FONT_DEBUG_SETTINGS, FlareConstants.FONT_DEBUG_SETTINGS_FILE);
         app.loadSettings();
+        verifyFlareDefaults();
+    }
+
+    private void verifyFlareDefaults()
+    {
+        var exception = new IllegalStateException(
+            "Invalid Flare configuration, please delete \"generated\" folder and \"flare\" folder under \"modules\" and try again. " +
+            "If the error persists, please contact the developer of the application."
+        );
+
+        // Font
+        FontEntry fontEntry = FlareRegistries.FONT.get(UnknownCharacter.FONT_KEY);
+        FontStyleEntry fontStyle = FlareRegistries.FONT_STYLE.get(UnknownCharacter.STYLE_KEY);
+        if (fontEntry == null || fontStyle == null)
+        {
+            LOGGER.severe("Font for unknown character not found!");
+            LOGGER.severe("Entry: " + fontEntry);
+            LOGGER.severe("Style: " + fontStyle);
+            throw exception;
+        }
+
+        // Atlas
+        if (FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI) == null)
+        {
+            LOGGER.severe("Flare Atlas 'ui' does not exist!");
+            throw exception;
+        }
+
+        if (FlareRegistries.ATLAS.get(FlareConstants.ATLAS_BLOCKBENCH) == null)
+        {
+            LOGGER.severe("Flare Atlas 'model' does not exist!");
+            throw exception;
+        }
     }
 
     private void initVulkan()

@@ -33,14 +33,14 @@ public class FlareConstants
     /// Constant stolen from Math.DEGREES_TO_RADIANS
     public static final float DEG_TO_RAD = 0.017453292519943295f;
 
-    /// Blockbench texture atlas
-    public static final Key BLOCKBENCH_TEXTURE = Key.withNamespace(NAMESPACE,"blockbench_main");
-
-    /// UI Texture atlas
-    public static final Key UI_TEXTURE = Key.withNamespace(NAMESPACE,"ui_texture");
-
     /// Error texture id
-    public static final Key ERROR_TEXTURE = Key.withNamespace(NAMESPACE, "error_texture");
+    public static final Key ERROR_TEXTURE = key("error_texture");
+
+    /// Atlas UI key reference
+    public static final Key ATLAS_UI = key("ui");
+
+    /// Atlas Blockbench key reference
+    public static final Key ATLAS_BLOCKBENCH = key("model");
 
     /*
      * File paths
@@ -60,6 +60,9 @@ public class FlareConstants
 
     /// Folder for generated debug files
     public static final File FLARE_DEBUG_FOLDER = new File(GENERATED_FLARE, "debug");
+
+    /// Folder for generated debug atlases
+    public static final File FLARE_DEBUG_ATLAS = new File(FLARE_DEBUG_FOLDER, "atlas");
 
     /// Folder for generated debug files
     public static final File MSDF_EXE = new File(GENERATED_FLARE, "msdf_atlas_gen.exe");

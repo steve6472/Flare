@@ -146,8 +146,8 @@
     "outliner": ["9887d5be-e738-f787-62cb-975aee8ea530", "53c52181-8933-f1d0-afca-be566fb85146", "f2410d0f-4626-8a92-ba94-a76c48815221"],
     "textures": [
         {
-            "path": "C:\\storage\\Flare\\modules\\test\\test\\textures\\model\\backdrop.png",
-            "name": "backdrop.png",
+            "path": "C:\\storage\\Flare\\modules\\test\\test\\textures\\model\\test\\backdrop.png",
+            "name": "test:test/backdrop",
             "folder": "block",
             "namespace": "",
             "id": "0",
@@ -171,7 +171,7 @@
             "internal": true,
             "saved": true,
             "uuid": "6237f7af-87b6-2cb3-b799-453e4bb65b1a",
-            "relative_path": "../../../textures/model/backdrop.png",
+            "relative_path": "../../../textures/model/test/backdrop.png",
             "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAACpJREFUOE9jtLW1/c9AAWAcNYBhOIRBbGws3nRw6tQpvKmEcdQAhmEQBgBwPzFhDnUXMQAAAABJRU5ErkJggg=="
         }
     ]

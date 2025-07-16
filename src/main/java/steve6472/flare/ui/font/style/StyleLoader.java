@@ -33,18 +33,6 @@ public class StyleLoader
         });
 
         styles.forEach(FlareRegistries.FONT_STYLE::register);
-
-        FontEntry fontEntry = FlareRegistries.FONT.get(UnknownCharacter.FONT_KEY);
-        FontStyleEntry fontStyle = FlareRegistries.FONT_STYLE.get(UnknownCharacter.STYLE_KEY);
-        if (fontEntry == null || fontStyle == null)
-        {
-            LOGGER.severe("Font for unknown character not found! This is a bug!");
-            LOGGER.severe("Please create font file 'unknown' and font style 'unknown' with single 'A' char that will be used as an error glyph.");
-            LOGGER.severe("Until fixed, any unknown character will crash the program instead of displaying unknown symbol.");
-        }
-        else
-        {
-            UnknownCharacter.init();
-        }
+        UnknownCharacter.init();
     }
 }

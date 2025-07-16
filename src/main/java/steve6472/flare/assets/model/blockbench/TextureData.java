@@ -8,7 +8,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
  * Date: 8/17/2024
  * Project: Flare <br>
  */
-public record TextureData(int id, int width, int height, int uvWidth, int uvHeight, String relativePath)
+public record TextureData(int id, int width, int height, int uvWidth, int uvHeight, String name)
 {
     // TODO: add animation data, new record for that
     public static final Codec<TextureData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -17,6 +17,6 @@ public record TextureData(int id, int width, int height, int uvWidth, int uvHeig
         Codec.INT.fieldOf("height").forGetter(o -> o.height),
         Codec.INT.fieldOf("uv_width").forGetter(o -> o.uvWidth),
         Codec.INT.fieldOf("uv_height").forGetter(o -> o.uvHeight),
-        Codec.STRING.fieldOf("relative_path").forGetter(o -> o.relativePath)
+        Codec.STRING.fieldOf("name").forGetter(o -> o.name)
     ).apply(instance, TextureData::new));
 }

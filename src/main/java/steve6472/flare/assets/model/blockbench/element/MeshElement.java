@@ -58,7 +58,7 @@ public record MeshElement(UUID uuid, String name, Vector3f rotation, Vector3f or
 
         faces.forEach((_, face) -> {
             TextureData textureData = model.textures().get(face.texture());
-            String textureId = textureData.relativePath();
+            String textureId = textureData.name();
             Rectangle rectangle = packer.getRects().get(textureId);
             for (Vector2f uv : face.uv().values())
             {

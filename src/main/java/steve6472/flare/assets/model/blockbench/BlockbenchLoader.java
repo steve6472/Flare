@@ -35,46 +35,7 @@ import java.util.logging.Logger;
  */
 public class BlockbenchLoader
 {
-    private static final Logger LOGGER = Log.getLogger(BlockbenchLoader.class);
-    private static final int STARTING_IMAGE_SIZE = 64;
-
-    private static final File DEBUG_ATLAS = new File(FlareConstants.FLARE_DEBUG_FOLDER, "blockbench_atlas.png");
-
-    private static final Map<String, BufferedImage> IMAGES = new HashMap<>();
-
-    public static TextureSampler packImages(VkDevice device, Commands commands, VkQueue graphicsQueue)
-    {
-        return createMainBlockbenchTexture(device, commands, graphicsQueue);
-    }
-
-    private static TextureSampler createMainBlockbenchTexture(VkDevice device, Commands commands, VkQueue graphicsQueue)
-    {
-        ImagePacker packer = PackerUtil.pack(STARTING_IMAGE_SIZE, IMAGES, true);
-
-        IMAGES.clear();
-
-        BufferedImage image = packer.getImage();
-        saveDebugAtlas(image);
-        Texture texture = new Texture();
-        texture.createTextureImageFromBufferedImage(device, image, commands.commandPool, graphicsQueue);
-        TextureSampler sampler = new TextureSampler(texture, device, FlareConstants.BLOCKBENCH_TEXTURE);
-        FlareRegistries.SAMPLER.register(sampler);
-        fixModelUvs(packer);
-        return sampler;
-    }
-
-    private static void saveDebugAtlas(BufferedImage image)
-    {
-        try
-        {
-            ImageIO.write(image, "PNG", DEBUG_ATLAS);
-        } catch (IOException e)
-        {
-            LOGGER.warning("Failed to save debug " + DEBUG_ATLAS.getName() + ", exception: " + e.getMessage());
-        }
-    }
-
-    private static void fixModelUvs(ImagePacker imagePacker)
+    public static void fixModelUvs(ImagePacker imagePacker)
     {
         FlareRegistries.ANIMATED_LOADED_MODEL.keys().forEach(key ->
         {
@@ -136,7 +97,7 @@ public class BlockbenchLoader
     {
         Map<Key, Pair<LoadedModel, String>> models = new LinkedHashMap<>();
 
-        ModuleUtil.loadModuleJsonCodecs(part, Flare.getModuleManager(), LoadedModel.CODEC, (module, file, key, loadedModel) -> {
+        ModuleUtil.loadModuleJsonCodecs(part, Flare.getModuleManager(), LoadedModel.CODEC, (_, file, key, loadedModel) -> {
             key = Key.withNamespace(key.namespace(), part.path().substring("model/".length()) + "/" + key.id());
             loadedModel = overrideKey(loadedModel, key);
             models.put(key, Pair.of(loadedModel, file.getAbsolutePath()));
@@ -146,42 +107,6 @@ public class BlockbenchLoader
         {
             LoadedModel model = value.getFirst();
             modelRegistry.register(model.key(), model);
-            loadTextures(model, value.getSecond());
-        }
-    }
-
-    private static void loadTextures(LoadedModel model, String modelPath)
-    {
-        LOGGER.finest("Loading textures for model '" + model.key() + "'");
-        try
-        {
-            List<TextureData> textures = model.textures();
-            if (textures.isEmpty()) LOGGER.warning("Model has no texture, weirdness may happen! (" + model.key() + ")");
-
-            for (TextureData texture : textures)
-            {
-                String pathId = texture.relativePath();
-                IMAGES.computeIfAbsent(pathId, _ ->
-                {
-                    String path = Paths.get(modelPath).resolve(Paths.get(pathId)).normalize().toAbsolutePath().toString();
-                    try
-                    {
-                        File input = new File(path);
-                        if (!input.exists())
-                        {
-                            throw new RuntimeException("Texture " + path + " (" + pathId + ")" + " not found");
-                        }
-                        return ImageIO.read(input);
-                    } catch (IOException e)
-                    {
-                        throw new RuntimeException(e);
-                    }
-                });
-            }
-        } catch (RuntimeException e)
-        {
-            LOGGER.severe("Failed to load texture for model " + model.key());
-            throw e;
         }
     }
 

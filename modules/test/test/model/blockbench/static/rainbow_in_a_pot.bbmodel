@@ -629,7 +629,7 @@
     "textures": [
         {
             "path": "C:\\storage\\Flare\\modules\\test\\test\\textures\\model\\rainbow_in_a_pot.png",
-            "name": "rainbow_in_a_pot.png",
+            "name": "test:rainbow_in_a_pot",
             "folder": "block",
             "namespace": "",
             "id": "1",

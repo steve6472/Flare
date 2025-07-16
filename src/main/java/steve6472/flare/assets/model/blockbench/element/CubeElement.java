@@ -68,7 +68,7 @@ public record CubeElement(UUID uuid, String name, Vector3f from, Vector3f to, Ve
 
         faces.forEach((_, face) -> {
             TextureData textureData = model.textures().get(face.texture());
-            String textureId = textureData.relativePath();
+            String textureId = textureData.name();
             Rectangle rectangle = packer.getRects().get(textureId);
             Preconditions.checkNotNull(rectangle, "Texture data not found in ImagePacker, for " + textureId);
             Vector4f uv = face.uv();

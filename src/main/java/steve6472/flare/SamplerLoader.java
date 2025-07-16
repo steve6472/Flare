@@ -2,11 +2,14 @@ package steve6472.flare;
 
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
+import steve6472.core.registry.Key;
+import steve6472.core.util.ImagePacker;
 import steve6472.flare.assets.TextureSampler;
+import steve6472.flare.assets.atlas.Atlas;
 import steve6472.flare.assets.model.blockbench.BlockbenchLoader;
 import steve6472.flare.registry.VkContent;
 import steve6472.flare.registry.FlareRegistries;
-import steve6472.flare.ui.textures.SpriteLoader;
+import steve6472.flare.assets.atlas.SpriteLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +28,15 @@ public final class SamplerLoader
 
     public static TextureSampler loadSamplers(VkDevice device, Commands commands, VkQueue graphicsQueue)
     {
-        // Flare textures
-        TextureSampler bbSampler = BlockbenchLoader.packImages(device, commands, graphicsQueue);
-        SpriteLoader.createTexture(device, commands, graphicsQueue);
+        for (Key key : FlareRegistries.ATLAS.keys())
+        {
+            Atlas atlas = FlareRegistries.ATLAS.get(key);
+            ImagePacker packer = SpriteLoader.createTexture(atlas, device, commands, graphicsQueue);
+            if (atlas.key().equals(FlareConstants.ATLAS_BLOCKBENCH))
+            {
+                BlockbenchLoader.fixModelUvs(packer);
+            }
+        }
 
         SAMPLER_LOADERS.forEach(loader ->
         {
@@ -35,7 +44,7 @@ public final class SamplerLoader
             FlareRegistries.SAMPLER.register(sampler);
         });
 
-        return bbSampler;
+        return null;
     }
 
     public static void addSamplerLoader(VkContent<TextureSampler> loader)

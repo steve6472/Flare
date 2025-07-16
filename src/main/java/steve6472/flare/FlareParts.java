@@ -10,8 +10,7 @@ import steve6472.core.module.ModulePart;
 public interface FlareParts
 {
     ModulePart ATLAS = new ModulePart("Atlas", "atlas");
-    ModulePart TEXTURE_MODEL = new ModulePart("Model Texture", "textures/model");
-    ModulePart TEXTURE_UI = new ModulePart("UI Texture", "textures/ui");
+    ModulePart TEXTURES = new ModulePart("Textures", "textures");
 
     ModulePart MODEL_STATIC = new ModulePart("Static Model", "model/blockbench/static");
     ModulePart MODEL_ANIMATED = new ModulePart("Animated Model", "model/blockbench/animated");

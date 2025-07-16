@@ -1155,7 +1155,7 @@
     "textures": [
         {
             "path": "C:\\storage\\Flare\\modules\\test\\test\\textures\\model\\chain.png",
-            "name": "chain.png",
+            "name": "test:chain",
             "folder": "block",
             "namespace": "",
             "id": "0",

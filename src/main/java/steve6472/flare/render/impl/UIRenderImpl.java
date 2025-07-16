@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 import steve6472.core.log.Log;
 import steve6472.core.registry.Key;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.Vertex;
@@ -41,7 +42,7 @@ public abstract class UIRenderImpl
 
     protected final SpriteEntry getTextureEntry(Key textureKey)
     {
-        SpriteEntry uiTextureEntry = FlareRegistries.SPRITE.get(textureKey);
+        SpriteEntry uiTextureEntry = FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).getSprites().get(textureKey);
         if (uiTextureEntry == null)
         {
             if (!MISSING_TEXTURES.contains(textureKey.toString()))
