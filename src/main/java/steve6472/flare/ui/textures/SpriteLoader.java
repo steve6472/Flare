@@ -44,7 +44,7 @@ import static org.lwjgl.vulkan.VK10.*;
 public class SpriteLoader
 {
     private static final Logger LOGGER = Log.getLogger(SpriteLoader.class);
-    private static final int STARTING_IMAGE_SIZE = 512;
+    private static final int STARTING_IMAGE_SIZE = 64;
 
     private static final File DEBUG_ATLAS = new File(FlareConstants.FLARE_DEBUG_FOLDER, "sprite_atlas.png");
     private static final Map<Key, BufferedImage> IMAGES = new HashMap<>();

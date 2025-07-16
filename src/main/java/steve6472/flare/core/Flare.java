@@ -32,6 +32,13 @@ import static steve6472.flare.render.debug.DebugRender.*;
 
 public class Flare
 {
+    /* # TODOS:
+
+     * [ ] Animated textures
+     *  - Should help me with writing into a texture
+     *
+     * [x] Texture Dumping
+     */
     private static final Logger LOGGER = Log.getLogger(Flare.class);
 
     private static Flare INSTANCE;

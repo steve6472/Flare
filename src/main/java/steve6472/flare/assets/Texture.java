@@ -2,6 +2,7 @@ package steve6472.flare.assets;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBImage;
+import org.lwjgl.stb.STBImageWrite;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 import steve6472.flare.Commands;
@@ -10,6 +11,7 @@ import steve6472.flare.VkBuffer;
 import steve6472.flare.VulkanUtil;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -30,12 +32,17 @@ public class Texture
 {
     public long textureImage;
     public long textureImageMemory;
+    public int width, height;
 
+    // TODO: channels does not work properly
     private void createTextureImage(VkDevice device, long commandPool, VkQueue graphicsQueue, ByteBuffer pixelData, Consumer<ByteBuffer> free, int width, int height, int channels)
     {
+        this.width = width;
+        this.height = height;
+
         try (MemoryStack stack = MemoryStack.stackPush())
         {
-            long imageSize = (long) width * (long) height/* * (long) channels*/ * 4;
+            long imageSize = (long) width * (long) height * (long) channels;
             if (imageSize == 0)
                 throw new RuntimeException("Image size is 0!");
 
@@ -63,7 +70,7 @@ public class Texture
                 width, height,
                 VK_FORMAT_R8G8B8A8_UNORM,
                 VK_IMAGE_TILING_OPTIMAL,
-                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                 pTextureImage,
                 pTextureImageMemory);
@@ -119,6 +126,43 @@ public class Texture
     {
         ByteBuffer pixels = convertImageToByteBuffer(image);
         createTextureImage(device, commandPool, graphicsQueue, pixels, _ -> {}, image.getWidth(), image.getHeight(), 4);
+    }
+
+    public void saveTextureAsPNG(VkDevice device, Commands commandPool, VkQueue graphicsQueue, File outputPath)
+    {
+        long imageSize = (long) width * (long) height * (long) 4;
+
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            VkBuffer stagingBuffer = new VkBuffer(
+                device,
+                (int) imageSize,
+                1,
+                VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+            // Transition image layout and copy image to buffer
+            VulkanUtil.transitionImageLayout(device, textureImage, VK_FORMAT_R8G8B8A8_UNORM,
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                commandPool.commandPool, graphicsQueue);
+
+            Texture.copyImageToBuffer(stack, device, textureImage, stagingBuffer.getBuffer(), width, height, commandPool.commandPool, graphicsQueue);
+
+            VulkanUtil.transitionImageLayout(device, textureImage, VK_FORMAT_R8G8B8A8_UNORM,
+                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                commandPool.commandPool, graphicsQueue);
+
+            // Map buffer memory
+            stagingBuffer.map();
+            ByteBuffer data = stagingBuffer.getMappedMemory().getByteBuffer(0, stagingBuffer.getInstanceSize());
+
+            // Write PNG using STB
+            STBImageWrite.stbi_write_png(outputPath.getAbsolutePath(), width, height, 4, data, width * 4);
+
+            stagingBuffer.cleanup();
+        }
     }
 
     private static ByteBuffer convertImageToByteBuffer(BufferedImage image)
@@ -235,10 +279,8 @@ public class Texture
         Commands.endSingleTimeCommands(commandBuffer, graphicsQueue, device, commandPool);
     }
 
-    private void copyBufferToImage(MemoryStack stack, VkDevice device, long buffer, long image, int width, int height, long commandPool, VkQueue graphicsQueue)
+    public static VkBufferImageCopy.Buffer createRegion(MemoryStack stack, int width, int height)
     {
-        VkCommandBuffer commandBuffer = Commands.beginSingleTimeCommands(device, commandPool);
-
         VkBufferImageCopy.Buffer region = VkBufferImageCopy.calloc(1, stack);
         region.bufferOffset(0);
         region.bufferRowLength(0);   // Tightly packed
@@ -249,8 +291,24 @@ public class Texture
         region.imageSubresource().layerCount(1);
         region.imageOffset().set(0, 0, 0);
         region.imageExtent(VkExtent3D.calloc(stack).set(width, height, 1));
+        return region;
+    }
 
-        vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region);
+    public static void copyBufferToImage(MemoryStack stack, VkDevice device, long buffer, long image, int width, int height, long commandPool, VkQueue graphicsQueue)
+    {
+        VkCommandBuffer commandBuffer = Commands.beginSingleTimeCommands(device, commandPool);
+
+        vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, createRegion(stack, width, height));
+
+        Commands.endSingleTimeCommands(commandBuffer, graphicsQueue, device, commandPool);
+    }
+
+    public static void copyImageToBuffer(MemoryStack stack, VkDevice device, long image, long buffer, int width, int height, long commandPool, VkQueue graphicsQueue)
+    {
+        VkCommandBuffer commandBuffer = Commands.beginSingleTimeCommands(device, commandPool);
+
+        // VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL must be set prior to this call
+        vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, createRegion(stack, width, height));
 
         Commands.endSingleTimeCommands(commandBuffer, graphicsQueue, device, commandPool);
     }
