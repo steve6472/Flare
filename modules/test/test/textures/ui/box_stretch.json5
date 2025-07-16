@@ -1,5 +1,5 @@
 {
-    render: {
+    ui: {
         type: "nine_slice",
         stretch: {
             inner: true,

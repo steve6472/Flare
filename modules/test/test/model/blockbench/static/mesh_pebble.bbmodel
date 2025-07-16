@@ -51,196 +51,196 @@
             "faces": {
                 "IODq3ZIf": {
                     "uv": {
-                        "h4lB": [9.4789, 3],
-                        "tKA4": [9.4789, 5],
+                        "OvtR": [14, 5],
                         "fbJe": [14, 3],
-                        "OvtR": [14, 5]
+                        "tKA4": [9.4789, 5],
+                        "h4lB": [9.4789, 3]
                     },
                     "vertices": ["h4lB", "tKA4", "fbJe", "OvtR"],
                     "texture": 0
                 },
                 "tJ5E1g5a": {
                     "uv": {
-                        "V4zi": [7.50847, 15.92192],
-                        "8a3p": [9, 15.57515],
+                        "zcIf": [7, 12.55937],
                         "X0Ea": [9, 12],
-                        "zcIf": [7, 12.55937]
+                        "8a3p": [9, 15.57515],
+                        "V4zi": [7.50847, 15.92192]
                     },
                     "vertices": ["V4zi", "8a3p", "X0Ea", "zcIf"],
                     "texture": 0
                 },
                 "tBPqYyXu": {
                     "uv": {
-                        "vrqs": [5.10732, 11.71694],
-                        "5bY0": [3.90732, 9.67154],
+                        "JZtk": [2.10732, 11.26244],
                         "v59E": [2.10732, 9.67154],
-                        "JZtk": [2.10732, 11.26244]
+                        "5bY0": [3.90732, 9.67154],
+                        "vrqs": [5.10732, 11.71694]
                     },
                     "vertices": ["vrqs", "5bY0", "v59E", "JZtk"],
                     "texture": 0
                 },
                 "u38efbPB": {
                     "uv": {
-                        "CbhY": [12, 11],
-                        "Hlco": [12, 9],
+                        "8cMt": [8, 11],
                         "hPb0": [8, 10],
-                        "8cMt": [8, 11]
+                        "Hlco": [12, 9],
+                        "CbhY": [12, 11]
                     },
                     "vertices": ["CbhY", "Hlco", "hPb0", "8cMt"],
                     "texture": 0
                 },
                 "aXP4trrq": {
                     "uv": {
-                        "bj5I": [8.3549, 0],
-                        "GE4l": [8.3549, 2],
+                        "i8o0": [12.6723, 2],
                         "VpaZ": [12.6723, 0],
-                        "i8o0": [12.6723, 2]
+                        "GE4l": [8.3549, 2],
+                        "bj5I": [8.3549, 0]
                     },
                     "vertices": ["bj5I", "GE4l", "VpaZ", "i8o0"],
                     "texture": 0
                 },
                 "jdLP57BF": {
                     "uv": {
-                        "5bY0": [11.77696, 14.70779],
-                        "vrqs": [11.1818, 12.41229],
+                        "fbJe": [10, 15.40591],
                         "h4lB": [10, 12],
-                        "fbJe": [10, 15.40591]
+                        "vrqs": [11.1818, 12.41229],
+                        "5bY0": [11.77696, 14.70779]
                     },
                     "vertices": ["5bY0", "vrqs", "h4lB", "fbJe"],
                     "texture": 0
                 },
                 "CjWnkZ2Z": {
                     "uv": {
-                        "JZtk": [2.10732, 11.55062],
-                        "v59E": [2.10732, 9.67154],
+                        "X0Ea": [0.47205, 9.43413],
                         "8a3p": [0.2712, 12.85252],
-                        "X0Ea": [0.47205, 9.43413]
+                        "v59E": [2.10732, 9.67154],
+                        "JZtk": [2.10732, 11.55062]
                     },
                     "vertices": ["JZtk", "v59E", "8a3p", "X0Ea"],
                     "texture": 0
                 },
                 "dE159tex": {
                     "uv": {
-                        "vrqs": [12.49631, 6.15147],
-                        "JZtk": [9.30514, 6],
+                        "hPb0": [8, 8],
                         "Hlco": [12.26168, 8],
-                        "hPb0": [8, 8]
+                        "JZtk": [9.30514, 6],
+                        "vrqs": [12.49631, 6.15147]
                     },
                     "vertices": ["vrqs", "JZtk", "Hlco", "hPb0"],
                     "texture": 0
                 },
                 "ELQg3LcY": {
                     "uv": {
-                        "v59E": [2.10732, 9.67154],
-                        "5bY0": [3.90732, 9.67154],
+                        "VpaZ": [1.90732, 7.92734],
                         "bj5I": [6.10732, 7.00004],
-                        "VpaZ": [1.90732, 7.92734]
+                        "5bY0": [3.90732, 9.67154],
+                        "v59E": [2.10732, 9.67154]
                     },
                     "vertices": ["v59E", "5bY0", "bj5I", "VpaZ"],
                     "texture": 0
                 },
                 "MDIam0dk": {
                     "uv": {
-                        "GE4l": [4, 15],
-                        "bj5I": [4, 13],
+                        "fbJe": [3, 13],
                         "OvtR": [3, 15],
-                        "fbJe": [3, 13]
+                        "bj5I": [4, 13],
+                        "GE4l": [4, 15]
                     },
                     "vertices": ["GE4l", "bj5I", "OvtR", "fbJe"],
                     "texture": 0
                 },
                 "Fw9DhgEH": {
                     "uv": {
-                        "Hlco": [8.6526, 3],
-                        "CbhY": [8.6526, 5],
+                        "h4lB": [9.4789, 3],
                         "tKA4": [9.4789, 5],
-                        "h4lB": [9.4789, 3]
+                        "CbhY": [8.6526, 5],
+                        "Hlco": [8.6526, 3]
                     },
                     "vertices": ["Hlco", "CbhY", "tKA4", "h4lB"],
                     "texture": 0
                 },
                 "KELGS5Mi": {
                     "uv": {
-                        "VpaZ": [12.6723, 0],
-                        "i8o0": [12.6723, 2],
+                        "X0Ea": [14, 0],
                         "zcIf": [14, 2],
-                        "X0Ea": [14, 0]
+                        "i8o0": [12.6723, 2],
+                        "VpaZ": [12.6723, 0]
                     },
                     "vertices": ["VpaZ", "i8o0", "zcIf", "X0Ea"],
                     "texture": 0
                 },
                 "642fK1cO": {
                     "uv": {
-                        "8cMt": [14.5767, 10],
-                        "hPb0": [14.2818, 9.0141],
+                        "8a3p": [13.4566, 9],
                         "V4zi": [13, 10],
-                        "8a3p": [13.4566, 9]
+                        "hPb0": [14.2818, 9.0141],
+                        "8cMt": [14.5767, 10]
                     },
                     "vertices": ["8cMt", "hPb0", "V4zi", "8a3p"],
                     "texture": 0
                 },
                 "6Ke9ztKt": {
                     "uv": {
-                        "vrqs": [15, 11],
+                        "h4lB": [13.97583, 11.71955],
                         "Hlco": [13.56961, 11],
-                        "h4lB": [13.97583, 11.71955]
+                        "vrqs": [15, 11]
                     },
                     "vertices": ["vrqs", "Hlco", "h4lB"],
                     "texture": 0
                 },
                 "Q1I73LeJ": {
                     "uv": {
-                        "JZtk": [2.10732, 11.55062],
+                        "hPb0": [0.93093, 13.35019],
                         "8a3p": [0.27117, 12.85254],
-                        "hPb0": [0.93093, 13.35019]
+                        "JZtk": [2.10732, 11.55062]
                     },
                     "vertices": ["JZtk", "8a3p", "hPb0"],
                     "texture": 0
                 },
                 "dY79qRmt": {
                     "uv": {
-                        "5bY0": [3.90732, 9.67154],
+                        "bj5I": [6.10735, 7],
                         "fbJe": [6.72883, 7.54455],
-                        "bj5I": [6.10735, 7]
+                        "5bY0": [3.90732, 9.67154]
                     },
                     "vertices": ["5bY0", "fbJe", "bj5I"],
                     "texture": 0
                 },
                 "pLoK9ilr": {
                     "uv": {
-                        "v59E": [2.10732, 9.67154],
+                        "X0Ea": [0.66419, 8.36623],
                         "VpaZ": [1.90282, 7.88814],
-                        "X0Ea": [0.66419, 8.36623]
+                        "v59E": [2.10732, 9.67154]
                     },
                     "vertices": ["v59E", "VpaZ", "X0Ea"],
                     "texture": 0
                 },
                 "HlSqxNhv": {
                     "uv": {
-                        "8cMt": [1.2, 0],
-                        "V4zi": [0, 1.0227],
+                        "i8o0": [2.2, 5],
                         "zcIf": [1, 4.4318],
-                        "i8o0": [2.2, 5]
+                        "V4zi": [0, 1.0227],
+                        "8cMt": [1.2, 0]
                     },
                     "vertices": ["8cMt", "V4zi", "zcIf", "i8o0"],
                     "texture": 0
                 },
                 "InmFYg8Q": {
                     "uv": {
-                        "i8o0": [2.2, 5],
-                        "GE4l": [6.4, 6],
+                        "8cMt": [1.2, 0],
                         "CbhY": [5.4, 0.4545],
-                        "8cMt": [1.2, 0]
+                        "GE4l": [6.4, 6],
+                        "i8o0": [2.2, 5]
                     },
                     "vertices": ["i8o0", "GE4l", "CbhY", "8cMt"],
                     "texture": 0
                 },
                 "7LiFydB4": {
                     "uv": {
-                        "GE4l": [6.4, 6],
-                        "OvtR": [7, 5.4318],
+                        "CbhY": [5.4, 0.4545],
                         "tKA4": [6, 1.0227],
-                        "CbhY": [5.4, 0.4545]
+                        "OvtR": [7, 5.4318],
+                        "GE4l": [6.4, 6]
                     },
                     "vertices": ["GE4l", "OvtR", "tKA4", "CbhY"],
                     "texture": 0
@@ -253,7 +253,7 @@
     "outliner": ["ac0aa86e-556c-f293-1fe2-cc4f4b508749"],
     "textures": [
         {
-            "path": "C:\\storage\\Flare\\src\\main\\resources\\textures\\mesh_pebble.png",
+            "path": "C:\\storage\\Flare\\modules\\test\\test\\textures\\model\\mesh_pebble.png",
             "name": "mesh_pebble.png",
             "folder": "block",
             "namespace": "",
@@ -269,6 +269,7 @@
             "sync_to_project": "",
             "render_mode": "default",
             "render_sides": "auto",
+            "pbr_channel": "color",
             "frame_time": 1,
             "frame_order_type": "loop",
             "frame_order": "",
@@ -277,7 +278,7 @@
             "internal": true,
             "saved": true,
             "uuid": "15d65278-258c-1453-dff2-9cb9f169be5e",
-            "relative_path": "../../../textures/mesh_pebble.png",
+            "relative_path": "../../../textures/model/mesh_pebble.png",
             "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAQdJREFUOE+NUs0JwjAUTkZILxHcoZ7UBUT07FnUGXQMd7Di2bMiOIA6gF1AaC51Aql8gRde0tjaS0rC+36fnK02lYh8x91W4no8mUbfL+eTfZcA6OpODeJlCgGQ/mAYBXjcb/8BxNTxu1YFZEFrbeeMMfb0LOAitBFaUEliB99laU9ngeTEwqQgm2zYIJo+WIB8ks7l2xbaqmoF4D330lQUxtSCarRAABhWSolnnovDPnPWwkVC+rQbCFJyAGKnisAcLhKlT6osAHUc6zkmn0hB5BRwVhoCO/rHGx/yNpE/4D+UTwDzxbJClSGRtwdg5B65AgCAmQfs9uBXTTxtqPtkI3HtrD3SL2RGshHKPlnbAAAAAElFTkSuQmCC"
         }
     ]

@@ -9,7 +9,7 @@ import org.joml.Vector4i;
  * Date: 11/27/2024
  * Project: Flare <br>
  */
-public record NineSlice(Stretch stretch, Vector4i border) implements SpriteRender
+public record NineSlice(Stretch stretch, Vector4i border) implements SpriteUI
 {
     private static final Codec<Vector4i> BORDER = RecordCodecBuilder.create(instance -> instance.group(
         Codec.INT.fieldOf("left").forGetter(Vector4i::x),
@@ -26,9 +26,9 @@ public record NineSlice(Stretch stretch, Vector4i border) implements SpriteRende
     ).apply(instance, NineSlice::new));
 
     @Override
-    public SpriteRenderType<?> getType()
+    public SpriteUIType<?> getType()
     {
-        return SpriteRenderType.NINE_SLICE;
+        return SpriteUIType.NINE_SLICE;
     }
 
     public record Stretch(boolean inner, boolean left, boolean right, boolean top, boolean bottom)

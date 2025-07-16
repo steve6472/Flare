@@ -3,6 +3,7 @@ package steve6472.flare.ui.font.style;
 import steve6472.core.log.Log;
 import steve6472.core.module.ModuleUtil;
 import steve6472.core.registry.Key;
+import steve6472.flare.FlareParts;
 import steve6472.flare.core.Flare;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.ui.font.FontEntry;
@@ -21,13 +22,11 @@ public class StyleLoader
 {
     private static final Logger LOGGER = Log.getLogger(StyleLoader.class);
 
-    private static final String PATH = "font/styles";
-
     public static void bootstrap()
     {
         Map<Key, FontStyleEntry> styles = new LinkedHashMap<>();
 
-        ModuleUtil.loadModuleJsonCodecsDebug(Flare.getModuleManager(), PATH, FontStyle.CODEC, LOGGER, "font style", (_, _, key, object) -> {
+        ModuleUtil.loadModuleJsonCodecs(FlareParts.STYLE, Flare.getModuleManager(), FontStyle.CODEC, (_, _, key, object) -> {
             int index = styles.containsKey(key) ? styles.get(key).index() : styles.size();
             FontStyleEntry entry = new FontStyleEntry(key, object, index);
             styles.put(key, entry);

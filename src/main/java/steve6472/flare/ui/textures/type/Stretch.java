@@ -7,7 +7,7 @@ import com.mojang.serialization.Codec;
  * Date: 11/27/2024
  * Project: Flare <br>
  */
-public final class Stretch implements SpriteRender
+public final class Stretch implements SpriteUI
 {
     private static final Stretch INSTANCE = new Stretch();
     public static final Codec<Stretch> CODEC = Codec.unit(INSTANCE);
@@ -17,9 +17,9 @@ public final class Stretch implements SpriteRender
     }
 
     @Override
-    public SpriteRenderType<?> getType()
+    public SpriteUIType<?> getType()
     {
-        return SpriteRenderType.STRETCH;
+        return SpriteUIType.STRETCH;
     }
 
     public static Stretch instance()

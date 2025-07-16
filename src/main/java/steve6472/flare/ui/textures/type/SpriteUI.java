@@ -9,7 +9,7 @@ import steve6472.flare.registry.FlareRegistries;
  * Date: 11/27/2024
  * Project: Flare <br>
  */
-public interface SpriteRender extends Typed<SpriteRenderType<?>>
+public interface SpriteUI extends Typed<SpriteUIType<?>>
 {
-    Codec<SpriteRender> CODEC = FlareRegistries.SPRITE_RENDER_TYPE.byKeyCodec().dispatch("type", SpriteRender::getType, SpriteRenderType::mapCodec);
+    Codec<SpriteUI> CODEC = FlareRegistries.SPRITE_UI_TYPE.byKeyCodec().dispatch("type", SpriteUI::getType, SpriteUIType::mapCodec);
 }

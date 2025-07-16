@@ -239,6 +239,7 @@
             "locked": false,
             "visibility": true,
             "autouv": 0,
+            "selected": false,
             "children": [
                 "13f16304-a9f7-9b19-e1f1-f3118d8dc6de",
                 "0dc20fef-4fca-1ac1-2fba-87a983f563fa",
@@ -250,7 +251,7 @@
     ],
     "textures": [
         {
-            "path": "C:\\storage\\Flare\\src\\main\\resources\\textures\\small_rock.png",
+            "path": "C:\\storage\\Flare\\modules\\test\\test\\textures\\model\\small_rock.png",
             "name": "small_rock.png",
             "folder": "block",
             "namespace": "",
@@ -266,6 +267,7 @@
             "sync_to_project": "",
             "render_mode": "default",
             "render_sides": "auto",
+            "pbr_channel": "color",
             "frame_time": 1,
             "frame_order_type": "loop",
             "frame_order": "",
@@ -274,7 +276,7 @@
             "internal": true,
             "saved": true,
             "uuid": "e22ce18d-e319-56f6-57df-b7a91bde8bba",
-            "relative_path": "../../../textures/small_rock.png",
+            "relative_path": "../../../textures/model/small_rock.png",
             "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAATdJREFUWEdjdPPw/M+ABsTFxRlevnyJLozBf//uHcPpUycZCSrEo4AR5gCQpRLi4mClL6CW43MENSwH2YXiAJAAsiPwOWDXju0U+RwWKHAHEBOMoiWrUZTdqnKmXhQQcgC65TD1S114KAoJokIAFN/oQFBICCxEaVQQdADI8sPLrTEcYBt5lAHkCLo4AOZb5JCghuXgXGBqZv6/ft4qFB82JoWBfQfKmiAAyw3r7Gzh6hw3bKQ4AaJkQ5jvYBbfuH4d7AgYAMkj82HiIEcuXriA7IQITgMwn8IMJVQKoocMJekAIxHi8im2bAqKEp6qKrJ9jxIFuMoBdN+C1MEcSYnPMUpCZIsIVUbUqgcwEiGoZoOlCUoSFqFSFVmeovgjxSJcakcdMBoCoyEwGgKjITAaAqMhMBoCAOAflCFPjP+sAAAAAElFTkSuQmCC"
         }
     ]

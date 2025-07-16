@@ -23,7 +23,7 @@ public record SpriteEntry(Key key, SpriteData data, Vector4f uv, Vector2i pixelS
 
         int flags = 0;
 
-        if (data.renderType() instanceof NineSlice nineSlice)
+        if (data.uiType() instanceof NineSlice nineSlice)
         {
             border.set(nineSlice.border());
             flags |= 0b1;

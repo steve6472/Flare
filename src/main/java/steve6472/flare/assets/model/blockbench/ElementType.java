@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.Type;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.assets.model.blockbench.element.CubeElement;
 import steve6472.flare.assets.model.blockbench.element.LocatorElement;
@@ -29,7 +30,7 @@ public final class ElementType<T extends Element> extends Type<T>
 
     private static <T extends Element> ElementType<T> register(String id, Codec<T> codec)
     {
-        var obj = new ElementType<>(Key.defaultNamespace(id), MapCodec.assumeMapUnsafe(codec));
+        var obj = new ElementType<>(FlareConstants.key(id), MapCodec.assumeMapUnsafe(codec));
         FlareRegistries.MODEL_ELEMENT.register(obj);
         return obj;
     }

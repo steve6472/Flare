@@ -62,7 +62,7 @@
     "outliner": ["b3621925-f7fb-8025-a987-5b7feb1d3a17"],
     "textures": [
         {
-            "path": "C:\\storage\\Flare\\src\\main\\resources\\textures\\white_cube.png",
+            "path": "C:\\storage\\Flare\\modules\\test\\test\\textures\\model\\white_cube.png",
             "name": "white_cube.png",
             "folder": "block",
             "namespace": "",
@@ -78,6 +78,7 @@
             "sync_to_project": "",
             "render_mode": "default",
             "render_sides": "auto",
+            "pbr_channel": "color",
             "frame_time": 1,
             "frame_order_type": "loop",
             "frame_order": "",
@@ -86,7 +87,7 @@
             "internal": true,
             "saved": true,
             "uuid": "1372f162-b447-5657-eb0d-b8a6f9803df8",
-            "relative_path": "../../../textures/white_cube.png",
+            "relative_path": "../../../textures/model/white_cube.png",
             "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAANxJREFUeF7t2FEOwDAIAtB5/0N3h8DEkLz91zhEoJ333vuKv5mZpP0BAAZYARqQiMj1WSLIBdigHJDokCAkCUqCkqAkmKjo9dn6JJj+QDqAcxsEQJjlMSBEwApcJ0EaQAOy+3woAR8NoAHHt0EiSASJYPSoyQVCBNhgaoPXKh4SIA9CADi2MQwIEYhF0ApYgdskF24AF6ABglD4HsAFuAAXOL3Ps8EQATYYAlh/vHp/N9AHwAaKzTUwoHl6G71jwAaKzTUwoHl6G71jwAaKzTUwoHl6G71jwAaKzTV+UjrAQRLJIGIAAAAASUVORK5CYII="
         }
     ]

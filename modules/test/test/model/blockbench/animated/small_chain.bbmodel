@@ -1090,6 +1090,7 @@
             "locked": false,
             "visibility": true,
             "autouv": 0,
+            "selected": false,
             "children": [
                 "75edecd0-127a-5b47-6e15-2b020ed746ee",
                 "fd0ffe9a-4f77-9aa5-cdf9-e910209704df",
@@ -1111,6 +1112,7 @@
                     "locked": false,
                     "visibility": true,
                     "autouv": 0,
+                    "selected": false,
                     "children": [
                         "e0af871c-cc29-9ee6-33fb-98d9e6c0f45a",
                         "968ffe6d-1904-c488-1599-c448908c60b8",
@@ -1131,6 +1133,7 @@
                             "locked": false,
                             "visibility": true,
                             "autouv": 0,
+                            "selected": false,
                             "children": [
                                 "8c9be760-3062-2d44-f813-936328e3c3c5",
                                 "c3701736-4a87-c1da-b8da-75e237cb012a",
@@ -1151,7 +1154,7 @@
     ],
     "textures": [
         {
-            "path": "C:\\storage\\Flare\\src\\main\\resources\\textures\\chain.png",
+            "path": "C:\\storage\\Flare\\modules\\test\\test\\textures\\model\\chain.png",
             "name": "chain.png",
             "folder": "block",
             "namespace": "",
@@ -1167,6 +1170,7 @@
             "sync_to_project": "",
             "render_mode": "default",
             "render_sides": "auto",
+            "pbr_channel": "color",
             "frame_time": 1,
             "frame_order_type": "loop",
             "frame_order": "",
@@ -1175,7 +1179,7 @@
             "internal": true,
             "saved": true,
             "uuid": "dcd38df2-ffe6-ae29-ce52-36ddef9cd664",
-            "relative_path": "../../../textures/chain.png",
+            "relative_path": "../../../textures/model/chain.png",
             "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAKZJREFUOE9jZGBgYCgtK/8Pol+8fAmiGF6+fMkgLi7OsHjhAkawAB7AiK4ZphZkCAjs2rEdryFgA0A2o9tmamYOdtXpUyfxGxAbn/AfZBu6TSADnj55wvDs2dOhYADIr9jCgCIvSElJgwORYBi4eXiCFZIdiKDQFhQSIt8AkAvev3uHkdZA/ifKCyBFsDiHmSItI8NATACC1BNM6wTzAiEFhOQH3gUAzSaJEY12dR0AAAAASUVORK5CYII="
         }
     ],
@@ -1201,9 +1205,9 @@
                             "channel": "position",
                             "data_points": [
                                 {
-                                    "x": 0,
-                                    "y": 0,
-                                    "z": 0
+                                    "x": "0",
+                                    "y": "0",
+                                    "z": "0"
                                 }
                             ],
                             "uuid": "125a2206-38d5-21c6-44b5-3ecb95309b6b",
@@ -1215,9 +1219,9 @@
                             "channel": "position",
                             "data_points": [
                                 {
-                                    "x": 0,
-                                    "y": 0,
-                                    "z": 0
+                                    "x": "0",
+                                    "y": "0",
+                                    "z": "0"
                                 }
                             ],
                             "uuid": "6ed269f2-7801-5c0b-9321-257a64e80f18",
@@ -1229,9 +1233,9 @@
                             "channel": "position",
                             "data_points": [
                                 {
-                                    "x": -8,
-                                    "y": 0,
-                                    "z": 0
+                                    "x": "-8",
+                                    "y": "0",
+                                    "z": "0"
                                 }
                             ],
                             "uuid": "95239f73-b90c-5a0e-8d09-230129c10fe7",
@@ -1244,8 +1248,8 @@
                             "data_points": [
                                 {
                                     "x": "8",
-                                    "y": 0,
-                                    "z": 0
+                                    "y": "0",
+                                    "z": "0"
                                 }
                             ],
                             "uuid": "5c2686b6-2cd7-6891-eb99-a23e799bab79",
@@ -1257,9 +1261,9 @@
                             "channel": "position",
                             "data_points": [
                                 {
-                                    "x": -0.08,
-                                    "y": 2,
-                                    "z": 3
+                                    "x": "-0.08",
+                                    "y": "2",
+                                    "z": "3"
                                 }
                             ],
                             "uuid": "fc5d04e2-3d2d-951b-862b-556135e0d1fa",

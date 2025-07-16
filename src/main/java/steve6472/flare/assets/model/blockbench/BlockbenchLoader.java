@@ -4,12 +4,14 @@ import com.mojang.datafixers.util.Pair;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
 import steve6472.core.log.Log;
+import steve6472.core.module.ModulePart;
 import steve6472.core.module.ModuleUtil;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.ObjectRegistry;
 import steve6472.core.util.ImagePacker;
 import steve6472.flare.Commands;
 import steve6472.flare.FlareConstants;
+import steve6472.flare.FlareParts;
 import steve6472.flare.core.Flare;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.assets.Texture;
@@ -34,7 +36,7 @@ import java.util.logging.Logger;
 public class BlockbenchLoader
 {
     private static final Logger LOGGER = Log.getLogger(BlockbenchLoader.class);
-    private static final int STARTING_IMAGE_SIZE = 512;
+    private static final int STARTING_IMAGE_SIZE = 64;
 
     private static final File DEBUG_ATLAS = new File(FlareConstants.FLARE_DEBUG_FOLDER, "blockbench_atlas.png");
 
@@ -91,12 +93,12 @@ public class BlockbenchLoader
 
     public static void loadStaticModels()
     {
-        loadModels("static", FlareRegistries.STATIC_LOADED_MODEL);
+        loadModels(FlareParts.MODEL_STATIC, FlareRegistries.STATIC_LOADED_MODEL);
     }
 
     public static void loadAnimatedModels()
     {
-        loadModels("animated", FlareRegistries.ANIMATED_LOADED_MODEL);
+        loadModels(FlareParts.MODEL_ANIMATED, FlareRegistries.ANIMATED_LOADED_MODEL);
     }
 
     public static Model createStaticModels(VkDevice device, Commands commands, VkQueue graphicsQueue)
@@ -130,14 +132,13 @@ public class BlockbenchLoader
         return first;
     }
 
-    private static void loadModels(String path, ObjectRegistry<LoadedModel> modelRegistry)
+    private static void loadModels(ModulePart part, ObjectRegistry<LoadedModel> modelRegistry)
     {
         Map<Key, Pair<LoadedModel, String>> models = new LinkedHashMap<>();
 
-        ModuleUtil.loadModuleJsonCodecs(Flare.getModuleManager(), "model/blockbench/" + path, LoadedModel.CODEC, (module, file, key, loadedModel) -> {
-            key = Key.withNamespace(key.namespace(), "blockbench/" + path + "/" + key.id());
+        ModuleUtil.loadModuleJsonCodecs(part, Flare.getModuleManager(), LoadedModel.CODEC, (module, file, key, loadedModel) -> {
+            key = Key.withNamespace(key.namespace(), part.path().substring("model/".length()) + "/" + key.id());
             loadedModel = overrideKey(loadedModel, key);
-            LOGGER.finest("Loaded %s '%s' from module '%s'".formatted("model", key, module.name()));
             models.put(key, Pair.of(loadedModel, file.getAbsolutePath()));
         });
 

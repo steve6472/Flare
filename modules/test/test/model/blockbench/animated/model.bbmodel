@@ -550,6 +550,7 @@
             "locked": false,
             "visibility": true,
             "autouv": 0,
+            "selected": false,
             "children": [
                 "a65e8bda-0171-b452-26c8-a0c1efee8085",
                 "09d4e4a9-5e2e-672e-7403-85aab4243412",
@@ -565,6 +566,7 @@
                     "locked": false,
                     "visibility": true,
                     "autouv": 0,
+                    "selected": false,
                     "children": ["eef7dea7-8cfb-7f80-44ac-676f4183b81d", "cf995d8a-8662-19c6-d0f2-db684a8dc48e"]
                 },
                 {
@@ -579,6 +581,7 @@
                     "locked": false,
                     "visibility": true,
                     "autouv": 0,
+                    "selected": false,
                     "children": ["06a7b245-f1d8-323e-0450-3e35744cc411", "197bb825-0ca1-837f-f5b3-e779531af717"]
                 },
                 {
@@ -593,6 +596,7 @@
                     "locked": false,
                     "visibility": true,
                     "autouv": 0,
+                    "selected": false,
                     "children": ["d33bd9e3-bfc4-4d5b-34b9-b300fe2f4b5c", "fe86a146-99d0-c28f-cd8a-153dbaf0c969"]
                 },
                 {
@@ -607,6 +611,7 @@
                     "locked": false,
                     "visibility": true,
                     "autouv": 0,
+                    "selected": false,
                     "children": ["4d83c88c-c158-b146-24e5-2cacc5bd31fb", "f6246722-fb76-6e9c-8446-ad191893c9d2"]
                 },
                 {
@@ -621,6 +626,7 @@
                     "locked": false,
                     "visibility": true,
                     "autouv": 0,
+                    "selected": false,
                     "children": ["190ec5a5-e364-f916-47f2-9f76a3ecf474", "3560a965-84b6-4c11-b1c6-29001d57f40a"]
                 }
             ]
@@ -628,7 +634,7 @@
     ],
     "textures": [
         {
-            "path": "C:\\storage\\Flare\\src\\main\\resources\\textures\\loony.png",
+            "path": "C:\\storage\\Flare\\modules\\test\\test\\textures\\model\\loony.png",
             "name": "loony.png",
             "folder": "",
             "namespace": "",
@@ -644,6 +650,7 @@
             "sync_to_project": "",
             "render_mode": "default",
             "render_sides": "auto",
+            "pbr_channel": "color",
             "frame_time": 1,
             "frame_order_type": "loop",
             "frame_order": "",
@@ -652,7 +659,7 @@
             "internal": true,
             "saved": true,
             "uuid": "0e7817f9-ca8d-14a9-f94f-64acb4692d11",
-            "relative_path": "../../../textures/loony.png",
+            "relative_path": "../../../textures/model/loony.png",
             "source": "data:image/png;base64,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"
         }
     ],
@@ -679,7 +686,7 @@
                             "data_points": [
                                 {
                                     "x": "0",
-                                    "y": -7.5,
+                                    "y": "-7.5",
                                     "z": "0"
                                 }
                             ],
@@ -706,9 +713,9 @@
                             "channel": "rotation",
                             "data_points": [
                                 {
-                                    "x": 0,
-                                    "y": -17.5,
-                                    "z": 0
+                                    "x": "0",
+                                    "y": "-17.5",
+                                    "z": "0"
                                 }
                             ],
                             "uuid": "d0880bb1-a6ba-ddbd-b601-b235057bd879",
@@ -720,9 +727,9 @@
                             "channel": "rotation",
                             "data_points": [
                                 {
-                                    "x": 0,
+                                    "x": "0",
                                     "y": "0",
-                                    "z": 0
+                                    "z": "0"
                                 }
                             ],
                             "uuid": "d98f609a-a5cc-655e-a3eb-50529a371400",
@@ -734,9 +741,9 @@
                             "channel": "scale",
                             "data_points": [
                                 {
-                                    "x": 1.5,
-                                    "y": 1.5,
-                                    "z": 1.5
+                                    "x": "1.5",
+                                    "y": "1.5",
+                                    "z": "1.5"
                                 }
                             ],
                             "uuid": "d0a4d842-b259-572e-f57d-a3149b6055f9",
@@ -764,9 +771,9 @@
                             "channel": "scale",
                             "data_points": [
                                 {
-                                    "x": 1,
-                                    "y": 1,
-                                    "z": 1
+                                    "x": "1",
+                                    "y": "1",
+                                    "z": "1"
                                 }
                             ],
                             "uuid": "3eef940f-b14f-118a-a3ed-2fc567657902",
@@ -785,7 +792,7 @@
                             "channel": "position",
                             "data_points": [
                                 {
-                                    "x": 5,
+                                    "x": "5",
                                     "y": "0",
                                     "z": "0"
                                 }
@@ -814,8 +821,8 @@
                             "data_points": [
                                 {
                                     "x": "0",
-                                    "y": 0,
-                                    "z": 0
+                                    "y": "0",
+                                    "z": "0"
                                 }
                             ],
                             "uuid": "2bc6c7fa-433b-5645-ba06-0218e47cdaa1",
@@ -849,6 +856,7 @@
                             "data_points": [
                                 {
                                     "effect": "move.ogg",
+                                    "locator": "",
                                     "file": ""
                                 }
                             ],
@@ -879,7 +887,7 @@
                             "channel": "rotation",
                             "data_points": [
                                 {
-                                    "x": -40,
+                                    "x": "-40",
                                     "y": "0",
                                     "z": "0"
                                 }
@@ -907,9 +915,9 @@
                             "channel": "rotation",
                             "data_points": [
                                 {
-                                    "x": 2.5,
-                                    "y": 0,
-                                    "z": 0
+                                    "x": "2.5",
+                                    "y": "0",
+                                    "z": "0"
                                 }
                             ],
                             "uuid": "0fbb82d3-0f00-a7b1-a0f5-10fc61dfd23f",
@@ -921,7 +929,7 @@
                             "channel": "position",
                             "data_points": [
                                 {
-                                    "x": -3,
+                                    "x": "-3",
                                     "y": "0",
                                     "z": "0"
                                 }
@@ -954,9 +962,9 @@
                             "channel": "position",
                             "data_points": [
                                 {
-                                    "x": 0,
-                                    "y": 0,
-                                    "z": 0
+                                    "x": "0",
+                                    "y": "0",
+                                    "z": "0"
                                 }
                             ],
                             "uuid": "ee7a3085-c5e2-30d1-abbc-b103490862a0",
@@ -1005,8 +1013,8 @@
                             "data_points": [
                                 {
                                     "x": "5",
-                                    "y": 1,
-                                    "z": 1
+                                    "y": "1",
+                                    "z": "1"
                                 }
                             ],
                             "uuid": "5efdd09f-61f1-7c72-956c-f7d96249dbba",
@@ -1019,9 +1027,9 @@
                             "channel": "scale",
                             "data_points": [
                                 {
-                                    "x": 1,
-                                    "y": 1,
-                                    "z": 1
+                                    "x": "1",
+                                    "y": "1",
+                                    "z": "1"
                                 }
                             ],
                             "uuid": "5d72aaed-f2c3-4758-560f-c3ff81d94272",

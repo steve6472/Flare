@@ -1,6 +1,5 @@
 package steve6472.test;
 
-import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -12,14 +11,13 @@ import steve6472.flare.core.FrameInfo;
 import steve6472.flare.core.FlareApp;
 import steve6472.flare.input.KeybindUpdater;
 import steve6472.flare.pipeline.Pipelines;
+import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.render.StaticModelRenderSystem;
 import steve6472.flare.render.UIFontRender;
 import steve6472.flare.render.UILineRender;
 import steve6472.flare.render.UIRenderSystem;
-import steve6472.flare.ui.font.render.*;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * Created by steve6472

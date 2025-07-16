@@ -10,6 +10,7 @@ import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
 import steve6472.core.log.Log;
 import steve6472.core.module.Module;
+import steve6472.core.module.ModuleUtil;
 import steve6472.core.module.ResourceCrawl;
 import steve6472.core.registry.Key;
 import steve6472.core.util.GsonUtil;
@@ -17,6 +18,7 @@ import steve6472.core.util.ImagePacker;
 import steve6472.core.util.Preconditions;
 import steve6472.flare.Commands;
 import steve6472.flare.FlareConstants;
+import steve6472.flare.FlareParts;
 import steve6472.flare.assets.Texture;
 import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.core.Flare;
@@ -49,7 +51,6 @@ public class SpriteLoader
     private static final File DEBUG_ATLAS = new File(FlareConstants.FLARE_DEBUG_FOLDER, "sprite_atlas.png");
     private static final Map<Key, BufferedImage> IMAGES = new HashMap<>();
 
-    private static final String PATH = "textures/ui";
     private static final String[] EXTENSIONS = {".json5", ".json"};
 
     public static void bootstrap()
@@ -60,7 +61,7 @@ public class SpriteLoader
         {
             module.iterateNamespaces((folder, namespace) ->
             {
-                File file = new File(folder, PATH);
+                File file = new File(folder, FlareParts.TEXTURE_UI.path());
 
                 ResourceCrawl.crawl(file, true, (filePath, id) ->
                 {
@@ -69,7 +70,7 @@ public class SpriteLoader
                         return;
 
                     Key key = Key.withNamespace(namespace, id);
-                    LOGGER.finest("Loaded Sprite '" + key + "' from '" + module.name() + "'");
+                    LOGGER.finest("Loaded %s '%s' from '%s'".formatted(FlareParts.TEXTURE_UI.name(), key, module.name()));
                     uiTextures.put(key, filePath);
                 });
             });

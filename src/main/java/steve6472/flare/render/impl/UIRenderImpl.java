@@ -36,7 +36,7 @@ public abstract class UIRenderImpl
 
     protected final void sprite(int x, int y, float zIndex, int width, int height, int pixelWidth, int pixelHeight, @NotNull Key textureKey)
     {
-        sprite( x, y, zIndex, width, height, pixelWidth, pixelHeight, NO_TINT, textureKey);
+        sprite(x, y, zIndex, width, height, pixelWidth, pixelHeight, NO_TINT, textureKey);
     }
 
     protected final SpriteEntry getTextureEntry(Key textureKey)

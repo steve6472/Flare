@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.Type;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.registry.FlareRegistries;
 
 /**
@@ -28,7 +29,7 @@ public final class KeyframeType<T extends KeyFrame> extends Type<T>
 
     private static <T extends KeyFrame> KeyframeType<T> register(String id, Codec<T> codec)
     {
-        var obj = new KeyframeType<>(Key.defaultNamespace(id), MapCodec.assumeMapUnsafe(codec));
+        var obj = new KeyframeType<>(FlareConstants.key(id), MapCodec.assumeMapUnsafe(codec));
 
         FlareRegistries.KEYFRAME_TYPE.register(obj);
         return obj;

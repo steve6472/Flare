@@ -7,7 +7,7 @@ import com.mojang.serialization.Codec;
  * Date: 11/27/2024
  * Project: Flare <br>
  */
-public final class Tile implements SpriteRender
+public final class Tile implements SpriteUI
 {
     private static final Tile INSTANCE = new Tile();
     public static final Codec<Tile> CODEC = Codec.unit(INSTANCE);
@@ -17,8 +17,8 @@ public final class Tile implements SpriteRender
     }
 
     @Override
-    public SpriteRenderType<?> getType()
+    public SpriteUIType<?> getType()
     {
-        return SpriteRenderType.TILE;
+        return SpriteUIType.TILE;
     }
 }
