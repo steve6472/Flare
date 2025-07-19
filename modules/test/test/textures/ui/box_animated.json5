@@ -6,6 +6,6 @@
     animation: {
         width: 8,
         height: 8,
-        frametime: 30
+        frametime: 333
     }
 }

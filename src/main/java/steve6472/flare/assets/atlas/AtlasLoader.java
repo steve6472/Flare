@@ -18,7 +18,7 @@ public class AtlasLoader
     {
         Map<Key, List<Atlas>> atlases = new LinkedHashMap<>();
 
-        Flare.getModuleManager().loadParts(FlareParts.ATLAS, Atlas.CODEC, (atlas, key) -> {
+        Flare.getModuleManager().loadParts(FlareParts.ATLAS, SpriteAtlas.CODEC, (atlas, key) -> {
             atlas.key = key;
             atlases.computeIfAbsent(key, _ -> new ArrayList<>()).add(atlas);
         });
@@ -36,8 +36,15 @@ public class AtlasLoader
         });
 
         // Load the sprites
-        FlareRegistries.ATLAS.keys().forEach(key -> FlareRegistries.ATLAS.get(key).loadSprites());
+        Collection<Key> keys = List.copyOf(FlareRegistries.ATLAS.keys());
+        keys.forEach(key ->
+        {
+            Atlas atlas = FlareRegistries.ATLAS.get(key);
+            atlas.create();
 
-
+            if (atlas instanceof SpriteAtlas spriteAtlas)
+                if (spriteAtlas.getAnimationAtlas() != null)
+                    FlareRegistries.ATLAS.register(spriteAtlas.getAnimationAtlas());
+        });
     }
 }

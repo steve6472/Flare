@@ -3,6 +3,7 @@ package steve6472.flare;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 import steve6472.flare.core.FrameInfo;
+import steve6472.flare.framebuffer.AnimatedAtlasFrameBuffer;
 import steve6472.flare.pipeline.Pipelines;
 import steve6472.flare.render.*;
 import steve6472.flare.struct.def.UBO;
@@ -39,6 +40,7 @@ public class MasterRenderer
 
     private boolean isFrameStarted;
 
+    private final List<AnimateTextureSystem> atlasAnimations = new ArrayList<>();
     private final List<RenderSystem> renderSystems = new ArrayList<>();
 
     public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, Commands commands, long surface, VrData vrData)
@@ -65,9 +67,15 @@ public class MasterRenderer
         renderSystems.add(renderSystem);
     }
 
+    public void addAtlasAnimationSystem(AnimateTextureSystem renderSystem)
+    {
+        atlasAnimations.add(renderSystem);
+    }
+
     public void rebuildPipelines()
     {
         renderSystems.forEach(renderSystem -> renderSystem._getPipeline().rebuild(device, swapChain, renderSystem.setLayouts()));
+        atlasAnimations.forEach(renderSystem -> renderSystem._getPipeline().rebuild(device, renderSystem.atlas.frameBuffer.extent, renderSystem.atlas.frameBuffer.renderPass, renderSystem.setLayouts()));
 
         if (VrData.VR_ON)
         {
@@ -83,6 +91,7 @@ public class MasterRenderer
     public void destroyPipelines()
     {
         renderSystems.forEach(renderSystem -> renderSystem._getPipeline().cleanup(device));
+        atlasAnimations.forEach(renderSystem -> renderSystem._getPipeline().cleanup(device));
         if (VrData.VR_ON)
             renderSystems.forEach(renderSystem -> renderSystem._getVrPipeline().cleanup(device));
     }
@@ -92,6 +101,7 @@ public class MasterRenderer
         swapChain.cleanupSwapChain();
 
         renderSystems.forEach(RenderSystem::cleanup);
+        atlasAnimations.forEach(AnimateTextureSystem::cleanup);
 
         vkDestroyCommandPool(device, commands.commandPool, null);
         window.cleanup();
@@ -208,6 +218,17 @@ public class MasterRenderer
         frameInfo.camera().cameraIndex++;
     }
 
+    public void updateAtlasAnimations(FrameInfo frameInfo, MemoryStack stack)
+    {
+        for (AnimateTextureSystem atlasAnimation : atlasAnimations)
+        {
+            AnimatedAtlasFrameBuffer frameBuffer = atlasAnimation.atlas.frameBuffer;
+            beginRenderPass(frameInfo.commandBuffer(), stack, frameBuffer.renderPass, frameBuffer.extent, frameBuffer.framebuffer);
+            atlasAnimation.render(frameInfo, stack);
+            endRenderPass(frameInfo.commandBuffer());
+        }
+    }
+
     public void postFrame()
     {
         for (RenderSystem renderSystem : renderSystems)
@@ -263,7 +284,7 @@ public class MasterRenderer
         return swapChain;
     }
 
-    boolean isFrameInProgress()
+    public boolean isFrameInProgress()
     {
         return isFrameStarted;
     }

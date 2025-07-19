@@ -21,6 +21,8 @@ import steve6472.flare.assets.model.blockbench.ErrorModel;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.ui.textures.SpriteData;
 import steve6472.flare.ui.textures.SpriteEntry;
+import steve6472.flare.ui.textures.animation.SpriteAnimation;
+import steve6472.flare.util.Obj;
 import steve6472.flare.util.PackerUtil;
 
 import javax.imageio.ImageIO;
@@ -40,46 +42,101 @@ import static org.lwjgl.vulkan.VK10.*;
  */
 public class SpriteLoader
 {
+    private static final Logger LOGGER = Log.getLogger(SpriteLoader.class);
     public static boolean SAVE_DEBUG_ATLASES = false;
 
-    private static final Map<Atlas, Map<Key, BufferedImage>> TEMP_IMAGES = new HashMap<>();
-
-    private static final Logger LOGGER = Log.getLogger(SpriteLoader.class);
+    private static final String[] EXTENSIONS = {".json5", ".json"};
     private static final int STARTING_IMAGE_SIZE = 64;
 
-    private static final String[] EXTENSIONS = {".json5", ".json"};
+    public record LoadResult(Map<Key, Pair<SpriteEntry, BufferedImage>> entries, AnimationAtlas animationAtlas) {}
 
-    public static Map<Key, SpriteEntry> loadFromAtlas(Atlas atlas, Set<SourceResult> input)
+    public static LoadResult loadFromAtlas(Set<SourceResult> input)
     {
-        final Map<Key, BufferedImage> images = new HashMap<>();
-        final Map<Key, SpriteEntry> entries = new HashMap<>();
+        final Map<Key, Pair<SpriteEntry, BufferedImage>> atlasData = new HashMap<>();
+        final Map<Key, Pair<SpriteEntry, BufferedImage>> animatedAtlasData = new HashMap<>();
 
-        input.forEach(pair ->
+        input.forEach(pair -> processInput(pair, atlasData, animatedAtlasData));
+
+        // Insert error image
+        atlasData.put(FlareConstants.ERROR_TEXTURE,
+            Pair.of(new SpriteEntry(FlareConstants.ERROR_TEXTURE, SpriteData.DEFAULT, new Vector4f(), new Vector2i(2, 2), atlasData.size()), ErrorModel.IMAGE));
+
+        AnimationAtlas animationAtlas = null;
+        if (!animatedAtlasData.isEmpty())
         {
-            SpriteData spriteData = loadSpriteData(pair.file());
-            BufferedImage image;
-            try
-            {
-                image = ImageIO.read(pair.file());
-            } catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-            SpriteEntry entry = new SpriteEntry(pair.key(), spriteData, new Vector4f(), new Vector2i(image.getWidth(), image.getHeight()), entries.size());
+            // Insert error image
+            animatedAtlasData.put(FlareConstants.ERROR_TEXTURE,
+                Pair.of(new SpriteEntry(FlareConstants.ERROR_TEXTURE, SpriteData.DEFAULT, new Vector4f(), new Vector2i(2, 2), animatedAtlasData.size()), ErrorModel.IMAGE));
 
-            images.put(pair.key(), image);
-            entries.put(pair.key(), entry);
-        });
-
-        images.put(FlareConstants.ERROR_TEXTURE, ErrorModel.IMAGE);
-        entries.put(FlareConstants.ERROR_TEXTURE, new SpriteEntry(FlareConstants.ERROR_TEXTURE, SpriteData.DEFAULT, new Vector4f(), new Vector2i(2, 2), entries.size()));
-
-        if (TEMP_IMAGES.put(atlas, images) != null)
-        {
-            throw new RuntimeException("Atlas " + atlas + " was processed twice!");
+            animationAtlas = new AnimationAtlas(animatedAtlasData);
         }
 
-        return entries;
+        return new LoadResult(atlasData, animationAtlas);
+    }
+
+    private static void processInput(SourceResult input, Map<Key, Pair<SpriteEntry, BufferedImage>> atlasData, Map<Key, Pair<SpriteEntry, BufferedImage>> animatedAtlasData)
+    {
+        Obj<Boolean> animationFailed = Obj.of(false);
+        Obj<BufferedImage> image = Obj.empty();
+        SpriteData spriteData = loadSpriteData(input.file());
+        try
+        {
+            image.set(ImageIO.read(input.file()));
+        } catch (IOException e)
+        {
+            LOGGER.severe("Failed to load image from " + input.file());
+            throw new RuntimeException(e);
+        }
+        Key key = input.key();
+
+        // Verify sizes, if they do not match animation size, do not add to atlas
+        // Crop the whole texture into just one frame
+        // Add animation data to the atlas
+        spriteData.animation().ifPresent(animation ->
+        {
+            if (image.get().getWidth() % animation.width() != 0)
+            {
+                LOGGER.warning("Animated Sprite '%s' failed to load, image width (%s) is not a multiple of animation width (%s)".formatted(key, image.get().getWidth(), animation.width()));
+                animationFailed.set(true);
+            }
+
+            if (image.get().getHeight() % animation.height() != 0)
+            {
+                LOGGER.warning("Animated Sprite '%s' failed to load, image height (%s) is not a multiple of animation height (%s)".formatted(key, image.get().getHeight(), animation.height()));
+                animationFailed.set(true);
+            }
+
+            if (animationFailed.get())
+                return;
+
+            SpriteEntry animationEntry = new SpriteEntry(key, spriteData, new Vector4f(), new Vector2i(image.get().getWidth(), image.get().getHeight()), animatedAtlasData.size());
+            animatedAtlasData.put(key, Pair.of(animationEntry, image.get()));
+
+            image.set(cropAnimation(image.get(), animation));
+        });
+
+        // Animation failed, skip adding to atlas. Error texture will be used instead.
+        if (animationFailed.get())
+            return;
+
+        SpriteEntry entry = new SpriteEntry(key, spriteData, new Vector4f(), new Vector2i(image.get().getWidth(), image.get().getHeight()), atlasData.size());
+
+        atlasData.put(key, Pair.of(entry, image.get()));
+    }
+
+    private static BufferedImage cropAnimation(BufferedImage image, SpriteAnimation animation)
+    {
+        BufferedImage cropped = new BufferedImage(animation.width(), animation.height(), BufferedImage.TYPE_4BYTE_ABGR);
+
+        for (int i = 0; i < animation.width(); i++)
+        {
+            for (int j = 0; j < animation.height(); j++)
+            {
+                cropped.setRGB(i, j, image.getRGB(i, j));
+            }
+        }
+
+        return cropped;
     }
 
     private static SpriteData loadSpriteData(File imageFile)
@@ -113,7 +170,8 @@ public class SpriteLoader
 
     public static ImagePacker createTexture(Atlas atlas, VkDevice device, Commands commands, VkQueue graphicsQueue)
     {
-        Map<Key, BufferedImage> images = TEMP_IMAGES.remove(atlas);
+        Map<Key, BufferedImage> images = atlas.tempImages;
+        atlas.tempImages = null;
 
         Map<String, BufferedImage> toPack = new HashMap<>();
         images.forEach((key, image) -> toPack.put(key.toString(), image));
@@ -122,11 +180,14 @@ public class SpriteLoader
 
         BufferedImage image = packer.getImage();
         saveDebugAtlas(atlas, image);
-        Texture texture = new Texture();
-        texture.createTextureImageFromBufferedImage(device, image, commands.commandPool, graphicsQueue);
-        TextureSampler sampler = new TextureSampler(texture, device, atlas.key(), VK_FILTER_NEAREST, VK_SAMPLER_MIPMAP_MODE_NEAREST, false);
-        FlareRegistries.SAMPLER.register(sampler);
-        atlas.sampler = sampler;
+        atlas.createVkResource(image, device, commands, graphicsQueue);
+
+//        Texture texture = new Texture();
+//        texture.createTextureImageFromBufferedImage(device, image, commands.commandPool, graphicsQueue);
+//        TextureSampler sampler = new TextureSampler(texture, device, atlas.key(), VK_FILTER_NEAREST, VK_SAMPLER_MIPMAP_MODE_NEAREST, false);
+//        FlareRegistries.SAMPLER.register(sampler);
+//        atlas.sampler = sampler;
+
         fixUvs(atlas, packer);
         return packer;
     }
@@ -161,6 +222,8 @@ public class SpriteLoader
             String folderPath = atlas.key().id();
             if (folderPath.contains("/"))
                 folderPath = atlas.key().id().substring(0, folderPath.lastIndexOf('/'));
+            else
+                folderPath = "";
             File pathDir = new File(namespaceDir, folderPath);
             if (!pathDir.exists() && !pathDir.mkdirs())
                 LOGGER.warning("Failed to create path " + pathDir.getAbsolutePath());

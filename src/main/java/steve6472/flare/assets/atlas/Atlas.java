@@ -1,15 +1,16 @@
 package steve6472.flare.assets.atlas;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import org.jetbrains.annotations.ApiStatus;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkQueue;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.Keyable;
+import steve6472.flare.Commands;
 import steve6472.flare.assets.TextureSampler;
-import steve6472.flare.assets.atlas.source.Source;
-import steve6472.flare.assets.atlas.source.SourceResult;
-import steve6472.flare.core.Flare;
+import steve6472.flare.struct.Struct;
 import steve6472.flare.ui.textures.SpriteEntry;
 
+import java.awt.image.BufferedImage;
 import java.util.*;
 
 /**
@@ -17,64 +18,32 @@ import java.util.*;
  * Date: 7/16/2025
  * Project: Flare <br>
  */
-public class Atlas implements Keyable
+public abstract class Atlas implements Keyable
 {
-    public static final Codec<Atlas> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-        Source.CODEC.listOf().fieldOf("sources").forGetter(Atlas::getSources)
-    ).apply(instance, Atlas::new));
-
-    private final List<Source> sources;
-    /// Set from AtlasLoader
+    /// Set from AtlasLoader or SpriteAtlas
     Key key;
 
-    private final Map<Key, SpriteEntry> sprites = new HashMap<>();
-    // Set from SpriteLoader
+    protected final Map<Key, SpriteEntry> sprites = new HashMap<>();
+    protected SpriteEntry errorTexture;
+    /// Set from SpriteLoader
     TextureSampler sampler = null;
 
-    private Atlas(List<Source> sources)
+    /// Used only to transfer data
+    @ApiStatus.Internal
+    Map<Key, BufferedImage> tempImages;
+
+    abstract void mergeWith(Atlas other);
+    abstract void create();
+    abstract void createVkResource(BufferedImage image, VkDevice device, Commands commands, VkQueue graphicsQueue);
+
+    Map<Key, SpriteEntry> getSprites()
     {
-        this.sources = sources;
+        return sprites;
     }
 
-    void mergeWith(Atlas other)
+    public SpriteEntry getSprite(Key key)
     {
-        sources.addAll(other.sources);
-    }
-
-    void loadSprites()
-    {
-        // Set to prevent duplicates
-        Set<SourceResult> toLoad = new LinkedHashSet<>();
-
-        Flare.getModuleManager().iterateWithNamespaces((module, namespace) ->
-        {
-            for (Source source : sources)
-            {
-                Collection<SourceResult> load = source.load(module, namespace);
-                for (SourceResult sourceResult : load)
-                {
-                    if (!sourceResult.file().isFile())
-                        throw new RuntimeException("Source did not return a file");
-                    if (!sourceResult.file().getName().endsWith(".png"))
-                        throw new RuntimeException("Source returned a non-.png file");
-                    toLoad.add(sourceResult);
-                }
-            }
-        });
-
-        sprites.putAll(SpriteLoader.loadFromAtlas(this, toLoad));
-    }
-
-    /// @return immutable copy
-    public List<Source> getSources()
-    {
-        return List.copyOf(sources);
-    }
-
-    /// @return immutable copy
-    public Map<Key, SpriteEntry> getSprites()
-    {
-        return Map.copyOf(sprites);
+        return sprites.getOrDefault(key, errorTexture);
     }
 
     public TextureSampler getSampler()
@@ -88,9 +57,16 @@ public class Atlas implements Keyable
         return key;
     }
 
-    @Override
-    public String toString()
+    public Struct[] createTextureSettings()
     {
-        return "Atlas{" + "sources=" + sources + '}';
+        Collection<Key> keys = sprites.keySet();
+        Struct[] textureSettings = new Struct[keys.size()];
+        for (Key key : keys)
+        {
+            SpriteEntry uiTextureEntry = sprites.get(key);
+            textureSettings[uiTextureEntry.index()] = uiTextureEntry.toStruct();
+        }
+
+        return textureSettings;
     }
 }

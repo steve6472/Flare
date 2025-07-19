@@ -1,7 +1,9 @@
-package steve6472.flare;
+package steve6472.flare.framebuffer;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
+import steve6472.flare.ErrorCode;
+import steve6472.flare.VulkanUtil;
 
 import java.nio.LongBuffer;
 
@@ -12,27 +14,28 @@ import static org.lwjgl.vulkan.VK10.*;
  * Date: 9/26/2024
  * Project: Flare <br>
  */
-public class FrameBuffer
+public class VRFrameBuffer
 {
     private final VkDevice device;
 
-    private long image;
-    private long imageView;
-    private long imageMemory;
-    private int imageLayout;
-    private long depthImage;
-    private long depthImageView;
-    private long depthImageMemory;
-    private int depthImageLayout;
-    private long renderPass;
-    private long framebuffer;
+    public long image;
+    public long imageMemory;
+    public long imageView;
+    public long depthImage;
+    public long depthImageMemory;
+    public long depthImageView;
+    public long renderPass;
+    public long framebuffer;
 
-    private int width;
-    private int height;
-    private int imageFormat;
-    private int usage;
+    public int imageLayout;
+    public int depthImageLayout;
 
-    public FrameBuffer(VkDevice device, int width, int height, int imageFormat, int usage)
+    public final int width;
+    public final int height;
+    public final int imageFormat;
+    public final int usage;
+
+    public VRFrameBuffer(VkDevice device, int width, int height, int imageFormat, int usage)
     {
         this.device = device;
         this.width = width;
@@ -84,7 +87,7 @@ public class FrameBuffer
     public void imageLayout(int imageLayout) { this.imageLayout = imageLayout; }
     public void depthImageLayout(int depthImageLayout) { this.depthImageLayout = depthImageLayout; }
 
-    private void createImage()
+    public void createImage()
     {
         try (MemoryStack stack = MemoryStack.stackPush())
         {
@@ -98,12 +101,40 @@ public class FrameBuffer
         }
     }
 
-    private void createView()
+    public void createView()
     {
         imageView = VulkanUtil.createImageView(device, image, imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
     }
 
-    private void createDepthStencilTarget()
+    public void createSampler(int filter, int mipmapMode, boolean anisotropy)
+    {
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            VkSamplerCreateInfo samplerInfo = VkSamplerCreateInfo.calloc(stack);
+            samplerInfo.sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
+            samplerInfo.magFilter(filter);
+            samplerInfo.minFilter(filter);
+            samplerInfo.addressModeU(VK_SAMPLER_ADDRESS_MODE_REPEAT);
+            samplerInfo.addressModeV(VK_SAMPLER_ADDRESS_MODE_REPEAT);
+            samplerInfo.addressModeW(VK_SAMPLER_ADDRESS_MODE_REPEAT);
+            samplerInfo.anisotropyEnable(anisotropy);
+            samplerInfo.maxAnisotropy(16f);
+            samplerInfo.borderColor(VK_BORDER_COLOR_INT_OPAQUE_BLACK);
+            samplerInfo.unnormalizedCoordinates(false);
+            samplerInfo.compareEnable(false);
+            samplerInfo.compareOp(VK_COMPARE_OP_ALWAYS);
+            samplerInfo.mipmapMode(mipmapMode);
+
+            LongBuffer pTextureSampler = stack.mallocLong(1);
+
+            if (vkCreateSampler(device, samplerInfo, null, pTextureSampler) != VK_SUCCESS)
+            {
+                throw new RuntimeException("Fialed to create texture sampler");
+            }
+        }
+    }
+
+    public void createDepthStencilTarget()
     {
         try (MemoryStack stack = MemoryStack.stackPush())
         {
@@ -117,12 +148,12 @@ public class FrameBuffer
         }
     }
 
-    private void createDepthStencilView()
+    public void createDepthStencilView()
     {
         depthImageView = VulkanUtil.createImageView(device, depthImage, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT);
     }
 
-    private void createRenderPass()
+    public void createRenderPass()
     {
         try (MemoryStack stack = MemoryStack.stackPush())
         {
@@ -209,7 +240,7 @@ public class FrameBuffer
         }
     }
 
-    private void createFrameBuffer()
+    public void createFrameBuffer()
     {
         try (MemoryStack stack = MemoryStack.stackPush())
         {

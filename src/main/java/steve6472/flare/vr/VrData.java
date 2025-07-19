@@ -9,6 +9,7 @@ import org.lwjgl.vulkan.*;
 import steve6472.core.log.Log;
 import steve6472.flare.*;
 import steve6472.flare.core.FrameInfo;
+import steve6472.flare.framebuffer.VRFrameBuffer;
 import steve6472.flare.render.debug.DebugRender;
 import steve6472.flare.settings.VisualSettings;
 
@@ -43,8 +44,8 @@ public class VrData
     private VkQueue graphicsQueue;
 
     private int width, height;
-    private List<FrameBuffer> leftEyeBuffer;
-    private List<FrameBuffer> rightEyeBuffer;
+    private List<VRFrameBuffer> leftEyeBuffer;
+    private List<VRFrameBuffer> rightEyeBuffer;
 
     private List<Pair<DeviceType, Matrix4f>> poses = new ArrayList<>();
     private Matrix4f HMDPose;
@@ -128,11 +129,16 @@ public class VrData
 
         for (int i = 0; i < SwapChain.MAX_FRAMES_IN_FLIGHT; i++)
         {
-            leftEyeBuffer.add(new FrameBuffer(device, width, height, VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT));
-            rightEyeBuffer.add(new FrameBuffer(device, width, height, VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT));
+            leftEyeBuffer.add(createEyeFrameBuffer(device));
+            rightEyeBuffer.add(createEyeFrameBuffer(device));
         }
         setupCameras();
         vrInput = new VrInput(this);
+    }
+
+    private VRFrameBuffer createEyeFrameBuffer(VkDevice device)
+    {
+        return new VRFrameBuffer(device, width, height, VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
     }
 
     private void setupCameras()
@@ -255,8 +261,8 @@ public class VrData
         if (!VR_ON)
             return;
 
-        leftEyeBuffer.forEach(FrameBuffer::cleanup);
-        rightEyeBuffer.forEach(FrameBuffer::cleanup);
+        leftEyeBuffer.forEach(VRFrameBuffer::cleanup);
+        rightEyeBuffer.forEach(VRFrameBuffer::cleanup);
 
         VR_ShutdownInternal();
     }
@@ -287,7 +293,7 @@ public class VrData
             // Render stuff to buffers
             frameInfo.camera().getProjectionMatrix().set(leftEyeProjection);
             frameInfo.camera().getViewMatrix().set(leftEyePose);
-            FrameBuffer leftEyeBuffer = this.leftEyeBuffer.get(frameInfo.frameIndex());
+            VRFrameBuffer leftEyeBuffer = this.leftEyeBuffer.get(frameInfo.frameIndex());
             vrRenderPass = VrRenderPass.LEFT_EYE;
 
             transitionImageLayout(stack, frameInfo.commandBuffer(), leftEyeBuffer);
@@ -298,7 +304,7 @@ public class VrData
 
             frameInfo.camera().getProjectionMatrix().set(rightEyeProjection);
             frameInfo.camera().getViewMatrix().set(rightEyePose);
-            FrameBuffer rightEyeBuffer = this.rightEyeBuffer.get(frameInfo.frameIndex());
+            VRFrameBuffer rightEyeBuffer = this.rightEyeBuffer.get(frameInfo.frameIndex());
             vrRenderPass = VrRenderPass.RIGHT_EYE;
 
             transitionImageLayout(stack, frameInfo.commandBuffer(), rightEyeBuffer);
@@ -384,7 +390,7 @@ public class VrData
     }
 
     // TODO: merge the next three methods, possibly create a VulkanUtil method
-    private void transitionImageLayout(MemoryStack stack, VkCommandBuffer commandBuffer, FrameBuffer frameBuffer)
+    private void transitionImageLayout(MemoryStack stack, VkCommandBuffer commandBuffer, VRFrameBuffer frameBuffer)
     {
         VkImageMemoryBarrier.Buffer barrier = VkImageMemoryBarrier.calloc(1, stack);
         barrier.sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER);
@@ -429,7 +435,7 @@ public class VrData
         }
     }
 
-    private void transitionImageLayoutBack(MemoryStack stack, VkCommandBuffer commandBuffer, FrameBuffer frameBuffer)
+    private void transitionImageLayoutBack(MemoryStack stack, VkCommandBuffer commandBuffer, VRFrameBuffer frameBuffer)
     {
         VkImageMemoryBarrier.Buffer barrier = VkImageMemoryBarrier.calloc(1, stack);
         barrier.sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER);
@@ -456,7 +462,7 @@ public class VrData
         frameBuffer.imageLayout(barrier.newLayout());
     }
 
-    private void transitionImageLayoutForSubmit(MemoryStack stack, VkCommandBuffer commandBuffer, FrameBuffer frameBuffer)
+    private void transitionImageLayoutForSubmit(MemoryStack stack, VkCommandBuffer commandBuffer, VRFrameBuffer frameBuffer)
     {
         VkImageMemoryBarrier.Buffer barrier = VkImageMemoryBarrier.calloc(1, stack);
         barrier.sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER);

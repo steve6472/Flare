@@ -30,6 +30,9 @@ import static org.lwjgl.vulkan.VK10.*;
  */
 public class Texture
 {
+    // Stuff used for vk init
+    public int imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
     public long textureImage;
     public long textureImageMemory;
     public int width, height;
@@ -70,7 +73,7 @@ public class Texture
                 width, height,
                 VK_FORMAT_R8G8B8A8_UNORM,
                 VK_IMAGE_TILING_OPTIMAL,
-                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+                imageUsage,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                 pTextureImage,
                 pTextureImageMemory);
@@ -78,11 +81,11 @@ public class Texture
             textureImage = pTextureImage.get(0);
             textureImageMemory = pTextureImageMemory.get(0);
 
-            transitionImageLayout(stack, device, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandPool, graphicsQueue);
+            VulkanUtil.transitionImageLayout(device, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandPool, graphicsQueue);
 
             copyBufferToImage(stack, device, stagingBuffer.getBuffer(), textureImage, width, height, commandPool, graphicsQueue);
 
-            transitionImageLayout(stack, device, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandPool, graphicsQueue);
+            VulkanUtil.transitionImageLayout(device, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandPool, graphicsQueue);
 
             stagingBuffer.cleanup();
         }
@@ -165,7 +168,7 @@ public class Texture
         }
     }
 
-    private static ByteBuffer convertImageToByteBuffer(BufferedImage image)
+    public static ByteBuffer convertImageToByteBuffer(BufferedImage image)
     {
         // Ensure the image is in a known format like ARGB or RGB
         int width = image.getWidth();
@@ -227,56 +230,6 @@ public class Texture
         }
 
         return image;
-    }
-
-    private void transitionImageLayout(MemoryStack stack, VkDevice device, long image, int format, int oldLayout, int newLayout, long commandPool, VkQueue graphicsQueue)
-    {
-        VkImageMemoryBarrier.Buffer barrier = VkImageMemoryBarrier.calloc(1, stack);
-        barrier.sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER);
-        barrier.oldLayout(oldLayout);
-        barrier.newLayout(newLayout);
-        barrier.srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
-        barrier.dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
-        barrier.image(image);
-        barrier.subresourceRange().aspectMask(VK_IMAGE_ASPECT_COLOR_BIT);
-        barrier.subresourceRange().baseMipLevel(0);
-        barrier.subresourceRange().levelCount(1);
-        barrier.subresourceRange().baseArrayLayer(0);
-        barrier.subresourceRange().layerCount(1);
-
-        int sourceStage;
-        int destinationStage;
-
-        if(oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-
-            barrier.srcAccessMask(0);
-            barrier.dstAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT);
-
-            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-
-        } else if(oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-
-            barrier.srcAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT);
-            barrier.dstAccessMask(VK_ACCESS_SHADER_READ_BIT);
-
-            sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-            destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-
-        } else {
-            throw new IllegalArgumentException("Unsupported layout transition");
-        }
-
-        VkCommandBuffer commandBuffer = Commands.beginSingleTimeCommands(device, commandPool);
-
-        vkCmdPipelineBarrier(commandBuffer,
-            sourceStage, destinationStage,
-            0,
-            null,
-            null,
-            barrier);
-
-        Commands.endSingleTimeCommands(commandBuffer, graphicsQueue, device, commandPool);
     }
 
     public static VkBufferImageCopy.Buffer createRegion(MemoryStack stack, int width, int height)

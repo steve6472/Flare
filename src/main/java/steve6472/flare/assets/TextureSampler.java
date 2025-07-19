@@ -23,6 +23,11 @@ public class TextureSampler implements Keyable
     public Texture texture;
     private final Key key;
 
+    public TextureSampler(Key key)
+    {
+        this.key = key;
+    }
+
     public TextureSampler(Texture texture, VkDevice device, Key key)
     {
         this(texture, device, key, VK_FILTER_NEAREST, VK_SAMPLER_MIPMAP_MODE_LINEAR, true);
@@ -32,13 +37,17 @@ public class TextureSampler implements Keyable
     {
         this.texture = texture;
         this.key = key;
-        create(device, filter, mipmapMode, anisotropy);
+        textureImageView = createImageView(device);
+        textureSampler = createSampler(device, filter, mipmapMode, anisotropy);
     }
 
-    private void create(VkDevice device, int filter, int mipmapMode, boolean anisotropy)
+    public long createImageView(VkDevice device)
     {
-        textureImageView = VulkanUtil.createImageView(device, texture.textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+        return VulkanUtil.createImageView(device, texture.textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+    }
 
+    public long createSampler(VkDevice device, int filter, int mipmapMode, boolean anisotropy)
+    {
         try (MemoryStack stack = MemoryStack.stackPush())
         {
             VkSamplerCreateInfo samplerInfo = VkSamplerCreateInfo.calloc(stack);
@@ -63,7 +72,7 @@ public class TextureSampler implements Keyable
                 throw new RuntimeException("Fialed to create texture sampler");
             }
 
-            textureSampler = pTextureSampler.get(0);
+            return pTextureSampler.get(0);
         }
     }
 

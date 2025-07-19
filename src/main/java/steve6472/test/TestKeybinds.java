@@ -18,6 +18,8 @@ public class TestKeybinds
     public static final Keybind RIGHT = register(new Keybind(FlareConstants.key("right"), KeybindType.REPEAT, GLFW.GLFW_KEY_D));
     public static final Keybind BACK = register(new Keybind(FlareConstants.key("back"), KeybindType.REPEAT, GLFW.GLFW_KEY_S));
 
+    public static final Keybind G = register(new Keybind(FlareConstants.key("special_action"), KeybindType.ONCE, GLFW.GLFW_KEY_G));
+
     public static final Keybind TO_UP = register(new Keybind(FlareConstants.key("to_up"), KeybindType.ONCE, GLFW.GLFW_KEY_UP));
     public static final Keybind TO_LEFT = register(new Keybind(FlareConstants.key("to_left"), KeybindType.ONCE, GLFW.GLFW_KEY_LEFT));
     public static final Keybind TO_RIGHT = register(new Keybind(FlareConstants.key("to_right"), KeybindType.ONCE, GLFW.GLFW_KEY_RIGHT));

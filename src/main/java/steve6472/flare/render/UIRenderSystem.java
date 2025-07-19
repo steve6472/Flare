@@ -3,7 +3,6 @@ package steve6472.flare.render;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
-import steve6472.core.registry.Key;
 import steve6472.flare.Camera;
 import steve6472.flare.FlareConstants;
 import steve6472.flare.MasterRenderer;
@@ -18,7 +17,6 @@ import steve6472.flare.render.impl.UIRenderImpl;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.SBO;
 import steve6472.flare.struct.def.UBO;
-import steve6472.flare.ui.textures.SpriteEntry;
 
 import java.nio.LongBuffer;
 import java.util.*;
@@ -157,15 +155,7 @@ public final class UIRenderSystem extends RenderSystem
 
     private Struct updateUITextures()
     {
-        Map<Key, SpriteEntry> sprites = FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).getSprites();
-        Collection<Key> keys = sprites.keySet();
-        Struct[] textureSettings = new Struct[keys.size()];
-        keys.forEach(key ->
-        {
-            SpriteEntry uiTextureEntry = sprites.get(key);
-            textureSettings[uiTextureEntry.index()] = uiTextureEntry.toStruct();
-        });
-
+        Struct[] textureSettings = FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).createTextureSettings();
         return SBO.SPRITE_ENTRIES.create((Object) textureSettings);
     }
 

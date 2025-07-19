@@ -6,6 +6,7 @@ import steve6472.core.registry.Key;
 import steve6472.core.util.ImagePacker;
 import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.assets.atlas.Atlas;
+import steve6472.flare.assets.atlas.SpriteAtlas;
 import steve6472.flare.assets.model.blockbench.BlockbenchLoader;
 import steve6472.flare.registry.VkContent;
 import steve6472.flare.registry.FlareRegistries;

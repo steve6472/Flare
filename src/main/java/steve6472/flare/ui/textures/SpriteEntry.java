@@ -9,6 +9,8 @@ import steve6472.core.util.BitUtil;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.SBO;
 import steve6472.flare.ui.textures.type.NineSlice;
+import steve6472.flare.ui.textures.type.Stretch;
+import steve6472.flare.ui.textures.type.Tile;
 
 /**
  * Created by steve6472
@@ -32,6 +34,9 @@ public record SpriteEntry(Key key, SpriteData data, Vector4f uv, Vector2i pixelS
             flags = BitUtil.setBit(flags, 4, nineSlice.stretch().right());
             flags = BitUtil.setBit(flags, 5, nineSlice.stretch().top());
             flags = BitUtil.setBit(flags, 6, nineSlice.stretch().bottom());
+        } else if (data.uiType() instanceof Tile)
+        {
+            flags |= 0b10;
         }
 
         return SBO.SPRITE_ENTRY.create(

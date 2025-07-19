@@ -1,30 +1,37 @@
 package steve6472.flare.render;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
+import steve6472.core.log.Log;
 import steve6472.core.registry.Key;
 import steve6472.flare.Camera;
 import steve6472.flare.FlareConstants;
 import steve6472.flare.MasterRenderer;
 import steve6472.flare.VkBuffer;
+import steve6472.flare.assets.atlas.AnimationAtlas;
+import steve6472.flare.assets.atlas.Atlas;
+import steve6472.flare.assets.atlas.SpriteAtlas;
 import steve6472.flare.core.FrameInfo;
 import steve6472.flare.descriptors.DescriptorPool;
 import steve6472.flare.descriptors.DescriptorSetLayout;
 import steve6472.flare.descriptors.DescriptorWriter;
+import steve6472.flare.framebuffer.AnimatedAtlasFrameBuffer;
 import steve6472.flare.pipeline.Pipelines;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.render.impl.UIRenderImpl;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.SBO;
 import steve6472.flare.struct.def.UBO;
+import steve6472.flare.struct.def.Vertex;
 import steve6472.flare.ui.textures.SpriteEntry;
+import steve6472.test.TestKeybinds;
 
 import java.nio.LongBuffer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 import static org.lwjgl.vulkan.VK10.*;
 import static steve6472.flare.SwapChain.MAX_FRAMES_IN_FLIGHT;
@@ -36,20 +43,21 @@ import static steve6472.flare.SwapChain.MAX_FRAMES_IN_FLIGHT;
  */
 public class AnimateTextureSystem extends RenderSystem
 {
+    private static final Logger LOGGER = Log.getLogger(AnimateTextureSystem.class);
     private final DescriptorPool globalPool;
     private final DescriptorSetLayout globalSetLayout;
-    private final List<UIRenderSystem.FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
+    private final List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
     private final VkBuffer buffer;
+    public final SpriteAtlas atlas;
 
-    private final UIRenderImpl renderImpl;
-    private final float far;
-
-    public AnimateTextureSystem(MasterRenderer masterRenderer, @NonNull UIRenderImpl renderImpl, float far)
+    public AnimateTextureSystem(MasterRenderer masterRenderer, Atlas atlas)
     {
         super(masterRenderer, Pipelines.UI_TEXTURE);
-        Objects.requireNonNull(renderImpl);
-        this.renderImpl = renderImpl;
-        this.far = far;
+        if (!(atlas instanceof SpriteAtlas spriteAtlas))
+            throw new RuntimeException("Passed atlas '%s' is not a Sprite Atlas".formatted(atlas.key()));
+        this.atlas = spriteAtlas;
+        AnimationAtlas animationAtlas = spriteAtlas.getAnimationAtlas();
+        Objects.requireNonNull(animationAtlas, "Atlas '%s' does not contain animations".formatted(atlas.key()));
 
         globalSetLayout = DescriptorSetLayout
             .builder(device)
@@ -65,7 +73,7 @@ public class AnimateTextureSystem extends RenderSystem
 
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
-            UIRenderSystem.FlightFrame frame = new UIRenderSystem.FlightFrame();
+            FlightFrame frame = new FlightFrame();
             frames.add(frame);
 
             VkBuffer global = new VkBuffer(
@@ -91,9 +99,10 @@ public class AnimateTextureSystem extends RenderSystem
             try (MemoryStack stack = MemoryStack.stackPush())
             {
                 DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
+
                 frame.descriptorSet = descriptorWriter
                     .writeBuffer(0, stack, frame.uboBuffer, UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT)
-                    .writeImage(1, stack, FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).getSampler())
+                    .writeImage(1, stack, animationAtlas.getSampler())
                     .writeBuffer(2, stack, frame.sboTextureSettings)
                     .build();
             }
@@ -115,23 +124,106 @@ public class AnimateTextureSystem extends RenderSystem
         return new long[] {globalSetLayout.descriptorSetLayout};
     }
 
+    List<Struct> structList;
+
+    protected final void vertex(Vector3f position, Vector3f tint, Vector3f data)
+    {
+        structList.add(Vertex.POS3F_COL3F_DATA3F.create(position, tint, data));
+    }
+
+
+
+    protected final SpriteEntry getTextureEntry(Key textureKey)
+    {
+        SpriteEntry uiTextureEntry = atlas.getAnimationAtlas().getSprite(textureKey);
+        if (uiTextureEntry == null)
+        {
+            Log.warningOnce(LOGGER, "Missing UI Texture for " + textureKey);
+        }
+        return uiTextureEntry;
+    }
+
+    protected final void sprite(int x, int y, float zIndex, int width, int height, int pixelWidth, int pixelHeight, Vector3f tint, @NotNull Key textureKey)
+    {
+        createSprite(x, y, zIndex, width, height, pixelWidth, pixelHeight, tint, getTextureEntry(textureKey));
+    }
+
+    protected static final Vector3f NO_TINT = new Vector3f(1.0f);
+
+    protected final void sprite(int x, int y, float zIndex, int width, int height, int pixelWidth, int pixelHeight, @NotNull Key textureKey)
+    {
+        sprite(x, y, zIndex, width, height, pixelWidth, pixelHeight, NO_TINT, textureKey);
+    }
+
+    protected final void createSprite(
+        int x, int y, float zIndex,
+        int width, int height,
+        int pixelWidth, int pixelHeight,
+        Vector3f tint,
+        SpriteEntry texture)
+    {
+        int index;
+        if (texture == null)
+        {
+            index = 0;
+        } else
+        {
+            index = texture.index();
+        }
+
+        // Fit zIndex to 0 - 0.1 range
+        zIndex /= 256f;
+        zIndex /= 10f;
+
+        // Define base vertices
+        Vector3f vtl = new Vector3f(x, y , zIndex);
+        Vector3f vbl = new Vector3f(x, y + height, zIndex);
+        Vector3f vbr = new Vector3f(x + width, y + height, zIndex);
+        Vector3f vtr = new Vector3f(x + width, y, zIndex);
+        //noinspection SuspiciousNameCombination
+        Vector3f vertexData = new Vector3f(index, pixelWidth, pixelHeight);
+
+        vertex(vtl, tint, vertexData);
+        vertex(vbl, tint, vertexData);
+        vertex(vbr, tint, vertexData);
+
+        vertex(vbr, tint, vertexData);
+        vertex(vtr, tint, vertexData);
+        vertex(vtl, tint, vertexData);
+    }
+
+    int w = 8;
+    int h = 0;
+
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
-        List<Struct> verticies = new ArrayList<>();
-        renderImpl.setStructList(verticies);
-        renderImpl.render();
+        structList = new ArrayList<>();
 
-        if (verticies.isEmpty())
+        if (TestKeybinds.TO_RIGHT.isActive())
+            w++;
+        if (TestKeybinds.TO_LEFT.isActive())
+            w--;
+
+        if (TestKeybinds.TO_DOWN.isActive())
+            h++;
+        if (TestKeybinds.TO_UP.isActive())
+            h--;
+
+
+        int scale = 16;
+        sprite(0, 0, 0, 8 * scale, 8 * scale, w, h, Key.withNamespace("test", "box_animated"));
+
+        if (structList.isEmpty())
             return;
 
-        UIRenderSystem.FlightFrame flightFrame = frames.get(frameInfo.frameIndex());
+        FlightFrame flightFrame = frames.get(frameInfo.frameIndex());
 
         Camera camera = new Camera();
         int windowWidth = getMasterRenderer().getWindow().getWidth();
         int windowHeight = getMasterRenderer().getWindow().getHeight();
 
-        camera.setOrthographicProjection(0, windowWidth, 0, windowHeight, 0f, far);
+        camera.setOrthographicProjection(0, windowWidth, 0, windowHeight, 0f, 1f);
         camera.setViewYXZ(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
 
         Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(camera.getProjectionMatrix(), camera.getViewMatrix());
@@ -150,27 +242,26 @@ public class AnimateTextureSystem extends RenderSystem
             stack.longs(flightFrame.descriptorSet),
             stack.ints(singleInstanceSize * frameInfo.camera().cameraIndex));
 
-        buffer.writeToBuffer(vertex()::memcpy, verticies);
+        buffer.writeToBuffer(vertex()::memcpy, structList);
 
         LongBuffer vertexBuffers = stack.longs(buffer.getBuffer());
         LongBuffer offsets = stack.longs(0);
         vkCmdBindVertexBuffers(frameInfo.commandBuffer(), 0, vertexBuffers, offsets);
-        vkCmdDraw(frameInfo.commandBuffer(), verticies.size(), 1, 0, 0);
+        vkCmdDraw(frameInfo.commandBuffer(), structList.size(), 1, 0, 0);
     }
-
 
     private Struct updateUITextures()
     {
-        return null;
-//        Collection<Key> keys = FlareRegistries.SPRITE.keys();
-//        Struct[] textureSettings = new Struct[keys.size()];
-//        keys.forEach(key ->
-//        {
-//            SpriteEntry uiTextureEntry = FlareRegistries.SPRITE.get(key);
-//            textureSettings[uiTextureEntry.index()] = uiTextureEntry.toStruct();
-//        });
-//
-//        return SBO.SPRITE_ENTRIES.create((Object) textureSettings);
+        Struct[] textureSettings;
+        Atlas atlas = FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI);
+        if (atlas instanceof SpriteAtlas spriteAtlas && spriteAtlas.getAnimationAtlas() != null)
+        {
+            textureSettings = spriteAtlas.getAnimationAtlas().createTextureSettings();
+        } else
+        {
+            textureSettings = atlas.createTextureSettings();
+        }
+        return SBO.SPRITE_ENTRIES.create((Object) textureSettings);
     }
 
     @Override
@@ -182,7 +273,7 @@ public class AnimateTextureSystem extends RenderSystem
         if (buffer != null)
             buffer.cleanup();
 
-        for (UIRenderSystem.FlightFrame flightFrame : frames)
+        for (FlightFrame flightFrame : frames)
         {
             flightFrame.uboBuffer.cleanup();
             flightFrame.sboTextureSettings.cleanup();

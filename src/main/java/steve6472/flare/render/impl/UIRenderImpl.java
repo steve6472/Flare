@@ -23,7 +23,6 @@ import java.util.logging.Logger;
 public abstract class UIRenderImpl
 {
     private static final Logger LOGGER = Log.getLogger(UIRenderImpl.class);
-    private static final Set<String> MISSING_TEXTURES = new HashSet<>(16);
     private List<Struct> structList;
 
     protected static final Vector3f NO_TINT = new Vector3f(1.0f);
@@ -42,14 +41,10 @@ public abstract class UIRenderImpl
 
     protected final SpriteEntry getTextureEntry(Key textureKey)
     {
-        SpriteEntry uiTextureEntry = FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).getSprites().get(textureKey);
+        SpriteEntry uiTextureEntry = FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).getSprite(textureKey);
         if (uiTextureEntry == null)
         {
-            if (!MISSING_TEXTURES.contains(textureKey.toString()))
-            {
-                MISSING_TEXTURES.add(textureKey.toString());
-                LOGGER.warning("Missing UI Texture for " + textureKey);
-            }
+            Log.warningOnce(LOGGER, "Missing UI Texture for " + textureKey);
         }
         return uiTextureEntry;
     }

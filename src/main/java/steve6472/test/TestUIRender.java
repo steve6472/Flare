@@ -15,7 +15,7 @@ public class TestUIRender extends UIRenderImpl
     {
         // Test animated texture
         int scale = 16;
-        sprite(0, 0, 0, 8 * scale, 8 * scale, 8, 8, Key.withNamespace("test", "box_background"));
+        sprite(0, 0, 0, 8 * scale, 8 * scale, 16, 16, Key.withNamespace("test", "box_animated"));
 
 //        sprite(TestApp.instance.masterRenderer().getWindow().getWidth() - TestApp.pixelW * 10, 0, 0, TestApp.pixelW * 10, TestApp.pixelH * 10, TestApp.pixelW, TestApp.pixelH, Key.withNamespace("test", "box"));
     }

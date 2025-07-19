@@ -8,10 +8,11 @@ import org.lwjgl.vulkan.*;
 import steve6472.core.SteveCore;
 import steve6472.core.log.Log;
 import steve6472.core.module.ModuleManager;
-import steve6472.core.registry.Key;
 import steve6472.core.setting.SettingsLoader;
 import steve6472.core.util.JarExport;
 import steve6472.flare.*;
+import steve6472.flare.assets.atlas.Atlas;
+import steve6472.flare.assets.atlas.SpriteAtlas;
 import steve6472.flare.input.UserInput;
 import steve6472.flare.registry.RegistryCreators;
 import steve6472.flare.registry.FlareRegistries;
@@ -42,6 +43,9 @@ public class Flare
      *  - Should help me with writing into a texture
      *
      * [x] Texture Dumping
+     *
+     * [ ] Proper generic FrameBuffer
+     * [ ] After above is completed: FrameBuffer registry
      */
     private static final Logger LOGGER = Log.getLogger(Flare.class);
 
@@ -215,6 +219,9 @@ public class Flare
 
                     app.render(frameInfo, stack);
 
+                    // Update atlases with animations
+                    renderer.updateAtlasAnimations(frameInfo, stack);
+
                     renderer.beginSwapChainRenderPass(commandBuffer, stack);
                     renderer.render(frameInfo, stack);
                     renderer.endRenderPass(commandBuffer);
@@ -263,6 +270,12 @@ public class Flare
         FlareRegistries.STATIC_MODEL.keys().forEach(key -> FlareRegistries.STATIC_MODEL.get(key).destroy());
         FlareRegistries.ANIMATED_MODEL.keys().forEach(key -> FlareRegistries.ANIMATED_MODEL.get(key).destroy());
         FlareRegistries.SAMPLER.keys().forEach(key -> FlareRegistries.SAMPLER.get(key).cleanup(device));
+        FlareRegistries.ATLAS.keys().forEach(key ->
+        {
+            Atlas atlas = FlareRegistries.ATLAS.get(key);
+            if (atlas instanceof SpriteAtlas spriteAtlas && spriteAtlas.frameBuffer != null)
+                spriteAtlas.frameBuffer.cleanup();
+        });
 
         vkDestroyDevice(device, null);
 

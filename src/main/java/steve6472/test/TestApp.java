@@ -5,6 +5,8 @@ import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkExtent2D;
 import steve6472.core.log.Log;
 import steve6472.core.registry.Key;
 import steve6472.core.setting.SettingsLoader;
@@ -13,13 +15,11 @@ import steve6472.flare.FlareConstants;
 import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.core.FrameInfo;
 import steve6472.flare.core.FlareApp;
+import steve6472.flare.framebuffer.AnimatedAtlasFrameBuffer;
 import steve6472.flare.input.KeybindUpdater;
 import steve6472.flare.pipeline.Pipelines;
 import steve6472.flare.registry.FlareRegistries;
-import steve6472.flare.render.StaticModelRenderSystem;
-import steve6472.flare.render.UIFontRender;
-import steve6472.flare.render.UILineRender;
-import steve6472.flare.render.UIRenderSystem;
+import steve6472.flare.render.*;
 
 import java.io.File;
 import java.util.logging.Logger;
@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  * Date: 9/29/2024
  * Project: Flare <br>
  */
-class TestApp extends FlareApp
+public class TestApp extends FlareApp
 {
     private static final Logger LOGGER = Log.getLogger(TestApp.class);
     private static final File TEST_SETTINGS = new File("settings/test_settings.json");
@@ -63,6 +63,7 @@ class TestApp extends FlareApp
     @Override
     protected void createRenderSystems()
     {
+        addAtlasAnimationSystem(FlareConstants.ATLAS_UI);
         addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new EntityTestRender(), Pipelines.BLOCKBENCH_STATIC));
         addRenderSystem(new UIRenderSystem(masterRenderer(), new TestUIRender(), 256f));
         addRenderSystem(new UIFontRender(masterRenderer(), new TestFontRender()));
@@ -91,20 +92,19 @@ class TestApp extends FlareApp
     {
         KeybindUpdater.updateKeybinds(TestRegistries.KEYBIND, input());
 
-        dumpSamplers();
+        if (DUMP_SAMPLERS)
+            dumpSamplers();
     }
 
     private void dumpSamplers()
     {
-        if (!DUMP_SAMPLERS)
-            return;
-
         LOGGER.info("Dumping samplers");
         File file = getFile("/sampler");
 
         LOGGER.info("Generating new samplers");
         for (Key key : FlareRegistries.SAMPLER.keys())
         {
+            LOGGER.info("Dumping " + key);
             File dumpFile = new File(file, key.namespace() + "-" + key.id().replaceAll("/", "__") + ".png");
             TextureSampler textureSampler = FlareRegistries.SAMPLER.get(key);
             textureSampler.texture.saveTextureAsPNG(device(), masterRenderer().getCommands(), masterRenderer().getGraphicsQueue(), dumpFile);
@@ -164,10 +164,14 @@ class TestApp extends FlareApp
         if (TestKeybinds.BACK.isActive())
             Y -= frameInfo.frameTime() * speed;
 
+        if (TestKeybinds.G.isActive())
+        {
+            dumpSamplers();
+        }
+
         Key sans = Key.withNamespace("test", "default_comic_sans");
         Key debug = Key.withNamespace("test", "debug");
         Key digi = Key.withNamespace("test", "digi");
-
 
 //                text().line(TextLine.fromText("Rainbow in a Pot", 0.25f), new Matrix4f().translate(0, 0.5f, 0.2f));
 //        text().message(new TextMessage(List.of(TextLine.fromText("Rainbow in a Pot", 1f)), 1f, 4f, Anchor.CENTER, Billboard.FIXED, Align.CENTER));
@@ -194,7 +198,6 @@ class TestApp extends FlareApp
     @Override
     public void cleanup()
     {
-
     }
 
     @Override
