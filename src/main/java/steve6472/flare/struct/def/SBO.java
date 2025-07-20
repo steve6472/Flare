@@ -70,12 +70,32 @@ public interface SBO
         //      0b1 -> tile left
         //  bit4: T/F -> mirror, used only when border is tiled
         .addMember(INT) // flags
-        .addMember(INT) // offset
-        .addMember(VEC_2F)
+        .addMember(INT) // alignment
+        .addMember(VEC_2F) // pixel scale
 
         .build();
 
     StructDef SPRITE_ENTRIES = builder()
         .addStructArray(SPRITE_ENTRY, MAX_SPRITE_ENTRIES)
+        .build();
+
+
+
+    int MAX_ANIMATED_SPRITE_ENTRIES = 1024;
+
+    StructDef ANIMATION_DATA = builder()
+        .addMember(VEC_4F) // dimensions
+
+        .addMember(VEC_2F) // single size
+        .addMember(INT) // index from
+        .addMember(INT) // index to
+
+        .addMember(FLOAT) // transition
+        .addMember(INT) // flags
+        .addMember(VEC_2F) // pixel scale
+        .build();
+
+    StructDef ANIMATION_ENTRIES = builder()
+        .addStructArray(ANIMATION_DATA, MAX_ANIMATED_SPRITE_ENTRIES)
         .build();
 }

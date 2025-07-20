@@ -58,6 +58,11 @@ public interface Vertex
         .addMember(VEC_3F)  // data
         .build(StructVertex::new);
 
+    StructVertex POS3F_DATA3F = builder()
+        .addMember(VEC_3F)  // position
+        .addMember(VEC_3F)  // data
+        .build(StructVertex::new);
+
     StructVertex POS3F_NORMAL_UV = builder()
         .addMember(VEC_3F)  // position
         .addMember(NORMAL)  // normal

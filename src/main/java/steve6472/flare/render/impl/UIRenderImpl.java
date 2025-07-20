@@ -42,7 +42,7 @@ public abstract class UIRenderImpl
     protected final SpriteEntry getTextureEntry(Key textureKey)
     {
         SpriteEntry uiTextureEntry = FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).getSprite(textureKey);
-        if (uiTextureEntry == null)
+        if (uiTextureEntry.key().equals(FlareConstants.ERROR_TEXTURE))
         {
             Log.warningOnce(LOGGER, "Missing UI Texture for " + textureKey);
         }

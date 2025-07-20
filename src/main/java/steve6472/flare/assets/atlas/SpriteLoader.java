@@ -181,13 +181,6 @@ public class SpriteLoader
         BufferedImage image = packer.getImage();
         saveDebugAtlas(atlas, image);
         atlas.createVkResource(image, device, commands, graphicsQueue);
-
-//        Texture texture = new Texture();
-//        texture.createTextureImageFromBufferedImage(device, image, commands.commandPool, graphicsQueue);
-//        TextureSampler sampler = new TextureSampler(texture, device, atlas.key(), VK_FILTER_NEAREST, VK_SAMPLER_MIPMAP_MODE_NEAREST, false);
-//        FlareRegistries.SAMPLER.register(sampler);
-//        atlas.sampler = sampler;
-
         fixUvs(atlas, packer);
         return packer;
     }

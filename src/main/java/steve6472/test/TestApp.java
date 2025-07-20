@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  * Date: 9/29/2024
  * Project: Flare <br>
  */
-public class TestApp extends FlareApp
+class TestApp extends FlareApp
 {
     private static final Logger LOGGER = Log.getLogger(TestApp.class);
     private static final File TEST_SETTINGS = new File("settings/test_settings.json");

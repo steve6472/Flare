@@ -233,6 +233,36 @@ public interface Pipelines
             .done()
         .build(renderPass, setLayouts);
 
+    PipelineConstructor ATLAS_ANIMATION = (device, extent, renderPass, setLayouts) -> PipelineBuilder
+        .create(device)
+        .shaders()
+            .addShader(ShaderSPIRVUtils.ShaderKind.VERTEX_SHADER, "flare/shaders/atlas_animation.vert", VK_SHADER_STAGE_VERTEX_BIT)
+            .addShader(ShaderSPIRVUtils.ShaderKind.FRAGMENT_SHADER, "flare/shaders/atlas_animation.frag", VK_SHADER_STAGE_FRAGMENT_BIT)
+            .done()
+        .vertexInputInfo(Vertex.POS3F_DATA3F)
+        .inputAssembly(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, false)
+        .viewport()
+            .viewportBounds(0.0f, extent.height(), extent.width(), -extent.height())
+            .viewportDepths(0.0f, 1.0f)
+            .scissorOffset(0, 0)
+            .scissorExtent(extent)
+            .done()
+        .rasterization()
+            .flags(false, false, false)
+            .lineWidth(1.0f)
+            .polygonInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE)
+            .done()
+        .multisampling()
+            .sampleShading(false)
+            .rasterizationSamples(VK_SAMPLE_COUNT_1_BIT)
+            .done()
+        .colorBlend(true, VK_LOGIC_OP_COPY, 0f, 0f, 0f, 0f)
+            .attachment(VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT, true)
+            .done()
+        .pushConstants()
+            .done()
+        .build(renderPass, setLayouts);
+
     PipelineConstructor SKIN = (device, extent, renderPass, setLayouts) -> PipelineBuilder
         .create(device)
         .shaders()

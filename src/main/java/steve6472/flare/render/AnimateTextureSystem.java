@@ -1,10 +1,7 @@
 package steve6472.flare.render;
 
-import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
-import steve6472.core.log.Log;
-import steve6472.core.registry.Key;
 import steve6472.flare.Camera;
 import steve6472.flare.FlareConstants;
 import steve6472.flare.MasterRenderer;
@@ -16,22 +13,17 @@ import steve6472.flare.core.FrameInfo;
 import steve6472.flare.descriptors.DescriptorPool;
 import steve6472.flare.descriptors.DescriptorSetLayout;
 import steve6472.flare.descriptors.DescriptorWriter;
-import steve6472.flare.framebuffer.AnimatedAtlasFrameBuffer;
 import steve6472.flare.pipeline.Pipelines;
-import steve6472.flare.registry.FlareRegistries;
-import steve6472.flare.render.impl.UIRenderImpl;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.SBO;
 import steve6472.flare.struct.def.UBO;
 import steve6472.flare.struct.def.Vertex;
 import steve6472.flare.ui.textures.SpriteEntry;
-import steve6472.test.TestKeybinds;
 
 import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Logger;
 
 import static org.lwjgl.vulkan.VK10.*;
 import static steve6472.flare.SwapChain.MAX_FRAMES_IN_FLIGHT;
@@ -43,24 +35,25 @@ import static steve6472.flare.SwapChain.MAX_FRAMES_IN_FLIGHT;
  */
 public class AnimateTextureSystem extends RenderSystem
 {
-    private static final Logger LOGGER = Log.getLogger(AnimateTextureSystem.class);
     private final DescriptorPool globalPool;
     private final DescriptorSetLayout globalSetLayout;
     private final List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
     private final VkBuffer buffer;
     public final SpriteAtlas atlas;
+    public final AnimationTicker ticker;
 
     public AnimateTextureSystem(MasterRenderer masterRenderer, Atlas atlas)
     {
-        super(masterRenderer, Pipelines.UI_TEXTURE);
+        super(masterRenderer, Pipelines.ATLAS_ANIMATION);
         if (!(atlas instanceof SpriteAtlas spriteAtlas))
             throw new RuntimeException("Passed atlas '%s' is not a Sprite Atlas".formatted(atlas.key()));
         this.atlas = spriteAtlas;
         AnimationAtlas animationAtlas = spriteAtlas.getAnimationAtlas();
         Objects.requireNonNull(animationAtlas, "Atlas '%s' does not contain animations".formatted(atlas.key()));
 
-        globalSetLayout = DescriptorSetLayout
-            .builder(device)
+        ticker = new AnimationTicker(animationAtlas);
+
+        globalSetLayout = DescriptorSetLayout.builder(device)
             .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT)
             .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
             .addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -85,16 +78,16 @@ public class AnimateTextureSystem extends RenderSystem
             global.map();
             frame.uboBuffer = global;
 
-            VkBuffer textureSettings = new VkBuffer(
+            VkBuffer animationSettings = new VkBuffer(
                 device,
-                SBO.SPRITE_ENTRIES.sizeof(),
+                SBO.ANIMATION_ENTRIES.sizeof(),
                 1,
                 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-            textureSettings.map();
-            frame.sboTextureSettings = textureSettings;
+            animationSettings.map();
+            frame.sboAnimDataSettings = animationSettings;
 
-            frame.sboTextureSettings.writeToBuffer(SBO.SPRITE_ENTRIES::memcpy, updateUITextures());
+            updateSbo(frame.sboAnimDataSettings);
 
             try (MemoryStack stack = MemoryStack.stackPush())
             {
@@ -103,7 +96,7 @@ public class AnimateTextureSystem extends RenderSystem
                 frame.descriptorSet = descriptorWriter
                     .writeBuffer(0, stack, frame.uboBuffer, UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT)
                     .writeImage(1, stack, animationAtlas.getSampler())
-                    .writeBuffer(2, stack, frame.sboTextureSettings)
+                    .writeBuffer(2, stack, frame.sboAnimDataSettings)
                     .build();
             }
         }
@@ -124,95 +117,35 @@ public class AnimateTextureSystem extends RenderSystem
         return new long[] {globalSetLayout.descriptorSetLayout};
     }
 
-    List<Struct> structList;
-
-    protected final void vertex(Vector3f position, Vector3f tint, Vector3f data)
-    {
-        structList.add(Vertex.POS3F_COL3F_DATA3F.create(position, tint, data));
-    }
-
-
-
-    protected final SpriteEntry getTextureEntry(Key textureKey)
-    {
-        SpriteEntry uiTextureEntry = atlas.getAnimationAtlas().getSprite(textureKey);
-        if (uiTextureEntry == null)
-        {
-            Log.warningOnce(LOGGER, "Missing UI Texture for " + textureKey);
-        }
-        return uiTextureEntry;
-    }
-
-    protected final void sprite(int x, int y, float zIndex, int width, int height, int pixelWidth, int pixelHeight, Vector3f tint, @NotNull Key textureKey)
-    {
-        createSprite(x, y, zIndex, width, height, pixelWidth, pixelHeight, tint, getTextureEntry(textureKey));
-    }
-
-    protected static final Vector3f NO_TINT = new Vector3f(1.0f);
-
-    protected final void sprite(int x, int y, float zIndex, int width, int height, int pixelWidth, int pixelHeight, @NotNull Key textureKey)
-    {
-        sprite(x, y, zIndex, width, height, pixelWidth, pixelHeight, NO_TINT, textureKey);
-    }
-
-    protected final void createSprite(
-        int x, int y, float zIndex,
-        int width, int height,
-        int pixelWidth, int pixelHeight,
-        Vector3f tint,
-        SpriteEntry texture)
-    {
-        int index;
-        if (texture == null)
-        {
-            index = 0;
-        } else
-        {
-            index = texture.index();
-        }
-
-        // Fit zIndex to 0 - 0.1 range
-        zIndex /= 256f;
-        zIndex /= 10f;
-
-        // Define base vertices
-        Vector3f vtl = new Vector3f(x, y , zIndex);
-        Vector3f vbl = new Vector3f(x, y + height, zIndex);
-        Vector3f vbr = new Vector3f(x + width, y + height, zIndex);
-        Vector3f vtr = new Vector3f(x + width, y, zIndex);
-        //noinspection SuspiciousNameCombination
-        Vector3f vertexData = new Vector3f(index, pixelWidth, pixelHeight);
-
-        vertex(vtl, tint, vertexData);
-        vertex(vbl, tint, vertexData);
-        vertex(vbr, tint, vertexData);
-
-        vertex(vbr, tint, vertexData);
-        vertex(vtr, tint, vertexData);
-        vertex(vtl, tint, vertexData);
-    }
-
-    int w = 8;
-    int h = 0;
-
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
-        structList = new ArrayList<>();
+        List<Struct> structList = new ArrayList<>();
 
-        if (TestKeybinds.TO_RIGHT.isActive())
-            w++;
-        if (TestKeybinds.TO_LEFT.isActive())
-            w--;
+        atlas.getAnimationAtlas().getSprites().forEach((key, entry) -> {
+            if (key.equals(FlareConstants.ERROR_TEXTURE))
+                return;
 
-        if (TestKeybinds.TO_DOWN.isActive())
-            h++;
-        if (TestKeybinds.TO_UP.isActive())
-            h--;
+            SpriteEntry sprite = atlas.getSprite(key);
+            int x = (int) (sprite.uv().x * atlas.frameBuffer.width);
+            int y = (int) (sprite.uv().y * atlas.frameBuffer.height);
+            int u = (int) (sprite.uv().z * atlas.frameBuffer.width);
+            int v = (int) (sprite.uv().w * atlas.frameBuffer.height);
 
+            Vector3f vtl = new Vector3f(x, y, 0);
+            Vector3f vbl = new Vector3f(x, v, 0);
+            Vector3f vbr = new Vector3f(u, v, 0);
+            Vector3f vtr = new Vector3f(u, y, 0);
+            Vector3f vertexData = new Vector3f(entry.index(), entry.data().animation().orElseThrow().width(), entry.data().animation().orElseThrow().height());
 
-        int scale = 16;
-        sprite(0, 0, 0, 8 * scale, 8 * scale, w, h, Key.withNamespace("test", "box_animated"));
+            structList.add(Vertex.POS3F_DATA3F.create(vtl, vertexData));
+            structList.add(Vertex.POS3F_DATA3F.create(vbl, vertexData));
+            structList.add(Vertex.POS3F_DATA3F.create(vbr, vertexData));
+
+            structList.add(Vertex.POS3F_DATA3F.create(vbr, vertexData));
+            structList.add(Vertex.POS3F_DATA3F.create(vtr, vertexData));
+            structList.add(Vertex.POS3F_DATA3F.create(vtl, vertexData));
+        });
 
         if (structList.isEmpty())
             return;
@@ -220,8 +153,8 @@ public class AnimateTextureSystem extends RenderSystem
         FlightFrame flightFrame = frames.get(frameInfo.frameIndex());
 
         Camera camera = new Camera();
-        int windowWidth = getMasterRenderer().getWindow().getWidth();
-        int windowHeight = getMasterRenderer().getWindow().getHeight();
+        int windowWidth = atlas.frameBuffer.width;
+        int windowHeight = atlas.frameBuffer.height;
 
         camera.setOrthographicProjection(0, windowWidth, 0, windowHeight, 0f, 1f);
         camera.setViewYXZ(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
@@ -233,6 +166,8 @@ public class AnimateTextureSystem extends RenderSystem
         flightFrame.uboBuffer.flush(singleInstanceSize, (long) singleInstanceSize * frameInfo.camera().cameraIndex);
 
         pipeline().bind(frameInfo.commandBuffer());
+
+        updateSbo(flightFrame.sboAnimDataSettings);
 
         vkCmdBindDescriptorSets(
             frameInfo.commandBuffer(),
@@ -250,18 +185,12 @@ public class AnimateTextureSystem extends RenderSystem
         vkCmdDraw(frameInfo.commandBuffer(), structList.size(), 1, 0, 0);
     }
 
-    private Struct updateUITextures()
+    private void updateSbo(VkBuffer sboBuffer)
     {
-        Struct[] textureSettings;
-        Atlas atlas = FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI);
-        if (atlas instanceof SpriteAtlas spriteAtlas && spriteAtlas.getAnimationAtlas() != null)
-        {
-            textureSettings = spriteAtlas.getAnimationAtlas().createTextureSettings();
-        } else
-        {
-            textureSettings = atlas.createTextureSettings();
-        }
-        return SBO.SPRITE_ENTRIES.create((Object) textureSettings);
+        long now = System.currentTimeMillis();
+        Struct sbo = ticker.createSbo(now);
+        sboBuffer.writeToBuffer(SBO.ANIMATION_ENTRIES::memcpy, sbo);
+        ticker.tick(now);
     }
 
     @Override
@@ -276,14 +205,14 @@ public class AnimateTextureSystem extends RenderSystem
         for (FlightFrame flightFrame : frames)
         {
             flightFrame.uboBuffer.cleanup();
-            flightFrame.sboTextureSettings.cleanup();
+            flightFrame.sboAnimDataSettings.cleanup();
         }
     }
 
     final static class FlightFrame
     {
         VkBuffer uboBuffer;
-        VkBuffer sboTextureSettings;
+        VkBuffer sboAnimDataSettings;
         long descriptorSet;
     }
 }

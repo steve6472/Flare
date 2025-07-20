@@ -4,8 +4,21 @@
         border: 3
     },
     animation: {
+        interpolate: true,
+        oklab: false,
         width: 8,
         height: 8,
-        frametime: 333
+        frametime: 1000,
+        frames: [
+            0,
+            1,
+            2,
+            3,
+            {
+                time: 3000,
+                index: 4
+            },
+            5
+        ]
     }
 }

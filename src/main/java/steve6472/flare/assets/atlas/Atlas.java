@@ -36,7 +36,9 @@ public abstract class Atlas implements Keyable
     abstract void create();
     abstract void createVkResource(BufferedImage image, VkDevice device, Commands commands, VkQueue graphicsQueue);
 
-    Map<Key, SpriteEntry> getSprites()
+    /// Just don't
+    @ApiStatus.Internal
+    public Map<Key, SpriteEntry> getSprites()
     {
         return sprites;
     }

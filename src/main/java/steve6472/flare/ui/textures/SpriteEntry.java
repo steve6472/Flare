@@ -8,8 +8,8 @@ import steve6472.core.registry.Keyable;
 import steve6472.core.util.BitUtil;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.SBO;
+import steve6472.flare.ui.textures.animation.SpriteAnimation;
 import steve6472.flare.ui.textures.type.NineSlice;
-import steve6472.flare.ui.textures.type.Stretch;
 import steve6472.flare.ui.textures.type.Tile;
 
 /**
@@ -47,5 +47,32 @@ public record SpriteEntry(Key key, SpriteData data, Vector4f uv, Vector2i pixelS
             0,
             new Vector2f(pixelSize)
         );
+    }
+
+    public Struct animationToStruct(float transition, int indexFrom, int indexTo)
+    {
+        if (data.animation().isPresent())
+        {
+            SpriteAnimation animation = data.animation().get();
+
+            int flags = 0;
+            flags = BitUtil.setBit(flags, 0, animation.interpolate());
+            flags = BitUtil.setBit(flags, 1, animation.useOklab());
+
+            return SBO.ANIMATION_DATA.create(
+                uv,
+
+                new Vector2f(animation.width(), animation.height()),
+                indexFrom,
+                indexTo,
+
+                transition,
+                flags,
+                new Vector2f(pixelSize)
+            );
+        } else
+        {
+            throw new RuntimeException("No animation exists for sprite '" + key + "'");
+        }
     }
 }

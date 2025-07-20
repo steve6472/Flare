@@ -25,7 +25,7 @@ public class FlareConstants
     public static final Vector4f CLEAR_COLOR = new Vector4f(0.1f, 0.1f, 0.1f, 1.0f);
 
     /// Null extent used by [Pipeline] to create a dummy Pipeline for the Vertex data
-    public static final VkExtent2D NULL_EXTENT = VkExtent2D.malloc();
+    public static final VkExtent2D NULL_EXTENT = VkExtent2D.malloc().set(1, 1);
 
     /// Note: This makes models be unable to be saved unless they are scaled in opposite direction before saving
     public static final float BB_MODEL_SCALE = 1f / 16f;
