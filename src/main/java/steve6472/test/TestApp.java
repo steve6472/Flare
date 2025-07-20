@@ -63,7 +63,6 @@ class TestApp extends FlareApp
     @Override
     protected void createRenderSystems()
     {
-        addAtlasAnimationSystem(FlareConstants.ATLAS_UI);
         addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new EntityTestRender(), Pipelines.BLOCKBENCH_STATIC));
         addRenderSystem(new UIRenderSystem(masterRenderer(), new TestUIRender(), 256f));
         addRenderSystem(new UIFontRender(masterRenderer(), new TestFontRender()));

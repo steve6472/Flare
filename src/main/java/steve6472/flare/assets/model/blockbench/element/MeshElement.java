@@ -52,12 +52,13 @@ public record MeshElement(UUID uuid, String name, Vector3f rotation, Vector3f or
     @Override
     public void fixUvs(LoadedModel model, ImagePacker packer)
     {
-        float resX = 1f / model.resolution().width();
-        float resY = 1f / model.resolution().height();
         float texel = 1f / packer.getImage().getWidth();
 
         faces.forEach((_, face) -> {
             TextureData textureData = model.textures().get(face.texture());
+            float resX = 1f / textureData.uvWidth();
+            float resY = 1f / textureData.uvHeight();
+
             String textureId = textureData.name();
             Rectangle rectangle = packer.getRects().get(textureId);
             for (Vector2f uv : face.uv().values())

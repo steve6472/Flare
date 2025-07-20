@@ -35,11 +35,13 @@ class EntityTestRender extends StaticModelRenderImpl
         var cube = transfromArray.addArea(FlareRegistries.STATIC_MODEL.get(Key.withNamespace("test", "blockbench/static/cube")));
         var pebble = transfromArray.addArea(FlareRegistries.STATIC_MODEL.get(Key.withNamespace("test", "blockbench/static/mesh_pebble")));
         var rainbowInAPot = transfromArray.addArea(FlareRegistries.STATIC_MODEL.get(Key.withNamespace("test", "blockbench/static/rainbow_in_a_pot")));
+        var fire = transfromArray.addArea(FlareRegistries.STATIC_MODEL.get(Key.withNamespace("test", "blockbench/static/fire")));
 
         entities.add(new Entity(ball.index(), new Vector3f(2, 0, 0), new Vector3f(1.0f), new Quaternionf()));
         entities.add(new Entity(cube.index(), new Vector3f(-2, 0, 0), new Vector3f(1.0f), new Quaternionf()));
         entities.add(new Entity(pebble.index(), new Vector3f(0, 0, 2), new Vector3f(1.0f), new Quaternionf()));
         entities.add(new Entity(rainbowInAPot.index(), new Vector3f(0, 0, 0), new Vector3f(1.0f), new Quaternionf()));
+        entities.add(new Entity(fire.index(), new Vector3f(0, 0, -2), new Vector3f(1.0f), new Quaternionf()));
     }
 
     @Override

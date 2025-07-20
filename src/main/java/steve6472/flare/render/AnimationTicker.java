@@ -49,9 +49,9 @@ public class AnimationTicker
     public Struct createSbo(long now)
     {
         Struct[] arr = new Struct[animations.size()];
-        for (int i = 0; i < animations.size(); i++)
+        for (TickedAnimation animation : animations)
         {
-            arr[i] = animations.get(i).toStruct(now);
+            arr[animation.spriteEntry.index()] = animation.toStruct(now);
         }
         return SBO.ANIMATION_ENTRIES.create((Object) arr);
     }

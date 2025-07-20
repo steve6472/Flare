@@ -35,7 +35,7 @@ public class SpriteAtlas extends Atlas
 
     private SpriteAtlas(List<Source> sources)
     {
-        this.sources = sources;
+        this.sources = new ArrayList<>(sources);
     }
 
     @Override

@@ -1,0 +1,9 @@
+{
+    sources: [
+        {
+            type: "single",
+            resource: "test:model/fire_1",
+            name: "test:fire_1"
+        }
+    ]
+}

@@ -6,6 +6,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import steve6472.core.registry.Key;
 import steve6472.core.util.ExtraCodecs;
 import steve6472.core.util.ImagePacker;
 import steve6472.core.util.Preconditions;
@@ -62,14 +63,17 @@ public record CubeElement(UUID uuid, String name, Vector3f from, Vector3f to, Ve
     @Override
     public void fixUvs(LoadedModel model, ImagePacker packer)
     {
-        float resX = 1f / model.resolution().width();
-        float resY = 1f / model.resolution().height();
         float texel = 1f / packer.getImage().getWidth();
 
         faces.forEach((_, face) -> {
             TextureData textureData = model.textures().get(face.texture());
+            float resX = 1f / textureData.uvWidth();
+            float resY = 1f / textureData.uvHeight();
+
             String textureId = textureData.name();
             Rectangle rectangle = packer.getRects().get(textureId);
+            if (rectangle == null)
+                rectangle = packer.getRects().get(FlareConstants.ERROR_TEXTURE.toString());
             Preconditions.checkNotNull(rectangle, "Texture data not found in ImagePacker, for " + textureId);
             Vector4f uv = face.uv();
             uv.set(

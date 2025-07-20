@@ -39,8 +39,10 @@ public class Flare
 {
     /* # TODOS:
 
-     * [ ] Animated textures
+     * [x] Animated textures
      *  - Should help me with writing into a texture
+     *  - [x] Fix texture mismatch if more than one animated texture exists
+     *  - [x] Fix animated textures on models, probably fixUv method
      *
      * [x] Texture Dumping
      *

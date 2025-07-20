@@ -2,9 +2,13 @@ package steve6472.flare;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
+import steve6472.core.registry.Key;
+import steve6472.flare.assets.atlas.Atlas;
+import steve6472.flare.assets.atlas.SpriteAtlas;
 import steve6472.flare.core.FrameInfo;
 import steve6472.flare.framebuffer.AnimatedAtlasFrameBuffer;
 import steve6472.flare.pipeline.Pipelines;
+import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.render.*;
 import steve6472.flare.struct.def.UBO;
 import steve6472.flare.ui.font.render.TextRender;
@@ -54,6 +58,7 @@ public class MasterRenderer
         this.textRender = new TextRender();
 
         swapChain = new SwapChain(device, window, surface, this);
+        addAnimatedAtlases();
     }
 
     public void builtinLast()
@@ -67,9 +72,18 @@ public class MasterRenderer
         renderSystems.add(renderSystem);
     }
 
-    public void addAtlasAnimationSystem(AnimateTextureSystem renderSystem)
+    private void addAnimatedAtlases()
     {
-        atlasAnimations.add(renderSystem);
+        for (Key key : FlareRegistries.ATLAS.keys())
+        {
+            Atlas atlas = FlareRegistries.ATLAS.get(key);
+            if (!(atlas instanceof SpriteAtlas spriteAtlas))
+                continue;
+            if (spriteAtlas.getAnimationAtlas() == null)
+                continue;
+
+            atlasAnimations.add(new AnimateTextureSystem(this, atlas));
+        }
     }
 
     public void rebuildPipelines()

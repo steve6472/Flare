@@ -74,17 +74,6 @@ public abstract class FlareApp
         masterRenderer.addRenderSystem(renderSystem);
     }
 
-    /// If atlas does not contain any animation, the atlas will not be processed
-    protected final void addAtlasAnimationSystem(Key atlasKey)
-    {
-        Atlas atlas = FlareRegistries.ATLAS.get(atlasKey);
-        if (!(atlas instanceof SpriteAtlas spriteAtlas))
-            return;
-        if (spriteAtlas.getAnimationAtlas() == null)
-            return;
-        masterRenderer.addAtlasAnimationSystem(new AnimateTextureSystem(masterRenderer, atlas));
-    }
-
     /// This method simply ensures that the fields in a static class are loaded.
     protected static void initRegistry(Registry<?> dummyRegistry) { }
     /// This method simply ensures that the fields in a static class are loaded.

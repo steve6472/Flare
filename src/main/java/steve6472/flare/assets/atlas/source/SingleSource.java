@@ -18,12 +18,18 @@ import java.util.Optional;
  * Date: 7/16/2025
  * Project: Flare <br>
  */
-public record SingleSource(String resource, Optional<String> name) implements Source
+public record SingleSource(String resource, Optional<Key> name) implements Source
 {
     public static final Codec<SingleSource> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         Codec.STRING.fieldOf("resource").forGetter(SingleSource::resource),
-        Codec.STRING.optionalFieldOf("name").forGetter(SingleSource::name)
+        Key.CODEC.optionalFieldOf("name").forGetter(SingleSource::name)
     ).apply(instance, SingleSource::new));
+
+    public SingleSource
+    {
+        if (!resource.contains(":"))
+            throw new IllegalArgumentException("resource has to specify namespace");
+    }
 
     @Override
     public SourceType<?> getType()
@@ -34,17 +40,15 @@ public record SingleSource(String resource, Optional<String> name) implements So
     @Override
     public Collection<SourceResult> load(Module module, String namespace)
     {
-//        Key parse = Key.parse(namespace, resource);
-//        File sourceFolder = new File(new File(new File(module.getRootFolder(), namespace), FlareParts.TEXTURES.path()), resource);
+        Key parse = Key.parse(resource);
 
-//        String replace = listFile.getAbsolutePath().replace("\\", "/");
-//        String replace1 = startingDir.getAbsolutePath().replace("\\", "/");
-//        String substring = replace.substring(replace1.length() + 1);
-//        if (stripExtFromRel)
-//            substring = substring.substring(0, substring.lastIndexOf('.'));
+        if (!parse.namespace().equals(namespace))
+            return List.of();
 
-//        return List.of(new SourceResult(sourceFolder, null));
-//        return List.of();
-        throw new UnsupportedOperationException("Unimplemented source type");
+        File sourceFile = new File(new File(new File(module.getRootFolder(), namespace), FlareParts.TEXTURES.path()), parse.id() + ".png");
+        if (!sourceFile.exists())
+            return List.of();
+
+        return List.of(new SourceResult(sourceFile, name.orElse(parse)));
     }
 }

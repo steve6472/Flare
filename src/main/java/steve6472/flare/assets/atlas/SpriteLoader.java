@@ -14,11 +14,8 @@ import steve6472.core.util.GsonUtil;
 import steve6472.core.util.ImagePacker;
 import steve6472.flare.Commands;
 import steve6472.flare.FlareConstants;
-import steve6472.flare.assets.Texture;
-import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.assets.atlas.source.SourceResult;
 import steve6472.flare.assets.model.blockbench.ErrorModel;
-import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.ui.textures.SpriteData;
 import steve6472.flare.ui.textures.SpriteEntry;
 import steve6472.flare.ui.textures.animation.SpriteAnimation;
@@ -32,8 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
-
-import static org.lwjgl.vulkan.VK10.*;
 
 /**
  * Created by steve6472

@@ -1,0 +1,9 @@
+{
+    animation: {
+        interpolate: false,
+        oklab: false,
+        width: 16,
+        height: 16,
+        frametime: 50
+    }
+}

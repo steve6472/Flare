@@ -14,7 +14,7 @@ class TestMain
 {
     public static void main(String[] args) throws IOException
     {
-        SpriteLoader.SAVE_DEBUG_ATLASES = false;
+        SpriteLoader.SAVE_DEBUG_ATLASES = true;
         TestApp.DUMP_SAMPLERS = false;
 
         System.setProperty("joml.format", "false");

@@ -2,6 +2,7 @@ package steve6472.flare.render;
 
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
+import steve6472.core.log.Log;
 import steve6472.flare.Camera;
 import steve6472.flare.FlareConstants;
 import steve6472.flare.MasterRenderer;
@@ -24,6 +25,7 @@ import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 import static org.lwjgl.vulkan.VK10.*;
 import static steve6472.flare.SwapChain.MAX_FRAMES_IN_FLIGHT;
@@ -35,6 +37,7 @@ import static steve6472.flare.SwapChain.MAX_FRAMES_IN_FLIGHT;
  */
 public class AnimateTextureSystem extends RenderSystem
 {
+    private static final Logger LOGGER = Log.getLogger(AnimateTextureSystem.class);
     private final DescriptorPool globalPool;
     private final DescriptorSetLayout globalSetLayout;
     private final List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
