@@ -1,7 +1,6 @@
 package steve6472.flare.ui.font;
 
 import com.mojang.datafixers.util.Pair;
-import steve6472.core.module.ModuleUtil;
 import steve6472.core.registry.Key;
 import steve6472.core.module.Module;
 import steve6472.flare.FlareParts;
@@ -22,7 +21,7 @@ public class FontLoader
     {
         Map<Key, Pair<FontEntry, Module>> fonts = new LinkedHashMap<>();
 
-        ModuleUtil.loadModuleJsonCodecs(FlareParts.FONT, Flare.getModuleManager(), Font.CODEC, (module, _, key, object) -> {
+        Flare.getModuleManager().loadModuleJsonCodecs(FlareParts.FONT, Font.CODEC, (module, _, key, object) -> {
 
             int index = fonts.containsKey(key) ? fonts.get(key).getFirst().index() : fonts.size();
             FontEntry entry = new FontEntry(key, object, index);
