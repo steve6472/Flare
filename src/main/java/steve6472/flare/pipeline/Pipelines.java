@@ -222,7 +222,7 @@ public interface Pipelines
             .done()
         .depthStencil()
             .depthEnableFlags(true, true)
-            .depthCompareOp(VK_COMPARE_OP_LESS)
+            .depthCompareOp(VK_COMPARE_OP_LESS_OR_EQUAL)
             .bounds(0.0f, 1.0f, false)
             .stencilTestEnable(false)
             .done()
