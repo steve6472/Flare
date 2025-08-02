@@ -14,13 +14,16 @@ import java.util.Map;
  */
 public final class PackerUtil
 {
+    public static int PADDING = 1;
+    public static boolean DUPLICATE_BORDER = true;
+
     public static ImagePacker pack(int startingImageSize, Map<String, BufferedImage> images, boolean includeError)
     {
         ImagePacker packer;
 
         l: while (true)
         {
-            packer = new ImagePacker(startingImageSize, startingImageSize, 1, true);
+            packer = new ImagePacker(startingImageSize, startingImageSize, PADDING, DUPLICATE_BORDER);
 
             for (String imgKey : images.keySet())
             {

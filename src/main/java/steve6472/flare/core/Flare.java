@@ -2,6 +2,7 @@ package steve6472.flare.core;
 
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVulkan;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -199,6 +200,12 @@ public class Flare
             long newTime = System.nanoTime();
             float frameTime = (newTime - currentTime) * 1e-9f;
             currentTime = newTime;
+
+            int iconified = org.lwjgl.glfw.GLFW.glfwGetWindowAttrib(app.window().window(), GLFW_ICONIFIED);
+            if (iconified == GLFW.GLFW_TRUE)
+            {
+                continue;
+            }
 
             VkCommandBuffer commandBuffer;
             try (MemoryStack stack = MemoryStack.stackPush())
