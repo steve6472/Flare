@@ -23,7 +23,7 @@ public class VisualSettings extends SettingRegister
      * Internal
      */
 
-    public static EnumSetting<PresentMode> PRESENT_MODE = registerEnum("present_mode", PresentMode.MAILBOX);
+    public static EnumSetting<PresentMode> PRESENT_MODE = registerEnum("present_mode", PresentMode.FIFO);
     public static IntSetting GLOBAL_CAMERA_COUNT = registerInt("global_camera_count", 3);
 
     /// Max timeout for font generating in seconds
@@ -55,14 +55,14 @@ public class VisualSettings extends SettingRegister
     public static FloatSetting LINE_WIDTH = registerFloat("line_width", 4.0f);
 
     /// Toggles a gray cross at 0, 0, 0
-    public static BoolSetting RENDER_CENTER_POINT = registerBool("render_center_point", true);
+    public static BoolSetting RENDER_CENTER_POINT = registerBool("render_center_point", false);
 
     /// Updates the window title with avarage FPS over last second and last frame MS
-    public static BoolSetting TITLE_FPS = registerBool("title_fps", true);
+    public static BoolSetting TITLE_FPS = registerBool("title_fps", false);
 
     /// Validation level
     /// A warning is thrown if validation level is set to anything other than NONE and no Vulkan SDK is found
-    public static EnumSetting<ValidationLevel> VALIDATION_LEVEL = registerEnum("validation_level", ValidationLevel.WARNING);
+    public static EnumSetting<ValidationLevel> VALIDATION_LEVEL = registerEnum("validation_level", ValidationLevel.NONE);
 
     /// If true, logs everything from the font generator process
     /// (default false as it is mostly missing glyphs)

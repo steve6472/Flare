@@ -9,7 +9,7 @@
   "flare:render_center_point": false,
   "flare:title_fps": true,
   "flare:username": "Steve",
-  "flare:validation_level": "Info",
+  "flare:validation_level": "Warning",
   "flare:vr": false,
   "flare:vr_action_manifest_path": "settings/vr_actions.json"
 }
