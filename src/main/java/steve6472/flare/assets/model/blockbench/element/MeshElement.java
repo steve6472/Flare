@@ -61,6 +61,8 @@ public record MeshElement(UUID uuid, String name, Vector3f rotation, Vector3f or
 
             String textureId = textureData.name();
             Rectangle rectangle = packer.getRects().get(textureId);
+            if (rectangle == null)
+                rectangle = packer.getRects().get(FlareConstants.ERROR_TEXTURE.toString());
             for (Vector2f uv : face.uv().values())
             {
                 uv.set((rectangle.x + rectangle.width * uv.x * resX) * texel, (rectangle.y + rectangle.height * uv.y * resY) * texel);
