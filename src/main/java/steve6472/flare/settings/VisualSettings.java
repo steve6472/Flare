@@ -60,6 +60,9 @@ public class VisualSettings extends SettingRegister
     /// Updates the window title with avarage FPS over last second and last frame MS
     public static BoolSetting TITLE_FPS = registerBool("title_fps", false);
 
+    /// Creates a json of name - coordinate pairs for each atlas at startup
+    public static BoolSetting GENERATE_STARTUP_ATLAS_DATA = registerBool("generate_startup_atlas_data", false);
+
     /// Validation level
     /// A warning is thrown if validation level is set to anything other than NONE and no Vulkan SDK is found
     public static EnumSetting<ValidationLevel> VALIDATION_LEVEL = registerEnum("validation_level", ValidationLevel.NONE);

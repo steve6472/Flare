@@ -101,17 +101,19 @@ public class Camera
 
     public void head(int mouseX, int mouseY, float sensitivity)
     {
+        double dx = 0, dy = 0;
         if (mouseX != oldx)
         {
-            int dx = oldx - mouseX;
-            yaw += (float) Math.toRadians((float) dx * sensitivity);
+            dx = oldx - mouseX;
         }
 
         if (mouseY != oldy)
         {
-            int dy = oldy - mouseY;
-            pitch += (float) Math.toRadians((float) dy * sensitivity);
+            dy = oldy - mouseY;
         }
+
+        pitch += (float) Math.toRadians((float) dy * sensitivity);
+        yaw += (float) Math.toRadians((float) dx * sensitivity);
 
         oldx = mouseX;
         oldy = mouseY;

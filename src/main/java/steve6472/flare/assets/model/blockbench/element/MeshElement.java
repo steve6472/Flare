@@ -3,6 +3,7 @@ package steve6472.flare.assets.model.blockbench.element;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.*;
+import steve6472.core.log.Log;
 import steve6472.core.util.ExtraCodecs;
 import steve6472.core.util.ImagePacker;
 import steve6472.flare.FlareConstants;
@@ -12,6 +13,7 @@ import java.awt.*;
 import java.lang.Math;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Created by steve6472
@@ -20,6 +22,8 @@ import java.util.List;
  */
 public record MeshElement(UUID uuid, String name, Vector3f rotation, Vector3f origin, Map<String, Vector3f> vertices, Map<String, MeshFace> faces) implements Element
 {
+    private static final Logger LOGGER = Log.getLogger(MeshElement.class);
+
     public static final Codec<MeshElement> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         ExtraCodecs.UUID.fieldOf("uuid").forGetter(o -> o.uuid),
         Codec.STRING.fieldOf("name").forGetter(o -> o.name),
@@ -62,7 +66,10 @@ public record MeshElement(UUID uuid, String name, Vector3f rotation, Vector3f or
             String textureId = textureData.name();
             Rectangle rectangle = packer.getRects().get(textureId);
             if (rectangle == null)
+            {
+                Log.warningOnce(LOGGER, "Texture " + textureId + " not found!");
                 rectangle = packer.getRects().get(FlareConstants.ERROR_TEXTURE.toString());
+            }
             for (Vector2f uv : face.uv().values())
             {
                 uv.set((rectangle.x + rectangle.width * uv.x * resX) * texel, (rectangle.y + rectangle.height * uv.y * resY) * texel);

@@ -303,6 +303,24 @@ public final class PipelineBuilder
             colorBlendInfo.blends.add(attachment);
             return this;
         }
+
+        public ColorBlendBuilder additive(int writeMask)
+        {
+            ColorBlendAttachment attachment = new ColorBlendAttachment();
+            attachment.writeMask = writeMask;
+            attachment.blendEnable = true;
+
+            attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+            attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+            attachment.colorBlendOp = VK_BLEND_OP_ADD;
+
+            attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+            attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+            attachment.alphaBlendOp = VK_BLEND_OP_ADD;
+
+            colorBlendInfo.blends.add(attachment);
+            return this;
+        }
     }
 
     public class PushConstantBuilder extends NestedBuilder

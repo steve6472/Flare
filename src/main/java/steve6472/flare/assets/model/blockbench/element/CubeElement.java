@@ -6,6 +6,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import steve6472.core.log.Log;
 import steve6472.core.registry.Key;
 import steve6472.core.util.ExtraCodecs;
 import steve6472.core.util.ImagePacker;
@@ -16,6 +17,7 @@ import steve6472.flare.assets.model.blockbench.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Created by steve6472
@@ -24,6 +26,8 @@ import java.util.List;
  */
 public record CubeElement(UUID uuid, String name, Vector3f from, Vector3f to, Vector3f rotation, Vector3f origin, float inflate, Map<FaceType, CubeFace> faces) implements Element
 {
+    private static final Logger LOGGER = Log.getLogger(CubeElement.class);
+
     public static final Codec<CubeElement> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         ExtraCodecs.UUID.fieldOf("uuid").forGetter(o -> o.uuid),
         Codec.STRING.fieldOf("name").forGetter(o -> o.name),
@@ -73,7 +77,10 @@ public record CubeElement(UUID uuid, String name, Vector3f from, Vector3f to, Ve
             String textureId = textureData.name();
             Rectangle rectangle = packer.getRects().get(textureId);
             if (rectangle == null)
+            {
+                Log.warningOnce(LOGGER, "Texture " + textureId + " not found!");
                 rectangle = packer.getRects().get(FlareConstants.ERROR_TEXTURE.toString());
+            }
             Preconditions.checkNotNull(rectangle, "Texture data not found in ImagePacker, for " + textureId);
             Vector4f uv = face.uv();
             uv.set(
