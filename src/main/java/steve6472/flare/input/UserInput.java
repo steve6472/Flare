@@ -30,6 +30,11 @@ public class UserInput
         return glfwGetKey(window.window(), key) == GLFW_PRESS;
     }
 
+    public boolean isMouseButtonPressed(int button)
+    {
+        return glfwGetMouseButton(window.window(), button) == GLFW_PRESS;
+    }
+
     public Vector2i getMousePositionRelativeToTopLeftOfTheWindow()
     {
         double[] x = new double[1];

@@ -16,8 +16,8 @@ public record DebugCapsule(float radius, float height, int quality, Vector4f col
     @Override
     public void addVerticies(List<Struct> vertices, Matrix4f transform)
     {
-        new DebugCylinder(radius, height - radius, quality, color).addVerticies(vertices, transform);
-        new DebugHemisphere(radius, height - radius, quality, true, color).addVerticies(vertices, transform);
-        new DebugHemisphere(radius, height - radius, quality, false, color).addVerticies(vertices, transform);
+        new DebugCylinder(radius, height / 2f, quality, color).addVerticies(vertices, transform);
+        new DebugHemisphere(radius, height / 2f, quality, true, color).addVerticies(vertices, transform);
+        new DebugHemisphere(radius, height / 2f, quality, false, color).addVerticies(vertices, transform);
     }
 }

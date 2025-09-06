@@ -116,5 +116,15 @@ public class SBOTransfromArray<T extends VkModel>
         {
             return index;
         }
+
+        public T modelType()
+        {
+            return modelType;
+        }
+
+        public int toRender()
+        {
+            return toRender;
+        }
     }
 }
