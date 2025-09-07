@@ -1,28 +1,16 @@
 package steve6472.flare.assets.model.blockbench.anim.datapoint;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import steve6472.flare.assets.model.blockbench.anim.ScriptValue;
+import steve6472.orlang.codec.OrVec3;
 
 /**
  * Created by steve6472
  * Date: 8/20/2024
  * Project: Flare <br>
  */
-public record Vec3DataPoint(ScriptValue x, ScriptValue y, ScriptValue z) implements DataPoint
+public record Vec3DataPoint(OrVec3 xyz) implements DataPoint
 {
-    public static final Codec<Vec3DataPoint> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-        ScriptValue.CODEC.fieldOf("x").forGetter(o -> o.x),
-        ScriptValue.CODEC.fieldOf("y").forGetter(o -> o.y),
-        ScriptValue.CODEC.fieldOf("z").forGetter(o -> o.z)
-    ).apply(instance, Vec3DataPoint::new));
+    public static final Codec<Vec3DataPoint> CODEC = OrVec3.CODEC.xmap(Vec3DataPoint::new, Vec3DataPoint::xyz);
 
-    public static Codec<Vec3DataPoint> scaledResultCodec(double scale)
-    {
-        return RecordCodecBuilder.create(instance -> instance.group(
-            ScriptValue.scaledResultCodec(scale).fieldOf("x").forGetter(o -> o.x),
-            ScriptValue.scaledResultCodec(scale).fieldOf("y").forGetter(o -> o.y),
-            ScriptValue.scaledResultCodec(scale).fieldOf("z").forGetter(o -> o.z)
-        ).apply(instance, Vec3DataPoint::new));
-    }
+
 }

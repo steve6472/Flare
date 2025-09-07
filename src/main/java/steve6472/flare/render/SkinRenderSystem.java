@@ -125,7 +125,7 @@ public class SkinRenderSystem extends RenderSystem
         animationController = new AnimationController(loadedModel.getAnimationByName("idle"), primitiveSkinModel.skinData, loadedModel);
         animationController.timer.setLoop(true);
         animationController.timer.start();
-        animationController.debugModel(device, commands, graphicsQueue);
+//        animationController.debugModel(device, commands, graphicsQueue);
 //        if (animationController.debugModel != null)
 //            getMasterRenderer().debugLines().models.add(animationController.debugModel);
 
@@ -150,8 +150,7 @@ public class SkinRenderSystem extends RenderSystem
         flightFrame.uboBuffer.flush();
 
         Matrix4f modelTransform = new Matrix4f();
-        modelTransform.rotateY((float) Math.toRadians(12.5d));
-        animationController.tick(modelTransform);
+        animationController.tick(modelTransform, null);
 
         Matrix4f[] array = animationController.skinData.toArray();
         var sbo = SBO.BONES.create((Object) array);

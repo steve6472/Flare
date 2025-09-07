@@ -2,22 +2,12 @@ package steve6472.flare.assets.model.blockbench.anim;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.lwjgl.vulkan.VkDevice;
-import org.lwjgl.vulkan.VkQueue;
-import steve6472.core.log.Log;
-import steve6472.core.util.Preconditions;
-import steve6472.flare.Commands;
-import steve6472.flare.assets.model.VkModel;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
 import steve6472.flare.assets.model.blockbench.SkinData;
 import steve6472.flare.assets.model.blockbench.anim.ik.Ik;
 import steve6472.flare.assets.model.blockbench.outliner.OutlinerElement;
 import steve6472.flare.assets.model.blockbench.outliner.OutlinerUUID;
-import steve6472.flare.struct.Struct;
-import steve6472.flare.struct.def.Vertex;
-
-import java.util.*;
-import java.util.logging.Logger;
+import steve6472.orlang.OrlangEnvironment;
 
 import static steve6472.flare.render.debug.DebugRender.*;
 
@@ -28,7 +18,7 @@ import static steve6472.flare.render.debug.DebugRender.*;
  */
 public class AnimationController
 {
-    private static final Logger LOGGER = Log.getLogger(AnimationController.class);
+    public static boolean ENABLE_DEBUG_RENDER = false;
 
     private final SkinData masterSkinData;
     private final double animationLength;
@@ -36,18 +26,8 @@ public class AnimationController
     public AnimationTimer timer;
     public SkinData skinData;
     public Timeline timeline;
+    private final Ik ik;
 
-    /*
-     * Debug
-     */
-
-    private Commands commands;
-    private VkQueue graphicsQueue;
-    private VkDevice device;
-    private List<Struct> vertices;
-    public VkModel debugModel;
-    private List<Vector3f> pointsToRender = new ArrayList<>();
-    private Ik ik;
     // Null Object UUID
 
     public AnimationController(Animation animation, SkinData skinData, LoadedModel model)
@@ -60,24 +40,8 @@ public class AnimationController
         ik = new Ik(model, this);
     }
 
-    public void debugModel(VkDevice device, Commands commands, VkQueue graphicsQueue)
+    public void tick(Matrix4f modelTransform, OrlangEnvironment env)
     {
-        this.commands = commands;
-        this.graphicsQueue = graphicsQueue;
-        this.device = device;
-        this.vertices = new ArrayList<>();
-        debugModel = new VkModel();
-    }
-
-    private void updateModel()
-    {
-        Preconditions.checkNotNull(debugModel, "Debug not enabled");
-        debugModel.createVertexBuffer(device, commands, graphicsQueue, vertices, Vertex.POS3F_COL4F);
-    }
-
-    public void tick(Matrix4f modelTransform)
-    {
-
         double currentAnimationTime = timer.calculateTime(System.currentTimeMillis());
 
         // TODO: this should be all in timer
@@ -87,34 +51,14 @@ public class AnimationController
 
         skinData = masterSkinData.copy();
 
-//        if (true)
-//            return;
-
-//        if (System.currentTimeMillis() % 200 != 0)
-//            return;
-//        System.out.println("--TICK--");
-
-//        LOGGER.finest("last: %.4f edit: %.4f stopped: %s".formatted(lastCurAdwdawd, currentAnimationTime, stopped));
-
         for (OutlinerUUID outlinerUUID : model.outliner())
         {
             Matrix4f transform = new Matrix4f();
-            recursiveAnimation(skinData, outlinerUUID, transform, modelTransform, currentAnimationTime);
-        }
-
-        for (Vector3f vector3f : pointsToRender)
-        {
-            addDebugObjectForFrame(lineCube(vector3f, 0.05f, YELLOW));
-        }
-
-        if (vertices != null && !vertices.isEmpty())
-        {
-            updateModel();
-            vertices.clear();
+            recursiveAnimation(skinData, outlinerUUID, transform, modelTransform, currentAnimationTime, env);
         }
     }
 
-    private void recursiveAnimation(SkinData skinData, OutlinerUUID parent, Matrix4f transform, Matrix4f modelTransform, double animTime)
+    private void recursiveAnimation(SkinData skinData, OutlinerUUID parent, Matrix4f transform, Matrix4f modelTransform, double animTime, OrlangEnvironment env)
     {
         if (parent instanceof OutlinerElement outEl)
         {
@@ -122,9 +66,9 @@ public class AnimationController
             Matrix4f newTransform = new Matrix4f(transform);
 
             newTransform.translate(outEl.origin());
-            animateBone(boneName, KeyframeType.POSITION, animTime, newTransform, false);
-            animateBone(boneName, KeyframeType.ROTATION, animTime, newTransform, false);
-            animateBone(boneName, KeyframeType.SCALE, animTime, newTransform, false);
+            animateBone(boneName, KeyframeType.POSITION, animTime, newTransform, false, env);
+            animateBone(boneName, KeyframeType.ROTATION, animTime, newTransform, false, env);
+            animateBone(boneName, KeyframeType.SCALE, animTime, newTransform, false, env);
             newTransform.translate(-outEl.origin().x, -outEl.origin().y, -outEl.origin().z);
 
             Vector3f translation = new Vector3f(outEl.origin());
@@ -132,41 +76,22 @@ public class AnimationController
 
             for (OutlinerUUID child : outEl.children())
             {
-                recursiveAnimation(skinData, child, newTransform, modelTransform, animTime);
+                recursiveAnimation(skinData, child, newTransform, modelTransform, animTime, env);
 
                 if (child instanceof OutlinerElement outElChild)
                 {
                     Vector3f translation_ = new Vector3f(outElChild.origin());
                     transform.transformPosition(translation_);
-                    addDebugObjectForFrame(line(translation_, translation, RED));
-                } else
+                    if (ENABLE_DEBUG_RENDER)
+                        addDebugObjectForFrame(line(translation_, translation, RED));
+                } else if (child instanceof OutlinerUUID outlinerUUID)
                 {
-                    /*
-                     * Debug rendering
-                     */
-
-//                    model.getElementByUUIDWithType(LocatorElement.class, child.uuid()).ifPresent(element ->
-//                    {
-//                        Vector3f translation_ = new Vector3f(element.position());
-//                        transform.transformPosition(translation_);
-//                        line(ORANGE, translation_, translation);
-//                    });
-//
-//                    model.getElementByUUIDWithType(LocatorElement.class, child.uuid()).ifPresent(element -> {
-//                        Matrix4f newerTransform = new Matrix4f(transform);
-//                        animateBone(element.uuid().toString(), KeyframeType.POSITION, animTime, newerTransform, true);
-//                        Vector3f translation_ = new Vector3f(element.position());
-//                        newerTransform.transformPosition(translation_);
-//                        addCube(GREEN, translation_, 0.08f);
-//                    });
-                }
-
-                if (child instanceof OutlinerUUID outlinerUUID)
-                {
-                    ik.tick(outlinerUUID, transform, animTime, skinData);
+                    ik.tick(outlinerUUID, transform, animTime, skinData, env);
                 }
             }
-            addDebugObjectForFrame(lineCube(translation, 0.1f, PURPLE));
+
+            if (ENABLE_DEBUG_RENDER)
+                addDebugObjectForFrame(lineCube(translation, 0.1f, PURPLE));
 
             skinData.transformations.get(parent.uuid()).getSecond().mul(newTransform).mulLocal(modelTransform);
         }
@@ -174,7 +99,7 @@ public class AnimationController
 
     // TODO: some way to programmatically set the end effector for specific IK
 
-    public void animateBone(String boneName, KeyframeType<?> type, double currentAnimationTime, Matrix4f transform, boolean invert)
+    public void animateBone(String boneName, KeyframeType<?> type, double currentAnimationTime, Matrix4f transform, boolean invert, OrlangEnvironment env)
     {
         KeyframeChannel<?> lastKeyframe = timeline.getLastKeyframe(type, currentAnimationTime, boneName);
         KeyframeChannel<?> nextKeyframe = timeline.getNextKeyframe(type, currentAnimationTime, boneName);
@@ -184,11 +109,20 @@ public class AnimationController
 
 //        System.out.println("keyframes for bone " + boneName + " type: " + type.key().id() + " at " + "%.4f ".formatted(currentAnimationTime) + lastKeyframe + " -> " + nextKeyframe);
 
-        if (!(lastKeyframe instanceof KeyframeChannel.AnimationKeyframeChannel lastAnimChannel))
+        //noinspection rawtypes
+        if (lastKeyframe instanceof KeyframeChannel.AnimationKeyframeChannel lastAnimChannel)
+        {
+            double ticks = timeline.calculateTicks(currentAnimationTime, lastKeyframe.time(), nextKeyframe.time());
+            //noinspection unchecked
+            lastAnimChannel.processKeyframe(lastKeyframe.dataPoints().getFirst(), nextKeyframe.dataPoints().getFirst(), ticks, transform, invert, env);
+        } else if (lastKeyframe instanceof KeyframeChannel.EffectKeyframeChannel<?> lastEffectChannel)
+        {
+            throw new RuntimeException("Effects are not implemented yet, it's 9:37PM and my head already hurts a bit");
+        } else
+        {
             throw new RuntimeException("Unknown keyframe type");
+        }
 
-        double ticks = timeline.calculateTicks(currentAnimationTime, lastKeyframe.time(), nextKeyframe.time());
-        lastAnimChannel.processKeyframe(lastKeyframe.dataPoints().getFirst(), nextKeyframe.dataPoints().getFirst(), ticks, transform, invert);
     }
 
     private void processEffect(KeyframeChannel<?> channel)

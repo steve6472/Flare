@@ -3,12 +3,15 @@ package steve6472.flare.assets.model.blockbench.anim;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Matrix4f;
+import steve6472.core.log.Log;
 import steve6472.core.util.MathUtil;
 import steve6472.flare.FlareConstants;
 import steve6472.flare.assets.model.blockbench.anim.datapoint.*;
+import steve6472.orlang.OrlangEnvironment;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 /**
  * Created by steve6472
@@ -17,6 +20,8 @@ import java.util.Objects;
  */
 public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
 {
+    private static final Logger LOGGER = Log.getLogger(KeyframeChannel.class);
+
     private final Interpolation interpolation;
     private final double time;
     private final List<T> dataPoints;
@@ -101,22 +106,25 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
             super(interpolation, time, dataPoints);
         }
 
-        public abstract void processKeyframe(T first, T second, double ticks, Matrix4f transform, boolean invert);
+        public abstract void processKeyframe(T first, T second, double ticks, Matrix4f transform, boolean invert, OrlangEnvironment env);
     }
 
 
     public static final class RotationKeyframe extends AnimationKeyframeChannel<Vec3DataPoint>
     {
-        public static final Codec<RotationKeyframe> CODEC = createKeyframe(Vec3DataPoint.scaledResultCodec(FlareConstants.DEG_TO_RAD), RotationKeyframe::new);
+        public static final Codec<RotationKeyframe> CODEC = createKeyframe(Vec3DataPoint.CODEC, RotationKeyframe::new);
         public RotationKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.ROTATION; }
 
         @Override
-        public void processKeyframe(Vec3DataPoint first, Vec3DataPoint second, double ticks, Matrix4f transform, boolean invert)
+        public void processKeyframe(Vec3DataPoint first, Vec3DataPoint second, double ticks, Matrix4f transform, boolean invert, OrlangEnvironment env)
         {
-            double x = MathUtil.lerp(first.x().getValue(), second.x().getValue(), ticks);
-            double y = MathUtil.lerp(first.y().getValue(), second.y().getValue(), ticks);
-            double z = MathUtil.lerp(first.z().getValue(), second.z().getValue(), ticks);
+            first.xyz().evaluate(env);
+            second.xyz().evaluate(env);
+
+            double x = MathUtil.lerp(first.xyz().x(), second.xyz().x(), ticks) * FlareConstants.DEG_TO_RAD;
+            double y = MathUtil.lerp(first.xyz().y(), second.xyz().y(), ticks) * FlareConstants.DEG_TO_RAD;
+            double z = MathUtil.lerp(first.xyz().z(), second.xyz().z(), ticks) * FlareConstants.DEG_TO_RAD;
 
             transform.rotateZ((float) z * (invert ? -1f : 1f));
             transform.rotateY((float) -y * (invert ? -1f : 1f));
@@ -126,16 +134,19 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
 
     public static final class PositionKeyframe extends AnimationKeyframeChannel<Vec3DataPoint>
     {
-        public static final Codec<PositionKeyframe> CODEC = createKeyframe(Vec3DataPoint.scaledResultCodec(FlareConstants.BB_MODEL_SCALE), PositionKeyframe::new);
+        public static final Codec<PositionKeyframe> CODEC = createKeyframe(Vec3DataPoint.CODEC, PositionKeyframe::new);
         public PositionKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.POSITION; }
 
         @Override
-        public void processKeyframe(Vec3DataPoint first, Vec3DataPoint second, double ticks, Matrix4f transform, boolean invert)
+        public void processKeyframe(Vec3DataPoint first, Vec3DataPoint second, double ticks, Matrix4f transform, boolean invert, OrlangEnvironment env)
         {
-            double x = MathUtil.lerp(first.x().getValue(), second.x().getValue(), ticks);
-            double y = MathUtil.lerp(first.y().getValue(), second.y().getValue(), ticks);
-            double z = MathUtil.lerp(first.z().getValue(), second.z().getValue(), ticks);
+            first.xyz().evaluate(env);
+            second.xyz().evaluate(env);
+
+            double x = MathUtil.lerp(first.xyz().x(), second.xyz().x(), ticks) * FlareConstants.BB_MODEL_SCALE;
+            double y = MathUtil.lerp(first.xyz().y(), second.xyz().y(), ticks) * FlareConstants.BB_MODEL_SCALE;
+            double z = MathUtil.lerp(first.xyz().z(), second.xyz().z(), ticks) * FlareConstants.BB_MODEL_SCALE;
 
             transform.translateLocal((float) -x * (invert ? -1f : 1f), (float) y * (invert ? -1f : 1f), (float) z * (invert ? -1f : 1f));
         }
@@ -143,16 +154,19 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
 
     public static final class ScaleKeyframe extends AnimationKeyframeChannel<Vec3DataPoint>
     {
-        public static final Codec<ScaleKeyframe> CODEC = createKeyframe(Vec3DataPoint.scaledResultCodec(1.0), ScaleKeyframe::new);
+        public static final Codec<ScaleKeyframe> CODEC = createKeyframe(Vec3DataPoint.CODEC, ScaleKeyframe::new);
         public ScaleKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)  { super(interpolation, time, dataPoints); }
         @Override public KeyframeType<?> getType()  { return KeyframeType.SCALE; }
 
         @Override
-        public void processKeyframe(Vec3DataPoint first, Vec3DataPoint second, double ticks, Matrix4f transform, boolean invert)
+        public void processKeyframe(Vec3DataPoint first, Vec3DataPoint second, double ticks, Matrix4f transform, boolean invert, OrlangEnvironment env)
         {
-            double x = MathUtil.lerp(first.x().getValue(), second.x().getValue(), ticks);
-            double y = MathUtil.lerp(first.y().getValue(), second.y().getValue(), ticks);
-            double z = MathUtil.lerp(first.z().getValue(), second.z().getValue(), ticks);
+            first.xyz().evaluate(env);
+            second.xyz().evaluate(env);
+
+            double x = MathUtil.lerp(first.xyz().x(), second.xyz().x(), ticks);
+            double y = MathUtil.lerp(first.xyz().y(), second.xyz().y(), ticks);
+            double z = MathUtil.lerp(first.xyz().z(), second.xyz().z(), ticks);
 
             transform.scale((float) x * (invert ? -1f : 1f), (float) y * (invert ? -1f : 1f), (float) z * (invert ? -1f : 1f));
         }
@@ -170,7 +184,7 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
         @Override
         public void processKeyframe(ParticleDataPoint effect)
         {
-
+            LOGGER.fine("Unimplemented particle: " + effect);
         }
     }
 
@@ -183,7 +197,7 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
         @Override
         public void processKeyframe(SoundDataPoint effect)
         {
-
+            LOGGER.fine("Unimplemented sound: " + effect);
         }
     }
 
@@ -196,7 +210,7 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
         @Override
         public void processKeyframe(TimelineDataPoint effect)
         {
-
+            LOGGER.fine("Unimplemented timeline: " + effect);
         }
     }
 }

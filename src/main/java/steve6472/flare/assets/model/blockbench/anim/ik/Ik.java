@@ -9,6 +9,7 @@ import steve6472.flare.assets.model.blockbench.anim.KeyframeType;
 import steve6472.flare.assets.model.blockbench.element.LocatorElement;
 import steve6472.flare.assets.model.blockbench.element.NullObjectElement;
 import steve6472.flare.assets.model.blockbench.outliner.OutlinerUUID;
+import steve6472.orlang.OrlangEnvironment;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +53,7 @@ public class Ik
         }
     }
 
-    public void tick(OutlinerUUID child, Matrix4f transform, double animTime, SkinData skinData)
+    public void tick(OutlinerUUID child, Matrix4f transform, double animTime, SkinData skinData, OrlangEnvironment env)
     {
 //        IkThing ikThing = map.get(child.uuid());
 //        if (ikThing != null)
@@ -67,7 +68,7 @@ public class Ik
 
         model.getElementByUUIDWithType(NullObjectElement.class, child.uuid()).ifPresent(element -> {
             Matrix4f newerTransform = new Matrix4f(transform);
-            controller.animateBone(element.uuid().toString(), KeyframeType.POSITION, animTime, newerTransform, true);
+            controller.animateBone(element.uuid().toString(), KeyframeType.POSITION, animTime, newerTransform, true, env);
             Vector3f endEffector = new Vector3f(element.position());
             newerTransform.transformPosition(endEffector);
 
