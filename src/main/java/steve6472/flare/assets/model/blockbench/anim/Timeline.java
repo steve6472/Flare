@@ -16,7 +16,6 @@ public class Timeline
     {
         createTimeline(animation);
         boneNames = Collections.unmodifiableSet(timeline.keySet());
-        System.out.println(timeline);
     }
 
     private void createTimeline(Animation animation)
@@ -26,8 +25,8 @@ public class Timeline
             for (KeyFrame keyframe : animator.keyframes())
             {
                 KeyframeType<?> type = keyframe.getType();
-                Map<KeyframeType<?>, TreeMap<Double, KeyframeChannel<?>>> bone = timeline.computeIfAbsent(boneName, (key) -> new HashMap<>());
-                TreeMap<Double, KeyframeChannel<?>> boneByType = bone.computeIfAbsent(type, (t) -> new TreeMap<>());
+                Map<KeyframeType<?>, TreeMap<Double, KeyframeChannel<?>>> bone = timeline.computeIfAbsent(boneName, _ -> new HashMap<>());
+                TreeMap<Double, KeyframeChannel<?>> boneByType = bone.computeIfAbsent(type, _ -> new TreeMap<>());
 
                 if (KeyframeChannel.class.isAssignableFrom(keyframe.getClass()))
                     boneByType.put(keyframe.time(), (KeyframeChannel<?>) keyframe);

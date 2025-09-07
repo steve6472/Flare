@@ -5,8 +5,6 @@ import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VkDevice;
-import org.lwjgl.vulkan.VkExtent2D;
 import steve6472.core.log.Log;
 import steve6472.core.registry.Key;
 import steve6472.core.setting.SettingsLoader;
@@ -15,7 +13,6 @@ import steve6472.flare.FlareConstants;
 import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.core.FrameInfo;
 import steve6472.flare.core.FlareApp;
-import steve6472.flare.framebuffer.AnimatedAtlasFrameBuffer;
 import steve6472.flare.input.KeybindUpdater;
 import steve6472.flare.pipeline.Pipelines;
 import steve6472.flare.registry.FlareRegistries;
@@ -63,7 +60,8 @@ class TestApp extends FlareApp
     @Override
     protected void createRenderSystems()
     {
-        addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new EntityTestRender(), Pipelines.BLOCKBENCH_STATIC));
+//        addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new EntityTestRender(), Pipelines.BLOCKBENCH_STATIC));
+        addRenderSystem(new SkinRenderSystem(masterRenderer(), Pipelines.SKIN));
         addRenderSystem(new UIRenderSystem(masterRenderer(), new TestUIRender(), 256f));
         addRenderSystem(new UIFontRender(masterRenderer(), new TestFontRender()));
         addRenderSystem(new UILineRender(masterRenderer(), new DebugUILines()));
@@ -138,30 +136,70 @@ class TestApp extends FlareApp
         return file;
     }
 
-    float Y = 0;
+    float X = 0;
+    float Z = 0;
+    float cameraDistance = 0.8f;
+    boolean canControlCamera = true;
 
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
-        frameInfo.camera().setViewTarget(new Vector3f(-0.5f, 1.0f, 1), new Vector3f(0, 0.5f, 0));
+//        frameInfo.camera().setViewTarget(new Vector3f(-0.5f, 1.0f, 1), new Vector3f(0, 0.5f, 0));
         Vector2i mousePos = input().getMousePositionRelativeToTopLeftOfTheWindow();
         frameInfo.camera().setPerspectiveProjection(TestSettings.FOV.get(), aspectRatio(), 0.1f, 1024f);
-        if (window().isFocused())
+
+        frameInfo.camera().center.set(X, 0, Z);
+
+        if (canControlCamera)
         {
-            frameInfo.camera().center.set(0, 0, 0 - Y);
-            frameInfo.camera().headOrbit(mousePos.x, mousePos.y, 0.4f, 0.8f);
+            frameInfo.camera().headOrbit(mousePos.x, mousePos.y, 0.4f, cameraDistance);
+        } else
+        {
+            frameInfo.camera().oldx = mousePos.x;
+            frameInfo.camera().oldy = mousePos.y;
         }
 
-        float speed = 1f;
+        if (TestKeybinds.CAMERA_FAR.isActive())
+            cameraDistance += 0.1f;
+        if (TestKeybinds.CAMERA_CLOSE.isActive())
+            cameraDistance -= 0.1f;
+        cameraDistance = Math.clamp(cameraDistance, 0, 16);
 
-        if (TestKeybinds.LEFT.isActive())
-            speed *= 10f;
+        if (TestKeybinds.TOGGLE_CAMERA_CONTROL.isActive())
+        {
+            canControlCamera = !canControlCamera;
+        }
+
+        float speed = 0.05f;
+
+        if (TestKeybinds.SPRINT.isActive())
+            speed *= 5f;
+
+        Camera camera = frameInfo.camera();
 
         if (TestKeybinds.FORWARD.isActive())
-            Y += frameInfo.frameTime() * speed;
+        {
+            X += (float) (Math.sin(camera.yaw()) * -speed);
+            Z += (float) (Math.cos(camera.yaw()) * -speed);
+        }
 
         if (TestKeybinds.BACK.isActive())
-            Y -= frameInfo.frameTime() * speed;
+        {
+            X += (float) (Math.sin(camera.yaw()) * speed);
+            Z += (float) (Math.cos(camera.yaw()) * speed);
+        }
+
+        if (TestKeybinds.LEFT.isActive())
+        {
+            X += (float) (Math.sin(camera.yaw() + Math.PI / 2.0) * -speed);
+            Z += (float) (Math.cos(camera.yaw() + Math.PI / 2.0) * -speed);
+        }
+
+        if (TestKeybinds.RIGHT.isActive())
+        {
+            X += (float) (Math.sin(camera.yaw() + Math.PI / 2.0) * speed);
+            Z += (float) (Math.cos(camera.yaw() + Math.PI / 2.0) * speed);
+        }
 
         if (TestKeybinds.G.isActive())
         {

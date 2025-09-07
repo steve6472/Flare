@@ -39,7 +39,7 @@ public class PrimitiveSkinModel extends PrimitiveStaticModel
         for (int i = 0; i < positions.size(); i++)
         {
             Vector3f pos = positions.get(i);
-            Vector3f normal = positions.get(i);
+            Vector3f normal = normals.get(i);
             Vector2f uv = texCoords.get(i);
             Struct vertex = vertexType.create(pos, normal, uv, transformationIndicies.get(i));
             vertices.add(vertex);

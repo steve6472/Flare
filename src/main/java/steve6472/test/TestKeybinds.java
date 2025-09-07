@@ -17,6 +17,11 @@ public class TestKeybinds
     public static final Keybind LEFT = register(new Keybind(FlareConstants.key("left"), KeybindType.REPEAT, GLFW.GLFW_KEY_A));
     public static final Keybind RIGHT = register(new Keybind(FlareConstants.key("right"), KeybindType.REPEAT, GLFW.GLFW_KEY_D));
     public static final Keybind BACK = register(new Keybind(FlareConstants.key("back"), KeybindType.REPEAT, GLFW.GLFW_KEY_S));
+    public static final Keybind SPRINT = register(new Keybind(FlareConstants.key("sprint"), KeybindType.REPEAT, GLFW.GLFW_KEY_LEFT_SHIFT));
+
+    public static final Keybind CAMERA_FAR = register(new Keybind(FlareConstants.key("camera_far"), KeybindType.REPEAT, GLFW.GLFW_KEY_Q));
+    public static final Keybind CAMERA_CLOSE = register(new Keybind(FlareConstants.key("camera_close"), KeybindType.REPEAT, GLFW.GLFW_KEY_E));
+    public static final Keybind TOGGLE_CAMERA_CONTROL = register(new Keybind(FlareConstants.key("toggle_camera_control"), KeybindType.ONCE, GLFW.GLFW_KEY_ESCAPE));
 
     public static final Keybind G = register(new Keybind(FlareConstants.key("special_action"), KeybindType.ONCE, GLFW.GLFW_KEY_G));
 

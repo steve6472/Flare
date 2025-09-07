@@ -5,8 +5,10 @@ import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
+import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkQueue;
+import steve6472.core.registry.Key;
 import steve6472.flare.*;
 import steve6472.flare.assets.Texture;
 import steve6472.flare.assets.TextureSampler;
@@ -19,6 +21,7 @@ import steve6472.flare.assets.model.blockbench.LoadedModel;
 import steve6472.flare.assets.model.primitive.PrimitiveSkinModel;
 import steve6472.flare.assets.model.blockbench.anim.AnimationController;
 import steve6472.flare.pipeline.builder.PipelineConstructor;
+import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.Push;
 import steve6472.flare.struct.def.SBO;
@@ -46,10 +49,10 @@ public class SkinRenderSystem extends RenderSystem
     private DescriptorPool globalPool;
     private DescriptorSetLayout globalSetLayout;
     List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
-    Texture texture;
-    TextureSampler sampler;
     PrimitiveSkinModel primitiveSkinModel;
     AnimationController animationController;
+
+    static final Key MODEL_KEY = Key.withNamespace("test", "blockbench/animated/debug_model_rotations");
 
     public SkinRenderSystem(MasterRenderer masterRenderer, PipelineConstructor pipeline)
     {
@@ -70,10 +73,10 @@ public class SkinRenderSystem extends RenderSystem
             .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT)
             .build();
 
-        texture = new Texture();
 //        texture.createTextureImage(device, "resources\\white_shaded.png", masterRenderer.getCommands().commandPool, masterRenderer.getGraphicsQueue());
 //        texture.createTextureImage(device, "resources\\loony.png", masterRenderer.getCommands().commandPool, masterRenderer.getGraphicsQueue());
 //        sampler = new TextureSampler(texture, device);
+        model3d = FlareRegistries.ANIMATED_MODEL.get(MODEL_KEY);
 
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
@@ -104,7 +107,7 @@ public class SkinRenderSystem extends RenderSystem
                 frame.descriptorSet = descriptorWriter
                     .writeBuffer(0, stack, frame.uboBuffer)
                     .writeBuffer(1, stack, frame.sboBuffer)
-                    .writeImage(2, stack, sampler)
+                    .writeImage(2, stack, FlareRegistries.ATLAS.get(FlareConstants.ATLAS_BLOCKBENCH).getSampler())
                     .build();
             }
         }
@@ -112,26 +115,8 @@ public class SkinRenderSystem extends RenderSystem
 
     private void createModel(Commands commands, VkQueue graphicsQueue)
     {
-//        final String PATH = "resources\\robot_arm.bbmodel";
-//        final String PATH = "resources\\small_chain.bbmodel";
-        final String PATH = "resources\\model.bbmodel";
-        final File file = new File(PATH);
-
-        BufferedReader reader = null;
-        try
-        {
-            reader = new BufferedReader(new FileReader(file));
-        } catch (FileNotFoundException e)
-        {
-            throw new RuntimeException(e);
-        }
-        JsonElement jsonElement = JsonParser.parseReader(reader);
-        DataResult<Pair<LoadedModel, JsonElement>> decode = LoadedModel.CODEC.decode(JsonOps.INSTANCE, jsonElement);
-
-        model3d = new VkModel();
-        LoadedModel loadedModel = decode.getOrThrow().getFirst();
+        LoadedModel loadedModel = FlareRegistries.ANIMATED_LOADED_MODEL.get(MODEL_KEY);
         primitiveSkinModel = loadedModel.toPrimitiveSkinModel();
-        model3d.createVertexBuffer(device, commands, graphicsQueue, primitiveSkinModel);
 
 //        animationController = new AnimationController(loadedModel.getAnimationByName("looping_chain"), primitiveSkinModel.skinData, loadedModel);
 //        animationController = new AnimationController(loadedModel.getAnimationByName("grab_loop"), primitiveSkinModel.skinData, loadedModel);
@@ -144,7 +129,7 @@ public class SkinRenderSystem extends RenderSystem
 //        if (animationController.debugModel != null)
 //            getMasterRenderer().debugLines().models.add(animationController.debugModel);
 
-        animationController.timer.setSpeed(0.1);
+//        animationController.timer.setSpeed(0.1);
     }
 
     @Override
@@ -164,12 +149,15 @@ public class SkinRenderSystem extends RenderSystem
         flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_UBO_TEST::memcpy, globalUBO);
         flightFrame.uboBuffer.flush();
 
-        animationController.tick();
+        Matrix4f modelTransform = new Matrix4f();
+        modelTransform.rotateY((float) Math.toRadians(12.5d));
+        animationController.tick(modelTransform);
 
-        var sbo = SBO.BONES.create((Object) animationController.skinData.toArray());
+        Matrix4f[] array = animationController.skinData.toArray();
+        var sbo = SBO.BONES.create((Object) array);
 
-        flightFrame.sboBuffer.writeToBuffer(SBO.BONES::memcpy, sbo);
-        flightFrame.sboBuffer.flush();
+        flightFrame.sboBuffer.writeToBuffer(SBO.BONES::memcpy, List.of(sbo), array.length * 64L, 0);
+        flightFrame.sboBuffer.flush(array.length * 64L, 0);
 
         pipeline().bind(frameInfo.commandBuffer());
 
@@ -191,11 +179,8 @@ public class SkinRenderSystem extends RenderSystem
     @Override
     public void cleanup()
     {
-        model3d.destroy();
         globalSetLayout.cleanup();
         globalPool.cleanup();
-        texture.cleanup(device);
-        sampler.cleanup(device);
 
         for (FlightFrame flightFrame : frames)
         {

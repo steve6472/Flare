@@ -75,7 +75,7 @@ public class AnimationController
         debugModel.createVertexBuffer(device, commands, graphicsQueue, vertices, Vertex.POS3F_COL4F);
     }
 
-    public void tick()
+    public void tick(Matrix4f modelTransform)
     {
 
         double currentAnimationTime = timer.calculateTime(System.currentTimeMillis());
@@ -99,7 +99,7 @@ public class AnimationController
         for (OutlinerUUID outlinerUUID : model.outliner())
         {
             Matrix4f transform = new Matrix4f();
-            recursiveAnimation(skinData, outlinerUUID, transform, currentAnimationTime);
+            recursiveAnimation(skinData, outlinerUUID, transform, modelTransform, currentAnimationTime);
         }
 
         for (Vector3f vector3f : pointsToRender)
@@ -114,7 +114,7 @@ public class AnimationController
         }
     }
 
-    private void recursiveAnimation(SkinData skinData, OutlinerUUID parent, Matrix4f transform, double animTime)
+    private void recursiveAnimation(SkinData skinData, OutlinerUUID parent, Matrix4f transform, Matrix4f modelTransform, double animTime)
     {
         if (parent instanceof OutlinerElement outEl)
         {
@@ -132,7 +132,7 @@ public class AnimationController
 
             for (OutlinerUUID child : outEl.children())
             {
-                recursiveAnimation(skinData, child, newTransform, animTime);
+                recursiveAnimation(skinData, child, newTransform, modelTransform, animTime);
 
                 if (child instanceof OutlinerElement outElChild)
                 {
@@ -168,7 +168,7 @@ public class AnimationController
             }
             addDebugObjectForFrame(lineCube(translation, 0.1f, PURPLE));
 
-            skinData.transformations.get(parent.uuid()).getSecond().mul(newTransform);
+            skinData.transformations.get(parent.uuid()).getSecond().mul(newTransform).mulLocal(modelTransform);
         }
     }
 

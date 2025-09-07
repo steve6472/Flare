@@ -119,8 +119,8 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
             double z = MathUtil.lerp(first.z().getValue(), second.z().getValue(), ticks);
 
             transform.rotateZ((float) z * (invert ? -1f : 1f));
-            transform.rotateY((float) y * (invert ? -1f : 1f));
-            transform.rotateX((float) x * (invert ? -1f : 1f));
+            transform.rotateY((float) -y * (invert ? -1f : 1f));
+            transform.rotateX((float) -x * (invert ? -1f : 1f));
         }
     }
 
@@ -137,7 +137,7 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
             double y = MathUtil.lerp(first.y().getValue(), second.y().getValue(), ticks);
             double z = MathUtil.lerp(first.z().getValue(), second.z().getValue(), ticks);
 
-            transform.translate((float) -x * (invert ? -1f : 1f), (float) -y * (invert ? -1f : 1f), (float) -z * (invert ? -1f : 1f));
+            transform.translateLocal((float) -x * (invert ? -1f : 1f), (float) y * (invert ? -1f : 1f), (float) z * (invert ? -1f : 1f));
         }
     }
 
