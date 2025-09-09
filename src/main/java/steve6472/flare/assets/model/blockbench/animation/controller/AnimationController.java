@@ -1,6 +1,7 @@
 package steve6472.flare.assets.model.blockbench.animation.controller;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.jetbrains.annotations.ApiStatus;
 import org.joml.Matrix4f;
@@ -20,7 +21,7 @@ import java.util.Map;
  */
 public final class AnimationController implements Keyable
 {
-    private final OrlangEnvironment environment;
+    public OrlangEnvironment environment;
     private final Map<String, Controller> controllers;
 
     /// Internal so it can be set
@@ -35,15 +36,25 @@ public final class AnimationController implements Keyable
 
     public static final Codec<AnimationController> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         ENV_CODEC.fieldOf("environment").forGetter(o -> o. environment),
-        Codec.unboundedMap(Codec.STRING, Controller.CODEC).fieldOf("controllers").forGetter(o -> o.controllers)
+        Codec.unboundedMap(Codec.STRING, Controller.CODEC).fieldOf("controllers").validate(in -> {
+            if (in.size() != 1)
+            {
+                HashMap<String, Controller> partial = new HashMap<>();
+                for (String s : in.keySet())
+                {
+                    partial.put(s, in.get(s));
+                    break;
+                }
+                return DataResult.error(() -> "Currently only exactly one controller per model is supported!", partial);
+            }
+            return DataResult.success(in);
+        }).forGetter(o -> o.controllers)
     ).apply(instance, AnimationController::new));
 
     public AnimationController(OrlangEnvironment environment, Map<String, Controller> controllers)
     {
         this.environment = environment;
         this.controllers = controllers;
-        if (controllers.size() != 1)
-            throw new RuntimeException("Currently only exactly one controller per model is supported!");
     }
 
     public void tick(Matrix4f modelTransform)
