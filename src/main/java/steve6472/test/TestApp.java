@@ -159,10 +159,18 @@ class TestApp extends FlareApp
             frameInfo.camera().oldy = mousePos.y;
         }
 
+        float cameraSpeed = 0.06f;
+
+        if (TestKeybinds.SPRINT.isActive())
+            cameraSpeed *= 2f;
+
+        if (TestKeybinds.SLOW.isActive())
+            cameraSpeed /= 4f;
+
         if (TestKeybinds.CAMERA_FAR.isActive())
-            cameraDistance += 0.1f;
+            cameraDistance += cameraSpeed;
         if (TestKeybinds.CAMERA_CLOSE.isActive())
-            cameraDistance -= 0.1f;
+            cameraDistance -= cameraSpeed;
         cameraDistance = Math.clamp(cameraDistance, 0, 16);
 
         if (TestKeybinds.TOGGLE_CAMERA_CONTROL.isActive())
@@ -174,6 +182,9 @@ class TestApp extends FlareApp
 
         if (TestKeybinds.SPRINT.isActive())
             speed *= 5f;
+
+        if (TestKeybinds.SLOW.isActive())
+            speed /= 5f;
 
         Camera camera = frameInfo.camera();
 

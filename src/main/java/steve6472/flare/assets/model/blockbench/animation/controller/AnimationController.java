@@ -3,9 +3,11 @@ package steve6472.flare.assets.model.blockbench.animation.controller;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.jetbrains.annotations.ApiStatus;
+import org.joml.Matrix4f;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.Keyable;
-import steve6472.flare.assets.model.blockbench.animation.AnimationTicker;
+import steve6472.flare.assets.model.blockbench.LoadedModel;
+import steve6472.flare.assets.model.blockbench.SkinData;
 import steve6472.orlang.OrlangEnvironment;
 
 import java.util.HashMap;
@@ -20,13 +22,14 @@ public final class AnimationController implements Keyable
 {
     private final OrlangEnvironment environment;
     private final Map<String, Controller> controllers;
-    private AnimationTicker previousAnimation;
-    private AnimationTicker currentAnimation;
-    private float blendTime;
 
     /// Internal so it can be set
     @ApiStatus.Internal
     public Key key;
+
+    LoadedModel model;
+    SkinData masterSkinData;
+    Matrix4f[] transformations;
 
     public static final Codec<OrlangEnvironment> ENV_CODEC = Codec.unit(OrlangEnvironment::new);
 
@@ -39,6 +42,21 @@ public final class AnimationController implements Keyable
     {
         this.environment = environment;
         this.controllers = controllers;
+        if (controllers.size() != 1)
+            throw new RuntimeException("Currently only exactly one controller per model is supported!");
+    }
+
+    public void tick(Matrix4f modelTransform)
+    {
+        for (Controller controller : controllers.values())
+        {
+            controller.tick(modelTransform);
+        }
+    }
+
+    public Matrix4f[] getTransformations()
+    {
+        return transformations;
     }
 
     public OrlangEnvironment environment()
@@ -51,10 +69,14 @@ public final class AnimationController implements Keyable
         return controllers;
     }
 
-    @Override
-    public String toString()
+    public AnimationController createForModel(LoadedModel model)
     {
-        return "AnimationController[" + "environment=" + environment + ", " + "controllers=" + controllers + ']';
+        Map<String, Controller> controllersCopy = new HashMap<>(controllers.size());
+        AnimationController result = new AnimationController(new OrlangEnvironment(), controllersCopy);
+        controllers.forEach((k, v) -> controllersCopy.put(k, v.copy(result)));
+        result.model = model;
+        result.masterSkinData = model.toPrimitiveSkinModel().skinData.copy();
+        return result;
     }
 
     @Override
@@ -63,10 +85,9 @@ public final class AnimationController implements Keyable
         return key;
     }
 
-    public AnimationController copy()
+    @Override
+    public String toString()
     {
-        Map<String, Controller> controllersCopy = new HashMap<>(controllers.size());
-        controllers.forEach((k, v) -> controllersCopy.put(k, v.copy()));
-        return new AnimationController(new OrlangEnvironment(), Map.copyOf(controllersCopy));
+        return "AnimationController[" + "environment=" + environment + ", " + "controllers=" + controllers + ']';
     }
 }

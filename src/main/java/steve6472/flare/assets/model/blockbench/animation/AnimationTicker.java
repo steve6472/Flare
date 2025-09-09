@@ -34,10 +34,10 @@ public class AnimationTicker
 
     // Null Object UUID
 
-    public AnimationTicker(Animation animation, SkinData skinData, LoadedModel model)
+    public AnimationTicker(Animation animation, LoadedModel model, SkinData masterSkinData)
     {
         this.animationLength = animation.length();
-        this.masterSkinData = skinData.copy();
+        this.masterSkinData = masterSkinData;
         this.timer = new AnimationTimer();
         this.timeline = new Timeline(animation);
         this.model = model;
