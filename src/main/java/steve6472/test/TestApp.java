@@ -201,7 +201,7 @@ class TestApp extends FlareApp
             Z += (float) (Math.cos(camera.yaw() + Math.PI / 2.0) * speed);
         }
 
-        if (TestKeybinds.G.isActive())
+        if (TestKeybinds.L.isActive())
         {
             dumpSamplers();
         }

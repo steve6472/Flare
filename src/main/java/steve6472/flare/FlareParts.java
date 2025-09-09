@@ -15,6 +15,8 @@ public interface FlareParts
     ModulePart MODEL_STATIC = new ModulePart("Static Model", "model/blockbench/static");
     ModulePart MODEL_ANIMATED = new ModulePart("Animated Model", "model/blockbench/animated");
 
+    ModulePart ANIMATION_CONTROLLER = new ModulePart("Animation Controller", "model/blockbench/animation_controller");
+
     ModulePart FONT = new ModulePart("Font", "font/fonts");
     ModulePart STYLE = new ModulePart("Font Style", "font/styles");
 }

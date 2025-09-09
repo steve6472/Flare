@@ -1,0 +1,31 @@
+{
+    environment: {
+    },
+    controllers: {
+        main: {
+            initial_state: "idle",
+            states: {
+                idle: {
+                    animations: ["idle"],
+                    transitions: [
+                        {
+                            state: "walking",
+                            condition: "v.flag"
+                        }
+                    ],
+                    blend_transition: 0.2
+                },
+                walking: {
+                    animations: ["walk"],
+                    transitions: [
+                        {
+                            state: "idle",
+                            condition: "!v.flag"
+                        }
+                    ],
+                    blend_transition: 0.2
+                }
+            }
+        }
+    }
+}

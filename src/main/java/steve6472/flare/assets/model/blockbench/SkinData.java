@@ -28,6 +28,23 @@ public class SkinData
         return arr;
     }
 
+    public Matrix4f[] toArray(SkinData toBlend, float blendFactor)
+    {
+        if (toBlend.transformations.size() != transformations.size())
+            throw new RuntimeException("Transformations size does not match somehow");
+
+        Matrix4f[] arr = new Matrix4f[transformations.size()];
+
+        transformations.forEach((key, value) ->
+        {
+            Matrix4f left = value.getSecond();
+            Matrix4f right = toBlend.transformations.get(key).getSecond();
+            arr[value.getFirst() - 1] = left.lerp(right, blendFactor, new Matrix4f());
+        });
+
+        return arr;
+    }
+
     public SkinData copy()
     {
         SkinData newData = new SkinData();

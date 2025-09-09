@@ -9,11 +9,9 @@ import steve6472.flare.assets.atlas.Atlas;
 import steve6472.flare.assets.atlas.AtlasLoader;
 import steve6472.flare.assets.atlas.source.SourceType;
 import steve6472.flare.assets.model.Model;
-import steve6472.flare.assets.model.blockbench.ElementType;
-import steve6472.flare.assets.model.blockbench.ErrorModel;
-import steve6472.flare.assets.model.blockbench.LoadedModel;
-import steve6472.flare.assets.model.blockbench.BlockbenchLoader;
-import steve6472.flare.assets.model.blockbench.anim.KeyframeType;
+import steve6472.flare.assets.model.blockbench.*;
+import steve6472.flare.assets.model.blockbench.animation.controller.AnimationController;
+import steve6472.flare.assets.model.blockbench.animation.keyframe.KeyframeType;
 import steve6472.flare.settings.FontDebugSettings;
 import steve6472.flare.settings.VisualSettings;
 import steve6472.flare.ui.font.FontEntry;
@@ -45,6 +43,7 @@ public class FlareRegistries extends RegistryCreators
     public static final ObjectRegistry<Atlas> ATLAS = createObjectRegistry("atlas", AtlasLoader::boostrap);
 
     // Models have to load after the model types registries
+    public static final ObjectRegistry<AnimationController> ANIMATION_CONTROLLER = createObjectRegistry("animation_controller", AnimationControllerLoader::load);
     public static final ObjectRegistry<LoadedModel> STATIC_LOADED_MODEL = createObjectRegistry("static_loaded_model", ErrorModel.INSTANCE, BlockbenchLoader::loadStaticModels);
     public static final ObjectRegistry<LoadedModel> ANIMATED_LOADED_MODEL = createObjectRegistry("animated_loaded_model", ErrorModel.INSTANCE, BlockbenchLoader::loadAnimatedModels);
     public static final ObjectRegistry<FontEntry> FONT = createObjectRegistry("font", FontLoader::bootstrap);

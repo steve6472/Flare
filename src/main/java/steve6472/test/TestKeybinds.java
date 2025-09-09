@@ -24,6 +24,7 @@ public class TestKeybinds
     public static final Keybind TOGGLE_CAMERA_CONTROL = register(new Keybind(FlareConstants.key("toggle_camera_control"), KeybindType.ONCE, GLFW.GLFW_KEY_ESCAPE));
 
     public static final Keybind G = register(new Keybind(FlareConstants.key("special_action"), KeybindType.ONCE, GLFW.GLFW_KEY_G));
+    public static final Keybind L = register(new Keybind(FlareConstants.key("dump_samplers"), KeybindType.ONCE, GLFW.GLFW_KEY_L));
 
     public static final Keybind TO_UP = register(new Keybind(FlareConstants.key("to_up"), KeybindType.ONCE, GLFW.GLFW_KEY_UP));
     public static final Keybind TO_LEFT = register(new Keybind(FlareConstants.key("to_left"), KeybindType.ONCE, GLFW.GLFW_KEY_LEFT));

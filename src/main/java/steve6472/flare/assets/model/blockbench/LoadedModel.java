@@ -7,7 +7,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.Keyable;
-import steve6472.flare.assets.model.blockbench.anim.Animation;
+import steve6472.flare.assets.model.blockbench.animation.Animation;
 import steve6472.flare.assets.model.blockbench.outliner.OutlinerElement;
 import steve6472.flare.assets.model.blockbench.outliner.OutlinerUUID;
 import steve6472.flare.assets.model.primitive.PrimitiveStaticModel;

@@ -1,36 +1,27 @@
 package steve6472.flare.render;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JsonOps;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkQueue;
 import steve6472.core.registry.Key;
 import steve6472.flare.*;
-import steve6472.flare.assets.Texture;
-import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.assets.model.VkModel;
+import steve6472.flare.assets.model.blockbench.animation.controller.AnimationController;
 import steve6472.flare.core.FrameInfo;
 import steve6472.flare.descriptors.DescriptorPool;
 import steve6472.flare.descriptors.DescriptorSetLayout;
 import steve6472.flare.descriptors.DescriptorWriter;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
 import steve6472.flare.assets.model.primitive.PrimitiveSkinModel;
-import steve6472.flare.assets.model.blockbench.anim.AnimationController;
+import steve6472.flare.assets.model.blockbench.animation.AnimationTicker;
 import steve6472.flare.pipeline.builder.PipelineConstructor;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.Push;
 import steve6472.flare.struct.def.SBO;
 import steve6472.flare.struct.def.UBO;
+import steve6472.test.TestKeybinds;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,15 +41,29 @@ public class SkinRenderSystem extends RenderSystem
     private DescriptorSetLayout globalSetLayout;
     List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
     PrimitiveSkinModel primitiveSkinModel;
+    AnimationTicker animationTickerIdle, animationTickerWalk;
     AnimationController animationController;
 
-    static final Key MODEL_KEY = Key.withNamespace("test", "blockbench/animated/debug_model_rotations");
+//    static final Key MODEL_KEY = Key.withNamespace("test", "blockbench/animated/debug_model_rotations");
+    static final Key MODEL_KEY = Key.withNamespace("test", "blockbench/animated/snail");
+    public boolean flag = false;
 
     public SkinRenderSystem(MasterRenderer masterRenderer, PipelineConstructor pipeline)
     {
         super(masterRenderer, pipeline);
 
-        createModel(masterRenderer.getCommands(), masterRenderer.getGraphicsQueue());
+        LoadedModel loadedModel = FlareRegistries.ANIMATED_LOADED_MODEL.get(MODEL_KEY);
+        primitiveSkinModel = loadedModel.toPrimitiveSkinModel();
+
+        animationTickerIdle = new AnimationTicker(loadedModel.getAnimationByName("idle"), primitiveSkinModel.skinData, loadedModel);
+        animationTickerIdle.timer.setLoop(true);
+        animationTickerIdle.timer.start();
+
+        animationTickerWalk = new AnimationTicker(loadedModel.getAnimationByName("walk"), primitiveSkinModel.skinData, loadedModel);
+        animationTickerWalk.timer.setLoop(true);
+        animationTickerWalk.timer.start();
+
+        animationController = FlareRegistries.ANIMATION_CONTROLLER.get(Key.withNamespace("test", "snail")).copy();
 
         globalSetLayout = DescriptorSetLayout
             .builder(device)
@@ -113,25 +118,6 @@ public class SkinRenderSystem extends RenderSystem
         }
     }
 
-    private void createModel(Commands commands, VkQueue graphicsQueue)
-    {
-        LoadedModel loadedModel = FlareRegistries.ANIMATED_LOADED_MODEL.get(MODEL_KEY);
-        primitiveSkinModel = loadedModel.toPrimitiveSkinModel();
-
-//        animationController = new AnimationController(loadedModel.getAnimationByName("looping_chain"), primitiveSkinModel.skinData, loadedModel);
-//        animationController = new AnimationController(loadedModel.getAnimationByName("grab_loop"), primitiveSkinModel.skinData, loadedModel);
-//        animationController = new AnimationController(loadedModel.getAnimationByName("flip"), primitiveSkinModel.skinData, loadedModel);
-//        animationController = new AnimationController(loadedModel.getAnimationByName("straight"), primitiveSkinModel.skinData, loadedModel);
-        animationController = new AnimationController(loadedModel.getAnimationByName("idle"), primitiveSkinModel.skinData, loadedModel);
-        animationController.timer.setLoop(true);
-        animationController.timer.start();
-//        animationController.debugModel(device, commands, graphicsQueue);
-//        if (animationController.debugModel != null)
-//            getMasterRenderer().debugLines().models.add(animationController.debugModel);
-
-//        animationController.timer.setSpeed(0.1);
-    }
-
     @Override
     public long[] setLayouts()
     {
@@ -141,6 +127,11 @@ public class SkinRenderSystem extends RenderSystem
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
+        if (TestKeybinds.G.isActive())
+        {
+            flag = !flag;
+        }
+
         FlightFrame flightFrame = frames.get(frameInfo.frameIndex());
         // Update
 
@@ -150,9 +141,11 @@ public class SkinRenderSystem extends RenderSystem
         flightFrame.uboBuffer.flush();
 
         Matrix4f modelTransform = new Matrix4f();
-        animationController.tick(modelTransform, null);
+        animationTickerIdle.tick(modelTransform, null);
 
-        Matrix4f[] array = animationController.skinData.toArray();
+        animationTickerWalk.tick(modelTransform, null);
+
+        Matrix4f[] array = animationTickerIdle.skinData.toArray(animationTickerWalk.skinData, flag ? 0.5f : 0f);
         var sbo = SBO.BONES.create((Object) array);
 
         flightFrame.sboBuffer.writeToBuffer(SBO.BONES::memcpy, List.of(sbo), array.length * 64L, 0);
