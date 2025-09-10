@@ -16,7 +16,7 @@
                     blend_transition: 0.2
                 },
                 walking: {
-                    animations: ["walk"],
+                    animations: ["walk", "look_around"],
                     transitions: [
                         {
                             state: "idle",

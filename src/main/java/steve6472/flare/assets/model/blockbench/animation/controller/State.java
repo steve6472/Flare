@@ -14,19 +14,13 @@ import java.util.stream.Collectors;
  * Date: 9/8/2025
  * Project: Flare <br>
  */
-public record State(List<String> animations, List<Transition> transitions, float blendTransitionSeconds)
+public record State(List<BlendableAnimation> animations, List<Transition> transitions, float blendTransitionSeconds)
 {
     public static final Codec<State> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-        Codec.STRING.listOf().fieldOf("animations").forGetter(State::animations),
+        BlendableAnimation.CODEC.listOf().fieldOf("animations").forGetter(State::animations),
         Transition.CODEC.listOf().fieldOf("transitions").forGetter(State::transitions),
         Codec.FLOAT.optionalFieldOf("blend_transition", 0.2f).forGetter(State::blendTransitionSeconds)
     ).apply(instance, State::new));
-
-    public State
-    {
-        if (animations.size() != 1)
-            throw new RuntimeException("Currently only exactly one animation per state is supported!");
-    }
 
     public Optional<String> getNextState(OrlangEnvironment environment)
     {

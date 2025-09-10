@@ -71,6 +71,7 @@ public class SkinRenderSystem extends CommonRenderSystem
         // Update
 
         Matrix4f modelTransform = new Matrix4f();
+        modelTransform.translate(0, 0, 0);
         animationController.tick(modelTransform);
         Matrix4f[] array = animationController.getTransformations();
         var sbo = SBO.BONES.create((Object) array);

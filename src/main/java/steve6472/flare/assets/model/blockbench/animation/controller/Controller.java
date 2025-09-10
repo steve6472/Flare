@@ -3,9 +3,6 @@ package steve6472.flare.assets.model.blockbench.animation.controller;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Matrix4f;
-import steve6472.flare.assets.model.blockbench.animation.Animation;
-import steve6472.flare.assets.model.blockbench.animation.AnimationTicker;
-import steve6472.flare.assets.model.blockbench.animation.Loop;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,8 +24,8 @@ public final class Controller
     private final Map<String, State> states;
 
     private AnimationController controller;
-    private AnimationTicker previousAnimation;
-    private AnimationTicker currentAnimation;
+    private StateAnimations previousAnimations;
+    private StateAnimations currentAnimations;
     private State currentState;
     private float blendTime;
     private float blendMult;
@@ -42,49 +39,43 @@ public final class Controller
 
     public void tick(Matrix4f modelTransform)
     {
-        if (currentAnimation == null)
+        if (currentAnimations == null)
         {
             currentState = states.get(initialState);
-            String animationName = currentState.animations().getFirst();
-            Animation animationByName = controller.model.getAnimationByName(animationName);
-            currentAnimation = new AnimationTicker(animationByName, controller.model, controller.masterSkinData);
-            currentAnimation.timer.start();
-            currentAnimation.timer.setLoop(animationByName.loop() == Loop.LOOP);
+            currentAnimations = new StateAnimations();
+            currentAnimations.start(controller, currentState);
         }
 
         Optional<String> nextStateOpt = currentState.getNextState(controller.environment());
         nextStateOpt.ifPresent(nextStateName ->
         {
             State nextState = states.get(nextStateName);
-            String nextAnimationName = nextState.animations().getFirst();
-            Animation nextAnimationByName = controller.model.getAnimationByName(nextAnimationName);
             beginBlendTransition(currentState.blendTransitionSeconds());
-            previousAnimation = currentAnimation;
-            currentAnimation = new AnimationTicker(nextAnimationByName, controller.model, controller.masterSkinData);
-            currentAnimation.timer.start();
-            currentAnimation.timer.setLoop(nextAnimationByName.loop() == Loop.LOOP);
+            previousAnimations = currentAnimations;
+            currentAnimations = new StateAnimations();
+            currentAnimations.start(controller, nextState);
             currentState = nextState;
         });
 
-        if (previousAnimation != null)
-            previousAnimation.tick(modelTransform, controller.environment());
+        if (previousAnimations != null)
+            previousAnimations.tick(modelTransform, controller.environment());
 
-        currentAnimation.tick(modelTransform, controller.environment());
+        currentAnimations.tick(modelTransform, controller.environment());
 
         float blendFactor = calculateCurrentBlendFactor();
 
-        if (blendFactor >= blendTime && previousAnimation != null)
+        if (blendFactor >= blendTime && previousAnimations != null)
         {
             finishBlendTransition();
             blendFactor = 0f;
         }
 
-        if (blendFactor == 0f || previousAnimation == null)
+        if (blendFactor == 0f || previousAnimations == null)
         {
-            controller.transformations = currentAnimation.skinData.toArray();
+            controller.transformations = currentAnimations.getTransformations();
         } else
         {
-            controller.transformations = previousAnimation.skinData.toArray(currentAnimation.skinData, blendFactor * blendMult);
+            controller.transformations = currentAnimations.getTransformations(previousAnimations.getTransformations(), blendFactor * blendMult);
         }
     }
 
@@ -106,7 +97,7 @@ public final class Controller
     {
         blendTime = 0;
         blendTimeStart = 0;
-        previousAnimation = null;
+        previousAnimations = null;
     }
 
     public String initialState()

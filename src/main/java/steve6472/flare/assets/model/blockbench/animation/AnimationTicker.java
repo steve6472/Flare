@@ -44,7 +44,7 @@ public class AnimationTicker
         ik = new Ik(model, this);
     }
 
-    public void tick(Matrix4f modelTransform, OrlangEnvironment env)
+    public void tick(OrlangEnvironment env)
     {
         double currentAnimationTime = timer.calculateTime(System.currentTimeMillis());
 
@@ -58,11 +58,11 @@ public class AnimationTicker
         for (OutlinerUUID outlinerUUID : model.outliner())
         {
             Matrix4f transform = new Matrix4f();
-            recursiveAnimation(skinData, outlinerUUID, transform, modelTransform, currentAnimationTime, env);
+            recursiveAnimation(skinData, outlinerUUID, transform, currentAnimationTime, env);
         }
     }
 
-    private void recursiveAnimation(SkinData skinData, OutlinerUUID parent, Matrix4f transform, Matrix4f modelTransform, double animTime, OrlangEnvironment env)
+    private void recursiveAnimation(SkinData skinData, OutlinerUUID parent, Matrix4f transform, double animTime, OrlangEnvironment env)
     {
         if (parent instanceof OutlinerElement outEl)
         {
@@ -80,7 +80,7 @@ public class AnimationTicker
 
             for (OutlinerUUID child : outEl.children())
             {
-                recursiveAnimation(skinData, child, newTransform, modelTransform, animTime, env);
+                recursiveAnimation(skinData, child, newTransform, animTime, env);
 
                 if (child instanceof OutlinerElement outElChild)
                 {
@@ -97,7 +97,7 @@ public class AnimationTicker
             if (ENABLE_DEBUG_RENDER)
                 addDebugObjectForFrame(lineCube(translation, 0.1f, PURPLE));
 
-            skinData.transformations.get(parent.uuid()).getSecond().mul(newTransform).mulLocal(modelTransform);
+            skinData.transformations.get(parent.uuid()).getSecond().mul(newTransform);
         }
     }
 
