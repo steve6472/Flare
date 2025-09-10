@@ -3,6 +3,7 @@ package steve6472.flare.assets.model.blockbench.animation.controller;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Matrix4f;
+import steve6472.orlang.OrlangEnvironment;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +38,7 @@ public final class Controller
         this.states = states;
     }
 
-    public void tick(Matrix4f modelTransform)
+    public void tick(Matrix4f modelTransform, OrlangEnvironment environment)
     {
         if (currentAnimations == null)
         {
@@ -46,7 +47,7 @@ public final class Controller
             currentAnimations.start(controller, currentState);
         }
 
-        Optional<String> nextStateOpt = currentState.getNextState(controller.environment());
+        Optional<String> nextStateOpt = currentState.getNextState(environment);
         nextStateOpt.ifPresent(nextStateName ->
         {
             State nextState = states.get(nextStateName);
@@ -58,9 +59,9 @@ public final class Controller
         });
 
         if (previousAnimations != null)
-            previousAnimations.tick(modelTransform, controller.environment());
+            previousAnimations.tick(modelTransform, environment, this);
 
-        currentAnimations.tick(modelTransform, controller.environment());
+        currentAnimations.tick(modelTransform, environment, this);
 
         float blendFactor = calculateCurrentBlendFactor();
 

@@ -18,6 +18,7 @@ import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.Push;
 import steve6472.flare.struct.def.SBO;
 import steve6472.orlang.AST;
+import steve6472.orlang.OrlangEnvironment;
 import steve6472.orlang.OrlangValue;
 import steve6472.orlang.VarContext;
 import steve6472.test.TestKeybinds;
@@ -39,6 +40,7 @@ public class SkinRenderSystem extends CommonRenderSystem
     VkModel model3d;
 
     AnimationController animationController;
+    OrlangEnvironment environment;
 
 //    static final Key MODEL_KEY = Key.withNamespace("test", "blockbench/animated/debug_model_rotations");
     static final Key MODEL_KEY = Key.withNamespace("test", "blockbench/animated/snail");
@@ -52,9 +54,10 @@ public class SkinRenderSystem extends CommonRenderSystem
             .entryImage(FlareRegistries.ATLAS.get(FlareConstants.ATLAS_BLOCKBENCH).getSampler()));
 
         LoadedModel loadedModel = FlareRegistries.ANIMATED_LOADED_MODEL.get(MODEL_KEY);
+        environment = new OrlangEnvironment();
 
         animationController = FlareRegistries.ANIMATION_CONTROLLER.get(Key.withNamespace("test", "snail")).createForModel(loadedModel);
-        animationController.environment().setValue(new AST.Node.Identifier(VarContext.VARIABLE, "flag"), OrlangValue.bool(false));
+        environment.setValue(new AST.Node.Identifier(VarContext.VARIABLE, "flag"), OrlangValue.bool(false));
 
         model3d = FlareRegistries.ANIMATED_MODEL.get(MODEL_KEY);
     }
@@ -65,14 +68,14 @@ public class SkinRenderSystem extends CommonRenderSystem
         if (TestKeybinds.G.isActive())
         {
             flag = !flag;
-            animationController.environment().setValue(FLAG_ID, OrlangValue.bool(flag));
+            environment.setValue(FLAG_ID, OrlangValue.bool(flag));
         }
 
         // Update
 
         Matrix4f modelTransform = new Matrix4f();
         modelTransform.translate(0, 0, 0);
-        animationController.tick(modelTransform);
+        animationController.tick(modelTransform, environment);
         Matrix4f[] array = animationController.getTransformations();
         var sbo = SBO.BONES.create((Object) array);
 

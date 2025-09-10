@@ -4,7 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
 import steve6472.flare.assets.model.blockbench.SkinData;
-import steve6472.flare.assets.model.blockbench.animation.AnimationTicker;
+import steve6472.flare.assets.model.blockbench.animation.controller.AnimationTicker;
 import steve6472.flare.assets.model.blockbench.animation.keyframe.KeyframeType;
 import steve6472.flare.assets.model.blockbench.element.LocatorElement;
 import steve6472.flare.assets.model.blockbench.element.NullObjectElement;

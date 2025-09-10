@@ -1,14 +1,17 @@
-package steve6472.flare.assets.model.blockbench.animation;
+package steve6472.flare.assets.model.blockbench.animation.controller;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
 import steve6472.flare.assets.model.blockbench.SkinData;
+import steve6472.flare.assets.model.blockbench.animation.Animation;
+import steve6472.flare.assets.model.blockbench.animation.AnimationTimer;
+import steve6472.flare.assets.model.blockbench.animation.Timeline;
+import steve6472.flare.assets.model.blockbench.animation.datapoint.ParticleDataPoint;
+import steve6472.flare.assets.model.blockbench.animation.datapoint.SoundDataPoint;
+import steve6472.flare.assets.model.blockbench.animation.datapoint.TimelineDataPoint;
 import steve6472.flare.assets.model.blockbench.animation.ik.Ik;
-import steve6472.flare.assets.model.blockbench.animation.keyframe.AnimationKeyframeChannel;
-import steve6472.flare.assets.model.blockbench.animation.keyframe.EffectKeyframeChannel;
-import steve6472.flare.assets.model.blockbench.animation.keyframe.KeyframeChannel;
-import steve6472.flare.assets.model.blockbench.animation.keyframe.KeyframeType;
+import steve6472.flare.assets.model.blockbench.animation.keyframe.*;
 import steve6472.flare.assets.model.blockbench.outliner.OutlinerElement;
 import steve6472.flare.assets.model.blockbench.outliner.OutlinerUUID;
 import steve6472.orlang.OrlangEnvironment;
@@ -24,7 +27,7 @@ public class AnimationTicker
 {
     public static boolean ENABLE_DEBUG_RENDER = false;
 
-    private final SkinData masterSkinData;
+    private final AnimationController controller;
     private final double animationLength;
     private final LoadedModel model;
     public AnimationTimer timer;
@@ -34,26 +37,44 @@ public class AnimationTicker
 
     // Null Object UUID
 
-    public AnimationTicker(Animation animation, LoadedModel model, SkinData masterSkinData)
+    public AnimationTicker(Animation animation, AnimationController controller)
     {
+        this.controller = controller;
         this.animationLength = animation.length();
-        this.masterSkinData = masterSkinData;
         this.timer = new AnimationTimer();
         this.timeline = new Timeline(animation);
-        this.model = model;
+        this.model = controller.model;
         ik = new Ik(model, this);
     }
 
-    public void tick(OrlangEnvironment env)
+    public void tick(OrlangEnvironment env, Controller controller)
     {
         double currentAnimationTime = timer.calculateTime(System.currentTimeMillis());
 
-        // TODO: this should be all in timer
-        if (currentAnimationTime >= animationLength) timer.setRunning(false);
-        if (timer.hasEnded() && timer.isLooping()) timer.start();
-        if (timer.hasEnded() && timer.isStayAtLastFrame()) currentAnimationTime = animationLength;
+        if (currentAnimationTime >= animationLength)
+        {
+            timer.setRunning(false);
+        }
 
-        skinData = masterSkinData.copy();
+        if (timer.hasEnded() && timer.isLooping())
+        {
+            timer.start();
+        }
+
+        if (timer.hasEnded() && timer.isStayAtLastFrame())
+        {
+            currentAnimationTime = animationLength;
+        }
+
+        if (timer.hasEnded())
+        {
+            if (this.controller.callbacks.onAnimationEnd != null)
+            {
+                this.controller.callbacks.onAnimationEnd.accept(controller);
+            }
+        }
+
+        skinData = this.controller.masterSkinData.copy();
 
         for (OutlinerUUID outlinerUUID : model.outliner())
         {
@@ -121,6 +142,9 @@ public class AnimationTicker
             lastAnimChannel.processKeyframe(lastKeyframe.dataPoints().getFirst(), nextKeyframe.dataPoints().getFirst(), ticks, transform, invert, env);
         } else if (lastKeyframe instanceof EffectKeyframeChannel<?> lastEffectChannel)
         {
+            //TODO Remember that they have to activate only once per their frame
+            processEffect(lastEffectChannel);
+
             throw new RuntimeException("Effects are not implemented yet, it's 9:37PM and my head already hurts a bit");
         } else
         {
@@ -129,8 +153,41 @@ public class AnimationTicker
 
     }
 
-    private void processEffect(KeyframeChannel<?> channel)
+    private void processEffect(EffectKeyframeChannel<?> channel)
     {
-        // Remember that they have to activate only once per their frame
+        switch (channel)
+        {
+            case ParticleKeyframe particle ->
+            {
+                if (controller.callbacks.onParticle != null)
+                {
+                    for (ParticleDataPoint dataPoint : particle.dataPoints())
+                    {
+                        controller.callbacks.onParticle.accept(dataPoint);
+                    }
+                }
+            }
+            case SoundKeyframe sound ->
+            {
+                if (controller.callbacks.onParticle != null)
+                {
+                    for (SoundDataPoint dataPoint : sound.dataPoints())
+                    {
+                        controller.callbacks.onSound.accept(dataPoint);
+                    }
+                }
+            }
+            case TimelineKeyframe script ->
+            {
+                if (controller.callbacks.onParticle != null)
+                {
+                    for (TimelineDataPoint dataPoint : script.dataPoints())
+                    {
+                        controller.callbacks.onScript.accept(dataPoint);
+                    }
+                }
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + channel);
+        }
     }
 }

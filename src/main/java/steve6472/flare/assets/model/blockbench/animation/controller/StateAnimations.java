@@ -2,7 +2,6 @@ package steve6472.flare.assets.model.blockbench.animation.controller;
 
 import org.joml.Matrix4f;
 import steve6472.flare.assets.model.blockbench.animation.Animation;
-import steve6472.flare.assets.model.blockbench.animation.AnimationTicker;
 import steve6472.flare.assets.model.blockbench.animation.Loop;
 import steve6472.orlang.OrlangEnvironment;
 
@@ -26,18 +25,18 @@ public class StateAnimations
         {
             BlendableAnimation animation = animations.get(i);
             Animation animationByName = controller.model.getAnimationByName(animation.animationName());
-            tickers[i] = new AnimationTicker(animationByName, controller.model, controller.masterSkinData);
+            tickers[i] = new AnimationTicker(animationByName, controller);
             tickers[i].timer.setLoop(animationByName.loop() == Loop.LOOP);
             tickers[i].timer.start();
         }
     }
 
-    public void tick(Matrix4f modelTransform, OrlangEnvironment environment)
+    public void tick(Matrix4f modelTransform, OrlangEnvironment environment, Controller controller)
     {
         for (int i = 0; i < tickers.length; i++)
         {
             AnimationTicker ticker = tickers[i];
-            ticker.tick(environment);
+            ticker.tick(environment, controller);
 
             if (i == 0)
             {

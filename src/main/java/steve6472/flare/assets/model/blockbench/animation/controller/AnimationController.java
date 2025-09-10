@@ -21,7 +21,6 @@ import java.util.Map;
  */
 public final class AnimationController implements Keyable
 {
-    public OrlangEnvironment environment;
     private final Map<String, Controller> controllers;
 
     /// Internal so it can be set
@@ -31,11 +30,9 @@ public final class AnimationController implements Keyable
     LoadedModel model;
     SkinData masterSkinData;
     Matrix4f[] transformations;
-
-    public static final Codec<OrlangEnvironment> ENV_CODEC = Codec.unit(OrlangEnvironment::new);
+    AnimationCallbacks callbacks;
 
     public static final Codec<AnimationController> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-        ENV_CODEC.fieldOf("environment").forGetter(o -> o. environment),
         Codec.unboundedMap(Codec.STRING, Controller.CODEC).fieldOf("controllers").validate(in -> {
             if (in.size() != 1)
             {
@@ -51,17 +48,16 @@ public final class AnimationController implements Keyable
         }).forGetter(o -> o.controllers)
     ).apply(instance, AnimationController::new));
 
-    public AnimationController(OrlangEnvironment environment, Map<String, Controller> controllers)
+    public AnimationController(Map<String, Controller> controllers)
     {
-        this.environment = environment;
         this.controllers = controllers;
     }
 
-    public void tick(Matrix4f modelTransform)
+    public void tick(Matrix4f modelTransform, OrlangEnvironment environment)
     {
         for (Controller controller : controllers.values())
         {
-            controller.tick(modelTransform);
+            controller.tick(modelTransform, environment);
         }
     }
 
@@ -70,23 +66,24 @@ public final class AnimationController implements Keyable
         return transformations;
     }
 
-    public OrlangEnvironment environment()
-    {
-        return environment;
-    }
-
     public Map<String, Controller> controllers()
     {
         return controllers;
     }
 
+    public AnimationCallbacks callbacks()
+    {
+        return callbacks;
+    }
+
     public AnimationController createForModel(LoadedModel model)
     {
         Map<String, Controller> controllersCopy = new HashMap<>(controllers.size());
-        AnimationController result = new AnimationController(new OrlangEnvironment(), controllersCopy);
+        AnimationController result = new AnimationController(controllersCopy);
         controllers.forEach((k, v) -> controllersCopy.put(k, v.copy(result)));
         result.model = model;
         result.masterSkinData = model.toPrimitiveSkinModel().skinData.copy();
+        result.callbacks = new AnimationCallbacks();
         return result;
     }
 
@@ -99,6 +96,6 @@ public final class AnimationController implements Keyable
     @Override
     public String toString()
     {
-        return "AnimationController[" + "environment=" + environment + ", " + "controllers=" + controllers + ']';
+        return "AnimationController[" + "controllers=" + controllers + ']';
     }
 }
