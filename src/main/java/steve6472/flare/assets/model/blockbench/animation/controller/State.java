@@ -18,7 +18,7 @@ public record State(List<BlendableAnimation> animations, List<Transition> transi
 {
     public static final Codec<State> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         BlendableAnimation.CODEC.listOf().fieldOf("animations").forGetter(State::animations),
-        Transition.CODEC.listOf().fieldOf("transitions").forGetter(State::transitions),
+        Transition.CODEC.listOf().optionalFieldOf("transitions", List.of()).forGetter(State::transitions),
         Codec.FLOAT.optionalFieldOf("blend_transition", 0.2f).forGetter(State::blendTransitionSeconds)
     ).apply(instance, State::new));
 

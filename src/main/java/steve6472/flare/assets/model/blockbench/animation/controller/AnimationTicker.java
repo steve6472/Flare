@@ -26,6 +26,7 @@ import static steve6472.flare.render.debug.DebugRender.*;
 public class AnimationTicker
 {
     public static boolean ENABLE_DEBUG_RENDER = false;
+    private static final String EFFECTS_NAME = "effects";
 
     private final AnimationController controller;
     private final double animationLength;
@@ -34,6 +35,10 @@ public class AnimationTicker
     public SkinData skinData;
     public Timeline timeline;
     private final Ik ik;
+
+    private double lastParticleTime = -1;
+    private double lastTimelineTime = -1;
+    private double lastSoundTime = -1;
 
     // Null Object UUID
 
@@ -59,6 +64,9 @@ public class AnimationTicker
         if (timer.hasEnded() && timer.isLooping())
         {
             timer.start();
+            lastParticleTime = -1;
+            lastTimelineTime = -1;
+            lastSoundTime = -1;
         }
 
         if (timer.hasEnded() && timer.isStayAtLastFrame())
@@ -81,6 +89,10 @@ public class AnimationTicker
             Matrix4f transform = new Matrix4f();
             recursiveAnimation(skinData, outlinerUUID, transform, currentAnimationTime, env);
         }
+
+        lastParticleTime = animateEffects(KeyframeType.PARTICLE, currentAnimationTime, lastParticleTime);
+        lastTimelineTime = animateEffects(KeyframeType.TIMELINE, currentAnimationTime, lastTimelineTime);
+        lastSoundTime = animateEffects(KeyframeType.SOUND, currentAnimationTime, lastSoundTime);
     }
 
     private void recursiveAnimation(SkinData skinData, OutlinerUUID parent, Matrix4f transform, double animTime, OrlangEnvironment env)
@@ -127,30 +139,44 @@ public class AnimationTicker
     public void animateBone(String boneName, KeyframeType<?> type, double currentAnimationTime, Matrix4f transform, boolean invert, OrlangEnvironment env)
     {
         KeyframeChannel<?> lastKeyframe = timeline.getLastKeyframe(type, currentAnimationTime, boneName);
-        KeyframeChannel<?> nextKeyframe = timeline.getNextKeyframe(type, currentAnimationTime, boneName);
 
-        if (lastKeyframe == null || nextKeyframe == null)
+        if (lastKeyframe == null)
             return;
-
-//        System.out.println("keyframes for bone " + boneName + " type: " + type.key().id() + " at " + "%.4f ".formatted(currentAnimationTime) + lastKeyframe + " -> " + nextKeyframe);
 
         //noinspection rawtypes
         if (lastKeyframe instanceof AnimationKeyframeChannel lastAnimChannel)
         {
+            KeyframeChannel<?> nextKeyframe = timeline.getNextKeyframe(type, currentAnimationTime, boneName);
+            if (nextKeyframe == null)
+                return;
+
             double ticks = timeline.calculateTicks(currentAnimationTime, lastKeyframe.time(), nextKeyframe.time());
             //noinspection unchecked
             lastAnimChannel.processKeyframe(lastKeyframe.dataPoints().getFirst(), nextKeyframe.dataPoints().getFirst(), ticks, transform, invert, env);
-        } else if (lastKeyframe instanceof EffectKeyframeChannel<?> lastEffectChannel)
-        {
-            //TODO Remember that they have to activate only once per their frame
-            processEffect(lastEffectChannel);
-
-            throw new RuntimeException("Effects are not implemented yet, it's 9:37PM and my head already hurts a bit");
         } else
         {
             throw new RuntimeException("Unknown keyframe type");
         }
+    }
 
+    public double animateEffects(KeyframeType<?> type, double currentAnimationTime, double testTime)
+    {
+        KeyframeChannel<?> lastKeyframe = timeline.getLastKeyframe(type, currentAnimationTime, EFFECTS_NAME);
+
+        if (lastKeyframe == null)
+            return testTime;
+
+        if (lastKeyframe instanceof EffectKeyframeChannel<?> lastEffectChannel)
+        {
+            if (lastKeyframe.time() == testTime)
+                return testTime;
+
+            processEffect(lastEffectChannel);
+            return lastKeyframe.time();
+        } else
+        {
+            throw new RuntimeException("Unknown keyframe type");
+        }
     }
 
     private void processEffect(EffectKeyframeChannel<?> channel)

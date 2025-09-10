@@ -19,9 +19,6 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
     private final double time;
     private final List<T> dataPoints;
 
-    /**
-     *
-     */
     public KeyframeChannel(Interpolation interpolation, double time, List<T> dataPoints)
     {
         this.interpolation = interpolation;
