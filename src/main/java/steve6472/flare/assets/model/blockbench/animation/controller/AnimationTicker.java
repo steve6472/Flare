@@ -183,34 +183,25 @@ public class AnimationTicker
     {
         switch (channel)
         {
-            case ParticleKeyframe particle ->
+            case ParticleKeyframe particle when controller.callbacks.onParticle != null ->
             {
-                if (controller.callbacks.onParticle != null)
+                for (ParticleDataPoint dataPoint : particle.dataPoints())
                 {
-                    for (ParticleDataPoint dataPoint : particle.dataPoints())
-                    {
-                        controller.callbacks.onParticle.accept(dataPoint);
-                    }
+                    controller.callbacks.onParticle.accept(dataPoint);
                 }
             }
-            case SoundKeyframe sound ->
+            case SoundKeyframe sound when controller.callbacks.onParticle != null ->
             {
-                if (controller.callbacks.onParticle != null)
+                for (SoundDataPoint dataPoint : sound.dataPoints())
                 {
-                    for (SoundDataPoint dataPoint : sound.dataPoints())
-                    {
-                        controller.callbacks.onSound.accept(dataPoint);
-                    }
+                    controller.callbacks.onSound.accept(dataPoint);
                 }
             }
-            case TimelineKeyframe script ->
+            case TimelineKeyframe script when controller.callbacks.onParticle != null ->
             {
-                if (controller.callbacks.onParticle != null)
+                for (TimelineDataPoint dataPoint : script.dataPoints())
                 {
-                    for (TimelineDataPoint dataPoint : script.dataPoints())
-                    {
-                        controller.callbacks.onScript.accept(dataPoint);
-                    }
+                    controller.callbacks.onScript.accept(dataPoint);
                 }
             }
             default -> throw new IllegalStateException("Unexpected value: " + channel);
