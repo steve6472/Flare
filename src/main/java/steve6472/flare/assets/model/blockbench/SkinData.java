@@ -28,6 +28,18 @@ public class SkinData
         return arr;
     }
 
+    public Matrix4f[] toArrayCopy()
+    {
+        Matrix4f[] arr = new Matrix4f[transformations.size()];
+
+        for (Pair<Integer, Matrix4f> value : transformations.values())
+        {
+            arr[value.getFirst() - 1] = new Matrix4f(value.getSecond());
+        }
+
+        return arr;
+    }
+
     public Matrix4f[] toArray(SkinData toBlend, float blendFactor)
     {
         if (toBlend.transformations.size() != transformations.size())

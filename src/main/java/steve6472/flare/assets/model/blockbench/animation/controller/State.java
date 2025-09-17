@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
 public record State(List<BlendableAnimation> animations, List<Transition> transitions, float blendTransitionSeconds)
 {
     public static final Codec<State> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-        BlendableAnimation.CODEC.listOf().fieldOf("animations").forGetter(State::animations),
+        BlendableAnimation.CODEC.listOf().optionalFieldOf("animations", List.of()).forGetter(State::animations),
         Transition.CODEC.listOf().optionalFieldOf("transitions", List.of()).forGetter(State::transitions),
-        Codec.FLOAT.optionalFieldOf("blend_transition", 0.2f).forGetter(State::blendTransitionSeconds)
+        Codec.FLOAT.optionalFieldOf("blend_transition", 0f).forGetter(State::blendTransitionSeconds)
     ).apply(instance, State::new));
 
     public Optional<String> getNextState(OrlangEnvironment environment)

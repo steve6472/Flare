@@ -24,13 +24,14 @@ public final class Controller
     private final String initialState;
     private final Map<String, State> states;
 
-    private AnimationController controller;
+    AnimationController controller;
     private StateAnimations previousAnimations;
     private StateAnimations currentAnimations;
     private State currentState;
     private float blendTime;
     private float blendMult;
     private long blendTimeStart;
+    Matrix4f[] transformations;
 
     public Controller(String initialState, Map<String, State> states)
     {
@@ -38,7 +39,7 @@ public final class Controller
         this.states = states;
     }
 
-    public void tick(Matrix4f modelTransform, OrlangEnvironment environment)
+    public void tick(OrlangEnvironment environment)
     {
         if (currentAnimations == null)
         {
@@ -47,21 +48,15 @@ public final class Controller
             currentAnimations.start(controller, currentState);
         }
 
+        currentAnimations.updateAnimationQueries(environment);
+
         Optional<String> nextStateOpt = currentState.getNextState(environment);
-        nextStateOpt.ifPresent(nextStateName ->
-        {
-            State nextState = states.get(nextStateName);
-            beginBlendTransition(currentState.blendTransitionSeconds());
-            previousAnimations = currentAnimations;
-            currentAnimations = new StateAnimations();
-            currentAnimations.start(controller, nextState);
-            currentState = nextState;
-        });
+        nextStateOpt.ifPresent(this::forceTransition);
 
         if (previousAnimations != null)
-            previousAnimations.tick(modelTransform, environment, this);
+            previousAnimations.tick(environment, this);
 
-        currentAnimations.tick(modelTransform, environment, this);
+        currentAnimations.tick(environment, this);
 
         float blendFactor = calculateCurrentBlendFactor();
 
@@ -73,11 +68,21 @@ public final class Controller
 
         if (blendFactor == 0f || previousAnimations == null)
         {
-            controller.transformations = currentAnimations.getTransformations();
+            transformations = currentAnimations.transformations;
         } else
         {
-            controller.transformations = currentAnimations.getTransformations(previousAnimations.getTransformations(), blendFactor * blendMult);
+            transformations = currentAnimations.getTransformations(previousAnimations.transformations, blendFactor * blendMult);
         }
+    }
+
+    public void forceTransition(String state)
+    {
+        State nextState = states.get(state);
+        beginBlendTransition(currentState.blendTransitionSeconds());
+        previousAnimations = currentAnimations;
+        currentAnimations = new StateAnimations();
+        currentAnimations.start(controller, nextState);
+        currentState = nextState;
     }
 
     private void beginBlendTransition(float blendTarget)
@@ -118,6 +123,16 @@ public final class Controller
         Controller result = new Controller(initialState, Map.copyOf(statesCopy));
         result.controller = controller;
         return result;
+    }
+
+    public Matrix4f[] copyTransformations()
+    {
+        Matrix4f[] copy = new Matrix4f[transformations.length];
+        for (int i = 0; i < transformations.length; i++)
+        {
+            copy[i] = new Matrix4f(transformations[i]);
+        }
+        return copy;
     }
 
     @Override

@@ -7,6 +7,7 @@ import steve6472.core.registry.Key;
 import steve6472.flare.*;
 import steve6472.flare.assets.model.VkModel;
 import steve6472.flare.assets.model.blockbench.animation.controller.AnimationController;
+import steve6472.flare.assets.model.blockbench.animation.controller.AnimationQuery;
 import steve6472.flare.core.FrameInfo;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
 import steve6472.flare.pipeline.builder.PipelineConstructor;
@@ -17,10 +18,7 @@ import steve6472.flare.render.common.FlightFrame;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.Push;
 import steve6472.flare.struct.def.SBO;
-import steve6472.orlang.AST;
-import steve6472.orlang.OrlangEnvironment;
-import steve6472.orlang.OrlangValue;
-import steve6472.orlang.VarContext;
+import steve6472.orlang.*;
 import steve6472.test.TestKeybinds;
 
 import java.util.Arrays;
@@ -55,6 +53,7 @@ public class SkinRenderSystem extends CommonRenderSystem
 
         LoadedModel loadedModel = FlareRegistries.ANIMATED_LOADED_MODEL.get(MODEL_KEY);
         environment = new OrlangEnvironment();
+        environment.queryFunctionSet = new AnimQuery();
 
         animationController = FlareRegistries.ANIMATION_CONTROLLER.get(Key.withNamespace("test", "snail")).createForModel(loadedModel);
         environment.setValue(new AST.Node.Identifier(VarContext.VARIABLE, "flag"), OrlangValue.bool(false));
@@ -92,5 +91,36 @@ public class SkinRenderSystem extends CommonRenderSystem
     @Override
     protected void updateData(steve6472.flare.render.common.FlightFrame flightFrame, FrameInfo frameInfo)
     {
+    }
+
+    private static final class AnimQuery extends QueryFunctionSet implements AnimationQuery
+    {
+        private double animTime;
+        private boolean anyAnimFinished, allAnimsFinished;
+
+        public AnimQuery()
+        {
+            functions.put("anim_time", OrlangValue.func(() -> animTime));
+            functions.put("any_animation_finished", OrlangValue.func(() -> anyAnimFinished));
+            functions.put("all_animations_finished", OrlangValue.func(() -> allAnimsFinished));
+        }
+
+        @Override
+        public void setAnimTime(double animTime)
+        {
+            this.animTime = animTime;
+        }
+
+        @Override
+        public void setAnyAnimationFinished(boolean flag)
+        {
+            anyAnimFinished = flag;
+        }
+
+        @Override
+        public void setAllAnimationsFinished(boolean flag)
+        {
+            allAnimsFinished = flag;
+        }
     }
 }

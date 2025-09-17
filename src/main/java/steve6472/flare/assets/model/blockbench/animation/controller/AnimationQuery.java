@@ -9,5 +9,5 @@ public interface AnimationQuery
 {
     void setAnimTime(double animTime);
     void setAnyAnimationFinished(boolean flag);
-    void setAllAnimationSFinished(boolean flag);
+    void setAllAnimationsFinished(boolean flag);
 }

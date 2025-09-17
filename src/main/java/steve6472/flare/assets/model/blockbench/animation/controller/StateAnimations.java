@@ -15,7 +15,7 @@ import java.util.List;
 public class StateAnimations
 {
     private AnimationTicker[] tickers;
-    private Matrix4f[] transformations;
+    Matrix4f[] transformations;
 
     public void start(AnimationController controller, State state)
     {
@@ -31,8 +31,36 @@ public class StateAnimations
         }
     }
 
-    public void tick(Matrix4f modelTransform, OrlangEnvironment environment, Controller controller)
+    public void updateAnimationQueries(OrlangEnvironment environment)
     {
+        boolean anyEnded = tickers.length == 0;
+        boolean allEnded = true;
+
+        for (AnimationTicker ticker : tickers)
+        {
+            if (ticker.timer.hasEnded())
+            {
+                anyEnded = true;
+            } else
+            {
+                allEnded = false;
+            }
+        }
+
+        if (environment.queryFunctionSet instanceof AnimationQuery animationQuery)
+        {
+            animationQuery.setAnyAnimationFinished(anyEnded);
+            animationQuery.setAllAnimationsFinished(allEnded);
+        }
+    }
+
+    public void tick(OrlangEnvironment environment, Controller controller)
+    {
+        if (tickers.length == 0)
+        {
+            transformations = controller.controller.masterSkinData.toArrayCopy();
+        }
+
         for (int i = 0; i < tickers.length; i++)
         {
             AnimationTicker ticker = tickers[i];
@@ -51,16 +79,6 @@ public class StateAnimations
                 }
             }
         }
-
-        for (Matrix4f transformation : transformations)
-        {
-            transformation.mulLocal(modelTransform);
-        }
-    }
-
-    public Matrix4f[] getTransformations()
-    {
-        return transformations;
     }
 
     public Matrix4f[] getTransformations(Matrix4f[] other, float blendFactor)
