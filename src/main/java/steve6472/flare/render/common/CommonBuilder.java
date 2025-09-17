@@ -31,6 +31,12 @@ public class CommonBuilder
         return this;
     }
 
+    public CommonBuilder vertexBuffer(int instanceSize, int instanceCount, int memoryPropertyFlags)
+    {
+        entries.add(new EntryVertexBuffer(instanceSize, instanceCount, memoryPropertyFlags));
+        return this;
+    }
+
     @Override
     public String toString()
     {

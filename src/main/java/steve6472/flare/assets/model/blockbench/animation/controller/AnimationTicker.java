@@ -56,6 +56,11 @@ public class AnimationTicker
     {
         double currentAnimationTime = timer.calculateTime(System.currentTimeMillis());
 
+        if (env.queryFunctionSet instanceof AnimationQuery animationQuery)
+        {
+            animationQuery.setAnimTime(currentAnimationTime);
+        }
+
         if (currentAnimationTime >= animationLength)
         {
             timer.setRunning(false);

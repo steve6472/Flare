@@ -55,7 +55,9 @@ public abstract class CommonRenderSystem extends RenderSystem
 
         for (CommonEntry entry : commonBuilder.entries)
         {
-            builder.addPoolSize(entry.type(), MAX_FRAMES_IN_FLIGHT);
+            int type = entry.type();
+            if (type == 0) continue;
+            builder.addPoolSize(type, MAX_FRAMES_IN_FLIGHT);
         }
 
         return builder.build();
@@ -70,7 +72,9 @@ public abstract class CommonRenderSystem extends RenderSystem
         int i = 1;
         for (CommonEntry entry : commonBuilder.entries)
         {
-            builder.addBinding(i, entry.type(), entry.stage());
+            int type = entry.type();
+            if (type == 0) continue;
+            builder.addBinding(i, type, entry.stage());
             i++;
         }
 
