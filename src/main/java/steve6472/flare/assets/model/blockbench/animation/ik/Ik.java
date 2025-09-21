@@ -4,6 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
 import steve6472.flare.assets.model.blockbench.SkinData;
+import steve6472.flare.assets.model.blockbench.animation.controller.AnimationController;
 import steve6472.flare.assets.model.blockbench.animation.controller.AnimationTicker;
 import steve6472.flare.assets.model.blockbench.animation.keyframe.KeyframeType;
 import steve6472.flare.assets.model.blockbench.element.LocatorElement;
@@ -24,13 +25,17 @@ import static steve6472.flare.render.debug.DebugRender.*;
  */
 public class Ik
 {
-    AnimationTicker controller;
+    public static boolean DEBUG_RENDER = false;
+
+    AnimationTicker ticker;
+    private AnimationController controller;
     private Map<UUID, IkThing> map = new HashMap<>();
     private LoadedModel model;
 
-    public Ik(LoadedModel model, AnimationTicker controller)
+    public Ik(LoadedModel model, AnimationTicker ticker, AnimationController controller)
     {
         this.model = model;
+        this.ticker = ticker;
         this.controller = controller;
         create();
     }
@@ -46,7 +51,7 @@ public class Ik
             model.getElementByUUID(UUID.fromString(nullObjectElement.ikTarget())).ifPresent(ikTarget -> {
                 // Get targets parent outliner element
                 model.getOutlinerByChildElementUUID(ikTarget.uuid()).ifPresent(outliner -> {
-                    IkThing thing = new IkThing(model, outliner, nullObjectElement, ((LocatorElement) ikTarget), controller);
+                    IkThing thing = new IkThing(model, outliner, nullObjectElement, ((LocatorElement) ikTarget), ticker);
                     map.put(nullObjectElement.uuid(), thing);
                 });
             });
@@ -68,11 +73,14 @@ public class Ik
 
         model.getElementByUUIDWithType(NullObjectElement.class, child.uuid()).ifPresent(element -> {
             Matrix4f newerTransform = new Matrix4f(transform);
-            controller.animateBone(element.uuid().toString(), KeyframeType.POSITION, animTime, newerTransform, true, env);
+            ticker.animateBone(element.uuid().toString(), KeyframeType.POSITION, animTime, newerTransform, false, env);
             Vector3f endEffector = new Vector3f(element.position());
             newerTransform.transformPosition(endEffector);
 
-            addDebugObjectForFrame(lineCube(endEffector, 0.04f, BLUE));
+            controller.setNullObject(element.name(), endEffector);
+
+            if (DEBUG_RENDER)
+                addDebugObjectForFrame(lineCube(endEffector, 0.04f, BLUE));
 
             if (!element.ikTarget().isBlank())
             {

@@ -8,6 +8,7 @@ import org.joml.Vector3f;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.Keyable;
 import steve6472.flare.assets.model.blockbench.animation.Animation;
+import steve6472.flare.assets.model.blockbench.element.LocatorElement;
 import steve6472.flare.assets.model.blockbench.outliner.OutlinerElement;
 import steve6472.flare.assets.model.blockbench.outliner.OutlinerUUID;
 import steve6472.flare.assets.model.primitive.PrimitiveStaticModel;
@@ -159,6 +160,9 @@ public record LoadedModel(ModelMeta meta, Key key, Resolution resolution, List<E
             model.normals.addAll(element.toNormals());
             model.texCoords.addAll(element.toUVs());
             model.transformationIndicies.addAll(bones1);
+
+            if (element instanceof LocatorElement locatorElement)
+                model.locatorNames.add(new PrimitiveSkinModel.LocatorData(boneIndex - 1, element.uuid(), element.name(), locatorElement.position()));
         }
     }
 

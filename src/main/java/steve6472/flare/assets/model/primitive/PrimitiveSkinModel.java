@@ -18,6 +18,7 @@ import java.util.List;
 public class PrimitiveSkinModel extends PrimitiveStaticModel
 {
     public List<Integer> transformationIndicies;
+    public List<LocatorData> locatorNames;
     public SkinData skinData;
     LoadedModel model;
 
@@ -26,6 +27,7 @@ public class PrimitiveSkinModel extends PrimitiveStaticModel
         super(vertexType);
         this.model = model;
         transformationIndicies = new ArrayList<>();
+        locatorNames = new ArrayList<>();
         skinData = new SkinData();
     }
 
@@ -46,4 +48,6 @@ public class PrimitiveSkinModel extends PrimitiveStaticModel
         }
         return vertices;
     }
+
+    public record LocatorData(int transformIndex, UUID uuid, String name, Vector3f position) {}
 }

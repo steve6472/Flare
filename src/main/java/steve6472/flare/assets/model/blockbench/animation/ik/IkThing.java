@@ -1,8 +1,8 @@
 package steve6472.flare.assets.model.blockbench.animation.ik;
 
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import steve6472.flare.FlareConstants;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
 import steve6472.flare.assets.model.blockbench.SkinData;
 import steve6472.flare.assets.model.blockbench.animation.controller.AnimationTicker;
@@ -91,30 +91,35 @@ public class IkThing
             copy.solve(endEffector);
 
             Matrix4f parentTransform = new Matrix4f();
-            Vector3f backRot = new Vector3f();
 
             for (int i = 0; i < elements.size(); i++)
             {
                 FabrikSegment segment = copy.segments()[i];
 
-                addDebugObjectForFrame(lineCube(segment.pos(), 0.02f, CYAN));
-                addDebugObjectForFrame(lineCube(segment.other(), 0.04f, DARK_CYAN));
+                if (Ik.DEBUG_RENDER)
+                {
+                    addDebugObjectForFrame(lineCube(segment.pos(), 0.02f, CYAN));
+                    addDebugObjectForFrame(lineCube(segment.other(), 0.04f, DARK_CYAN));
+                }
 
                 OutlinerElement el = elements.get(i);
                 Matrix4f transformMatrix = new Matrix4f(parentTransform);
                 transformMatrix.translate(el.origin());
-                transformMatrix.rotateZ(el.rotation().z);
-                transformMatrix.rotateY(el.rotation().y);
-                transformMatrix.rotateX(el.rotation().x);
+//                transformMatrix.rotateZ(el.rotation().z);
+//                transformMatrix.rotateY(el.rotation().y);
+//                transformMatrix.rotateX(el.rotation().x);
 
-                Matrix4f rotationMatrix = calculateRotationMatrix(segment.pos(), segment.other());
-                Vector3f newRot = new Vector3f();
-                rotationMatrix.getEulerAnglesZYX(newRot);
-//                newRot.add((float) Math.PI, 0, 0);
-                newRot.sub(backRot);
-                backRot.add(newRot);
-                transformMatrix.rotateZYX(newRot);
+                Vector3f dir = new Vector3f(segment.other()).sub(segment.pos());
+                if (dir.lengthSquared() > 1e-8f) dir.normalize();
 
+                Matrix4f invParent = new Matrix4f(parentTransform).invert();
+                invParent.transformDirection(dir).normalize();
+
+                // TODO: calculate this from rest position or something
+                Vector3f restDir = new Vector3f(0, -1, 0);
+
+                Quaternionf rot = new Quaternionf().rotationTo(restDir, dir);
+                transformMatrix.rotate(rot);
                 transformMatrix.translate(-el.origin().x, -el.origin().y, -el.origin().z);
 
                 parentTransform = transformMatrix;
@@ -122,23 +127,5 @@ public class IkThing
                 skinData.transformations.get(el.uuid()).getSecond().mul(transformMatrix);
             }
         });
-    }
-
-    private static Matrix4f calculateRotationMatrix(Vector3f pointA, Vector3f pointB)
-    {
-        Vector3f dir = new Vector3f();
-        pointA.sub(pointB, dir);
-        dir.normalize();
-//        Vector3f normalizedA = new Vector3f(0, 1, 0);
-        Vector3f normalizedA = FlareConstants.CAMERA_UP;
-        Vector3f axis = new Vector3f();
-        normalizedA.cross(dir, axis).normalize();
-        float angle = (float) Math.acos(normalizedA.dot(dir));
-
-        // Create the rotation matrix using the axis and angle
-        Matrix4f rotationMatrix = new Matrix4f().identity();
-        rotationMatrix.rotate(angle, axis); // Rotate around the axis by the angle
-
-        return rotationMatrix;
     }
 }

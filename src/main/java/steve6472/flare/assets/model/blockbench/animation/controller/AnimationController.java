@@ -1,17 +1,19 @@
 package steve6472.flare.assets.model.blockbench.animation.controller;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.jetbrains.annotations.ApiStatus;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.Keyable;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
 import steve6472.flare.assets.model.blockbench.SkinData;
+import steve6472.flare.assets.model.primitive.PrimitiveSkinModel;
 import steve6472.orlang.OrlangEnvironment;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,6 +33,12 @@ public final class AnimationController implements Keyable
     SkinData masterSkinData;
     Matrix4f[] transformations;
     AnimationCallbacks callbacks;
+    List<PrimitiveSkinModel.LocatorData> locatorIndicies;
+
+    public record LocatorInfo(Vector3f position, Vector3f velocity) {}
+
+    Map<String, Vector3f> nullObjects;
+    Map<String, LocatorInfo> locators;
 
     public static final Codec<AnimationController> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         Codec.unboundedMap(Codec.STRING, Controller.CODEC).fieldOf("controllers").forGetter(o -> o.controllers)
@@ -67,6 +75,20 @@ public final class AnimationController implements Keyable
         {
             transformation.mulLocal(modelTransform);
         }
+
+        // Set locators
+        for (PrimitiveSkinModel.LocatorData locatorIndicy : locatorIndicies)
+        {
+            Vector3f pos = new Vector3f(locatorIndicy.position());
+            pos.mulPosition(transformations[locatorIndicy.transformIndex()]);
+            LocatorInfo lastInfo = locators.get(locatorIndicy.name());
+            Vector3f velocity = new Vector3f();
+            if (lastInfo != null)
+            {
+                velocity.set(pos).sub(lastInfo.position);
+            }
+            locators.put(locatorIndicy.name(), new LocatorInfo(pos, velocity));
+        }
     }
 
     public Matrix4f[] getTransformations()
@@ -91,9 +113,29 @@ public final class AnimationController implements Keyable
         result.key = key;
         controllers.forEach((k, v) -> controllersCopy.put(k, v.copy(result)));
         result.model = model;
-        result.masterSkinData = model.toPrimitiveSkinModel().skinData.copy();
+        PrimitiveSkinModel primitiveSkinModel = model.toPrimitiveSkinModel();
+        result.locatorIndicies = primitiveSkinModel.locatorNames;
+        result.masterSkinData = primitiveSkinModel.skinData.copy();
         result.callbacks = new AnimationCallbacks();
+        result.nullObjects = new HashMap<>();
+        result.locators = new HashMap<>();
         return result;
+    }
+
+    public LocatorInfo getLocator(String name)
+    {
+        return locators.get(name);
+    }
+
+    public Vector3f getNullObject(String name)
+    {
+        return nullObjects.get(name);
+    }
+
+    @ApiStatus.Internal
+    public void setNullObject(String name, Vector3f position)
+    {
+        nullObjects.put(name, position);
     }
 
     @Override

@@ -21,6 +21,9 @@ import steve6472.flare.render.*;
 import java.io.File;
 import java.util.logging.Logger;
 
+import static steve6472.flare.render.debug.DebugRender.*;
+import static steve6472.flare.render.debug.DebugRender.RED;
+
 /**
  * Created by steve6472
  * Date: 9/29/2024
@@ -144,6 +147,7 @@ class TestApp extends FlareApp
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
+        renderDebugFloor();
 //        frameInfo.camera().setViewTarget(new Vector3f(-0.5f, 1.0f, 1), new Vector3f(0, 0.5f, 0));
         Vector2i mousePos = input().getMousePositionRelativeToTopLeftOfTheWindow();
         frameInfo.camera().setPerspectiveProjection(TestSettings.FOV.get(), aspectRatio(), 0.1f, 1024f);
@@ -235,6 +239,24 @@ class TestApp extends FlareApp
 //        ), 0.5f, 3f, Anchor.CENTER, Billboard.FIXED, Align.CENTER));
 //        text().line(TextLine.fromText("Helloě world", 1f)); // ě is an unknown character in the digi font
 //        text().line(TextLine.fromText("Comic Sans MS", 1f, digi));
+    }
+
+    public void renderDebugFloor()
+    {
+        // Debug render of plane
+        float density = 1f;
+        int range = 64;
+        float y = 0;
+        float x = 0;
+        for (int i = -range; i < range; i++)
+        {
+            addDebugObjectForFrame(line(new Vector3f(i * density, y, -range * density), new Vector3f(i * density, y, range * density), DARK_GRAY));
+            addDebugObjectForFrame(line(new Vector3f(-range * density, y, i * density), new Vector3f(range * density, y, i * density), DARK_GRAY));
+        }
+
+        addDebugObjectForFrame(line(new Vector3f(0, 0, 0), new Vector3f(1, 0, 0), RED));
+        addDebugObjectForFrame(line(new Vector3f(0, 0, 0), new Vector3f(0, 1, 0), GREEN));
+        addDebugObjectForFrame(line(new Vector3f(0, 0, 0), new Vector3f(0, 0, 1), BLUE));
     }
 
     @Override

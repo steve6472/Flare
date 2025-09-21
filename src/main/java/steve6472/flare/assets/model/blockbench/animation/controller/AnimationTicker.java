@@ -14,6 +14,7 @@ import steve6472.flare.assets.model.blockbench.animation.ik.Ik;
 import steve6472.flare.assets.model.blockbench.animation.keyframe.*;
 import steve6472.flare.assets.model.blockbench.outliner.OutlinerElement;
 import steve6472.flare.assets.model.blockbench.outliner.OutlinerUUID;
+import steve6472.flare.assets.model.primitive.PrimitiveSkinModel;
 import steve6472.orlang.OrlangEnvironment;
 
 import static steve6472.flare.render.debug.DebugRender.*;
@@ -49,7 +50,7 @@ public class AnimationTicker
         this.timer = new AnimationTimer();
         this.timeline = new Timeline(animation);
         this.model = controller.model;
-        ik = new Ik(model, this);
+        ik = new Ik(model, this, controller);
     }
 
     public void tick(OrlangEnvironment env, Controller controller)

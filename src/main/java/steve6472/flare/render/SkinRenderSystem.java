@@ -15,6 +15,7 @@ import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.render.common.CommonBuilder;
 import steve6472.flare.render.common.CommonRenderSystem;
 import steve6472.flare.render.common.FlightFrame;
+import steve6472.flare.render.debug.DebugRender;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.Push;
 import steve6472.flare.struct.def.SBO;
@@ -41,7 +42,7 @@ public class SkinRenderSystem extends CommonRenderSystem
     OrlangEnvironment environment;
 
 //    static final Key MODEL_KEY = Key.withNamespace("test", "blockbench/animated/debug_model_rotations");
-    static final Key MODEL_KEY = Key.withNamespace("test", "blockbench/animated/rift_reactor");
+    static final Key MODEL_KEY = Key.withNamespace("test", "blockbench/animated/long_chain");
     static final AST.Node.Identifier FLAG_ID = new AST.Node.Identifier(VarContext.VARIABLE, "flag");
     public boolean flag = false;
 
@@ -55,7 +56,7 @@ public class SkinRenderSystem extends CommonRenderSystem
         environment = new OrlangEnvironment();
         environment.queryFunctionSet = new AnimQuery();
 
-        animationController = FlareRegistries.ANIMATION_CONTROLLER.get(Key.withNamespace("test", "rift_reactor")).createForModel(loadedModel);
+        animationController = FlareRegistries.ANIMATION_CONTROLLER.get(Key.withNamespace("test", "long_chain")).createForModel(loadedModel);
         environment.setValue(new AST.Node.Identifier(VarContext.VARIABLE, "flag"), OrlangValue.bool(false));
 
         model3d = FlareRegistries.ANIMATED_MODEL.get(MODEL_KEY);
@@ -64,23 +65,24 @@ public class SkinRenderSystem extends CommonRenderSystem
     @Override
     protected void render(FlightFrame flightFrame, FrameInfo frameInfo, MemoryStack stack)
     {
-        System.out.println("---------");
+//        System.out.println("---------");
         if (TestKeybinds.F.isActive())
         {
             flag = !flag;
             environment.setValue(FLAG_ID, OrlangValue.bool(flag));
-            animationController.controllers().get("button_1").forceTransition("pressed");
+//            animationController.controllers().get("button_1").forceTransition("pressed");
         }
-        if (TestKeybinds.G.isActive())
-        {
-            animationController.controllers().get("button_2").forceTransition("pressed");
-        }
+//        if (TestKeybinds.G.isActive())
+//        {
+//            animationController.controllers().get("button_2").forceTransition("pressed");
+//        }
 
         // Update
 
         Matrix4f modelTransform = new Matrix4f();
         modelTransform.translate(0, 0, 0);
         animationController.tick(modelTransform, environment);
+        DebugRender.addDebugObjectForFrame(DebugRender.lineSphere(0.05f, 8, DebugRender.BEIGE), new Matrix4f().translate(animationController.getLocator("locator").position()));
         Matrix4f[] array = animationController.getTransformations();
         var sbo = SBO.BONES.create((Object) array);
 

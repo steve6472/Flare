@@ -1,0 +1,12 @@
+{
+    controllers: {
+        main: {
+            initial_state: "idle",
+            states: {
+                idle: {
+                    animations: ["looping_chain"]
+                }
+            }
+        }
+    }
+}
