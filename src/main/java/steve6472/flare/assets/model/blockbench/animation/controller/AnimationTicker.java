@@ -188,22 +188,31 @@ public class AnimationTicker
     {
         switch (channel)
         {
-            case ParticleKeyframe particle when controller.callbacks.onParticle != null ->
+            case ParticleKeyframe particle ->
             {
+                if (controller.callbacks.onParticle == null)
+                    return;
+
                 for (ParticleDataPoint dataPoint : particle.dataPoints())
                 {
                     controller.callbacks.onParticle.accept(dataPoint);
                 }
             }
-            case SoundKeyframe sound when controller.callbacks.onParticle != null ->
+            case SoundKeyframe sound ->
             {
+                if (controller.callbacks.onSound == null)
+                    return;
+
                 for (SoundDataPoint dataPoint : sound.dataPoints())
                 {
                     controller.callbacks.onSound.accept(dataPoint);
                 }
             }
-            case TimelineKeyframe script when controller.callbacks.onParticle != null ->
+            case TimelineKeyframe script ->
             {
+                if (controller.callbacks.onScript == null)
+                    return;
+
                 for (TimelineDataPoint dataPoint : script.dataPoints())
                 {
                     controller.callbacks.onScript.accept(dataPoint);

@@ -1,0 +1,42 @@
+{
+    controllers: {
+        main: {
+            initial_state: "idle",
+            states: {
+                idle: {
+                    animations: ["idle_catalyst"]
+                }
+            }
+        },
+        button_1: {
+            initial_state: "unpressed",
+            states: {
+                unpressed: {},
+                pressed: {
+                    animations: ["press_button_1"],
+                    transitions: [
+                        {
+                            state: "unpressed",
+                            condition: "q.all_animations_finished"
+                        }
+                    ]
+                }
+            }
+        },
+        button_2: {
+            initial_state: "unpressed",
+            states: {
+                unpressed: {},
+                pressed: {
+                    animations: ["press_button_2"],
+                    transitions: [
+                        {
+                            state: "unpressed",
+                            condition: "q.all_animations_finished"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
