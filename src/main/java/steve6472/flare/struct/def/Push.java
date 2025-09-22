@@ -14,6 +14,7 @@ public interface Push
 {
     StructPush SKIN = builder()
         .addMember(INT) // stride
+        .addMember(INT) // offset
         .build(StructPush::new);
 
     StructPush STATIC_TRANSFORM_OFFSET = builder()

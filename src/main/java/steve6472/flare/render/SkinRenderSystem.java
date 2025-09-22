@@ -82,6 +82,7 @@ public class SkinRenderSystem extends CommonRenderSystem
         Matrix4f modelTransform = new Matrix4f();
         modelTransform.translate(0, 0, 0);
         animationController.tick(modelTransform, environment);
+
         DebugRender.addDebugObjectForFrame(DebugRender.lineSphere(0.05f, 8, DebugRender.BEIGE), new Matrix4f().translate(animationController.getLocator("locator").position()));
         Matrix4f[] array = animationController.getTransformations();
         var sbo = SBO.BONES.create((Object) array);
@@ -89,7 +90,7 @@ public class SkinRenderSystem extends CommonRenderSystem
         flightFrame.getBuffer(0).writeToBuffer(SBO.BONES::memcpy, List.of(sbo), array.length * 64L, 0);
         flightFrame.getBuffer(0).flush(array.length * 64L, 0);
 
-        Struct struct = Push.SKIN.create(array.length);
+        Struct struct = Push.SKIN.create(array.length, 0);
         Push.SKIN.push(struct, frameInfo.commandBuffer(), pipeline().pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0);
 
         model3d.bind(frameInfo.commandBuffer());

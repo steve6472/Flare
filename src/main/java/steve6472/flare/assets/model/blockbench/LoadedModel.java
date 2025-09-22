@@ -162,7 +162,7 @@ public record LoadedModel(ModelMeta meta, Key key, Resolution resolution, List<E
             model.transformationIndicies.addAll(bones1);
 
             if (element instanceof LocatorElement locatorElement)
-                model.locatorNames.add(new PrimitiveSkinModel.LocatorData(boneIndex - 1, element.uuid(), element.name(), locatorElement.position()));
+                model.locatorNames.add(new PrimitiveSkinModel.LocatorData(boneIndex, element.uuid(), element.name(), locatorElement.position()));
         }
     }
 
