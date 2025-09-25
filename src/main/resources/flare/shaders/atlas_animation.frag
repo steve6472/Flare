@@ -11,16 +11,16 @@ layout(set = 0, binding = 1) uniform sampler2D texSampler;
 struct AnimationData
 {
     // Dimensions in UV coordinates of atlas
-    vec4 dimensions;
+    vec4 dimensions; // 4 * 4
 
     // Size of single sprite
-    vec2 singleSize;
-    int indexFrom;
-    int indexTo;
+    vec2 singleSize; // 4 * 2
+    int indexFrom;   // 4
+    int indexTo;     // 4
 
-    float transition;
-    int flags;
-    vec2 pixelScale;
+    float transition;// 4
+    int flags;       // 4
+    vec2 pixelScale; // 4 * 2
 };
 
 layout(std140, set = 0, binding = 2) readonly buffer AnimDataPlural
@@ -28,7 +28,7 @@ layout(std140, set = 0, binding = 2) readonly buffer AnimDataPlural
     AnimationData array[];
 } animationData;
 
-bool isInterpolation(int flags) { return (flags & 0x1) == 1; }
+bool isInterpolation(int flags) { return (flags & 0x01) == 1; }
 bool isOkLab(int flags)  { return ((flags >> 1) & 0x01) == 1; }
 
 float map(float value, float inMin, float inMax, float outMin, float outMax)

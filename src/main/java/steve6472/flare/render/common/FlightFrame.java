@@ -9,7 +9,7 @@ import steve6472.flare.VkBuffer;
  */
 public class FlightFrame
 {
-    VkBuffer cameraUbo;
+    public VkBuffer cameraUbo;
     Object[] userObjects;
     long descriptorSet;
 

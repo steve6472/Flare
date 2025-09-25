@@ -9,6 +9,7 @@ import steve6472.core.registry.Key;
 import steve6472.core.registry.Keyable;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
 import steve6472.flare.assets.model.blockbench.SkinData;
+import steve6472.flare.assets.model.blockbench.element.LocatorElement;
 import steve6472.flare.assets.model.primitive.PrimitiveSkinModel;
 import steve6472.orlang.OrlangEnvironment;
 
@@ -119,6 +120,9 @@ public final class AnimationController implements Keyable
         result.callbacks = new AnimationCallbacks();
         result.nullObjects = new HashMap<>();
         result.locators = new HashMap<>();
+
+        model.getElementsWithType(LocatorElement.class).forEach(l -> result.locators.put(l.name(), new LocatorInfo(l.position(), new Vector3f())));
+
         return result;
     }
 
