@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import steve6472.core.util.ExtraCodecs;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -21,4 +22,19 @@ public record Animation(UUID uuid, String name, Loop loop, double length, Map<St
         Codec.DOUBLE.fieldOf("length").forGetter(o -> o.length),
         ExtraCodecs.mapListCodec(Codec.STRING, Animator.CODEC).optionalFieldOf("animators", Map.of()).forGetter(o -> o.animators)
     ).apply(instance, Animation::new));
+
+    public Animation
+    {
+        Map<String, Animator> filteredAnimators = new HashMap<>(animators.size());
+
+        animators.forEach((k, v) -> {
+            if (v.keyframes().isEmpty())
+            {
+                return;
+            }
+            filteredAnimators.put(k, v);
+        });
+
+        animators = Map.copyOf(filteredAnimators);
+    }
 }

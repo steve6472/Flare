@@ -17,6 +17,6 @@ public record Animator(AnimatorType type, boolean rotationGlobal, List<KeyFrame>
     public static final Codec<Animator> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         AnimatorType.CODEC.fieldOf("type").forGetter(o -> o.type),
         Codec.BOOL.optionalFieldOf("rotation_global", true).forGetter(o -> o.rotationGlobal),
-        KeyframeChannel.CODEC.listOf().fieldOf("keyframes").forGetter(o -> o.keyframes)
+        KeyframeChannel.CODEC.listOf().optionalFieldOf("keyframes", List.of()).forGetter(o -> o.keyframes)
     ).apply(instance, Animator::new));
 }

@@ -1,7 +1,6 @@
 package steve6472.flare.render.common;
 
 import org.lwjgl.system.MemoryStack;
-import steve6472.core.log.Log;
 import steve6472.flare.Camera;
 import steve6472.flare.MasterRenderer;
 import steve6472.flare.VkBuffer;
@@ -17,7 +16,6 @@ import steve6472.flare.struct.def.UBO;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import static org.lwjgl.vulkan.VK10.*;
 import static steve6472.flare.SwapChain.MAX_FRAMES_IN_FLIGHT;
@@ -119,6 +117,9 @@ public abstract class CommonRenderSystem extends RenderSystem
     @Override
     public void render(FrameInfo frameInfo, MemoryStack stack)
     {
+        if (!shouldRender())
+            return;
+
         FlightFrame flightFrame = frames.get(frameInfo.frameIndex());
 
         int singleInstanceSize = UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT;
@@ -135,12 +136,16 @@ public abstract class CommonRenderSystem extends RenderSystem
             stack.longs(flightFrame.descriptorSet),
             stack.ints(singleInstanceSize * frameInfo.camera().cameraIndex));
 
-
         render(flightFrame, frameInfo, stack);
     }
 
     protected abstract void render(FlightFrame flightFrame, FrameInfo frameInfo, MemoryStack stack);
     protected abstract void updateData(FlightFrame flightFrame, FrameInfo frameInfo);
+
+    protected boolean shouldRender()
+    {
+        return true;
+    }
 
     protected void setupCameraUbo(FlightFrame flightFrame, Camera camera)
     {
