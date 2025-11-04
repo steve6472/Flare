@@ -10,9 +10,9 @@ import java.util.Arrays;
  */
 public class Struct
 {
-    final Object[] members;
+    public final Object[] members;
 
-    Struct(int memberCount)
+    public Struct(int memberCount)
     {
         members = new Object[memberCount];
     }

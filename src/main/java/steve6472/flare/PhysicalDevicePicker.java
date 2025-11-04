@@ -62,6 +62,7 @@ public class PhysicalDevicePicker
 //                    LOGGER.warning("alignment: " + limits.minUniformBufferOffsetAlignment()); // returns 64 on my device :)
 //                    LOGGER.warning("nonCoherentAtomSize: " + limits.nonCoherentAtomSize()); // Returns 256 on my device
                     LOGGER.finer("Selected GPU: " + deviceProperties.deviceNameString());
+                    LOGGER.finer("Min storage buffer offset alignment: " + limits.minStorageBufferOffsetAlignment());
                     return device;
                 }
             }

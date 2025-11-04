@@ -33,7 +33,7 @@ public class StructDef
         Struct vertex = new Struct(this.members.size());
         for (int i = 0; i < vertex.members.length; i++)
         {
-            vertex.members[i] = members.get(i).memberData().constructor();
+            vertex.members[i] = members.get(i).memberData().constructor().get();
         }
 
         return vertex;
