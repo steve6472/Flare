@@ -46,6 +46,9 @@ public abstract class FlareApp
     protected abstract void createRenderSystems();
     public abstract void postInit();
 
+    public void beginFrame() {}
+    public void endFrame() {}
+
     public abstract void render(FrameInfo frameInfo, MemoryStack stack);
 
     public abstract void saveSettings();

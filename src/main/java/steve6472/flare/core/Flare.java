@@ -207,6 +207,8 @@ public class Flare
                 continue;
             }
 
+            app.beginFrame();
+
             VkCommandBuffer commandBuffer;
             try (MemoryStack stack = MemoryStack.stackPush())
             {
@@ -255,6 +257,7 @@ public class Flare
             }
 
             renderer.postFrame();
+            app.endFrame();
         }
 
         // Wait for the device to complete all operations before release resources

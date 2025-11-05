@@ -21,7 +21,7 @@ import static org.lwjgl.vulkan.VK10.*;
  * Date: 8/31/2024
  * Project: Flare <br>
  */
-public final class StaticModelRenderSystem extends CommonRenderSystem
+public class StaticModelRenderSystem extends CommonRenderSystem
 {
     private final SBOTransfromArray<Model> transfromArray = new SBOTransfromArray<>(ErrorModel.VK_STATIC_INSTANCE);
     private final StaticModelRenderImpl renderImpl;
