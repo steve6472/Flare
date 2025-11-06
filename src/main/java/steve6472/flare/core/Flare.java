@@ -1,5 +1,6 @@
 package steve6472.flare.core;
 
+import io.github.benjaminamos.tracy.Tracy;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
@@ -19,6 +20,8 @@ import steve6472.flare.registry.RegistryCreators;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.settings.ValidationLevel;
 import steve6472.flare.settings.VisualSettings;
+import steve6472.flare.tracy.FlareProfiler;
+import steve6472.flare.tracy.Profiler;
 import steve6472.flare.ui.font.FontEntry;
 import steve6472.flare.ui.font.UnknownCharacter;
 import steve6472.flare.ui.font.style.FontStyleEntry;
@@ -90,15 +93,41 @@ public class Flare
     {
         createGeneratedFolders();
         exportBuiltinResources();
+
+        // Tracy
+        if (FlareConstants.SystemProperties.booleanProperty(FlareConstants.SystemProperties.ENABLE_TRACY))
+        {
+            System.setProperty("org.terasology.librarypath", FlareConstants.TRACY_NATIVE.getParentFile().getAbsolutePath());
+            Tracy.startupProfiler();
+        }
+
+        Profiler profiler = FlareProfiler.startup();
+        profiler.start();
+
+        profiler.push("createWindow");
         window = new Window(app.windowTitle());
         app.userInput = new UserInput(window);
+        profiler.popPush("preInit");
         app.preInit();
+        profiler.popPush("setupCamera");
         app.camera = app.setupCamera();
+        profiler.popPush("initContent");
         initContent(); // initRegistries & loadSettings
+        profiler.popPush("initVulkan");
         initVulkan(); // createRenderSystems
+        profiler.popPush("postInit");
         app.postInit();
+        profiler.pop();
+        profiler.end();
+        FlareProfiler.endFrame();
+
         mainLoop();
+
+        profiler = FlareProfiler.cleanup();
+        profiler.start();
         cleanup();
+        profiler.end();
+        FlareProfiler.shutdown();
     }
 
     private void createGeneratedFolders()
@@ -116,6 +145,7 @@ public class Flare
             JarExport.exportFolder("flare/export/msdf", FlareConstants.GENERATED_FLARE);
 
             JarExport.exportFolder("flare/module", FlareConstants.FLARE_MODULE);
+            JarExport.exportFile("windows/tracy-jni-amd64.dll", FlareConstants.TRACY_NATIVE);
         } catch (IOException | URISyntaxException exception)
         {
             LOGGER.severe("Failed to export Flare Module! Stopping application.");
@@ -190,11 +220,15 @@ public class Flare
 
     private void mainLoop()
     {
+        Profiler profiler = FlareProfiler.frame();
+
         long currentTime = System.nanoTime();
         long secondCounter = currentTime;
         float lastFps = 0;
         while (!window.shouldWindowClose())
         {
+            profiler.start();
+            profiler.push("glfwPollEvents");
             glfwPollEvents();
 
             long newTime = System.nanoTime();
@@ -204,17 +238,21 @@ public class Flare
             int iconified = org.lwjgl.glfw.GLFW.glfwGetWindowAttrib(app.window().window(), GLFW_ICONIFIED);
             if (iconified == GLFW.GLFW_TRUE)
             {
+                profiler.pop();
+                profiler.end();
+                FlareProfiler.endFrame();
                 continue;
             }
-
-            app.beginFrame();
+            profiler.popPush("stackPush");
 
             VkCommandBuffer commandBuffer;
             try (MemoryStack stack = MemoryStack.stackPush())
             {
+                profiler.push("newFrame");
                 IntBuffer pImageIndex = stack.mallocInt(1);
                 if ((commandBuffer = renderer.beginFrame(stack, pImageIndex)) != null)
                 {
+                    profiler.push("createFrameInfo");
                     FrameInfo frameInfo = new FrameInfo();
                     frameInfo.frameTime = frameTime;
                     frameInfo.camera = app.camera;
@@ -222,24 +260,32 @@ public class Flare
                     frameInfo.commandBuffer = commandBuffer;
                     frameInfo.camera.cameraIndex = 0;
 
+                    profiler.popPush("centerPoint");
                     if (VisualSettings.RENDER_CENTER_POINT.get())
                         addDebugObjectForFrame(cross(new Vector3f(0, 0, 0), 0.5f, DARK_GRAY));
 
                     // Render
 //                    renderer.totalRenderCount = 0;
 
+                    profiler.popPush("renderApp");
                     app.render(frameInfo, stack);
 
+                    profiler.popPush("updateAtlasAnimations");
                     // Update atlases with animations
                     renderer.updateAtlasAnimations(frameInfo, stack);
 
+                    profiler.popPush("beingSwapChainPass");
                     renderer.beginSwapChainRenderPass(commandBuffer, stack);
+                    profiler.popPush("appRender");
                     renderer.render(frameInfo, stack);
+                    profiler.popPush("endRenderPass");
                     renderer.endRenderPass(commandBuffer);
 
+                    profiler.popPush("vrFrame");
                     vrData.frame(device, instance, renderer, frameInfo);
 //                    renderer.maxRenderCount = renderer.totalRenderCount;
 
+                    profiler.popPush("endFrame");
                     renderer.endFrame(stack, pImageIndex);
 
                     if (System.nanoTime() - secondCounter > 1e9)
@@ -248,16 +294,24 @@ public class Flare
                         secondCounter = System.nanoTime();
                     }
 
+                    profiler.popPush("titleFps");
                     if (VisualSettings.TITLE_FPS.get())
                         window.setWindowTitle("FPS: %.4f,  Frame time: %.4fms %n".formatted(lastFps, frameTime * 1e3f));
 
+                    profiler.popPush("updateVr");
                     vrData.updateHDMMatrixPose();
                     vrData.updateEyes(frameInfo.camera);
+
+                    profiler.pop();
                 }
+                profiler.pop();
             }
 
+            profiler.popPush("postFrame");
             renderer.postFrame();
-            app.endFrame();
+            profiler.pop();
+            profiler.end();
+            FlareProfiler.endFrame();
         }
 
         // Wait for the device to complete all operations before release resources

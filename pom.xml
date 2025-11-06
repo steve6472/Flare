@@ -93,6 +93,12 @@
             <version>${joml.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>io.github.benjaminamos</groupId>
+            <artifactId>TracyJavaBindings</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
         <!-- LWJGL (Vulkan) -->
         <dependency>
             <groupId>org.lwjgl</groupId>

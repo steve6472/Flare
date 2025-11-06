@@ -42,6 +42,18 @@ public class FlareConstants
     /// Atlas Blockbench key reference
     public static final Key ATLAS_BLOCKBENCH = key("model");
 
+    // TODO: refine system properties
+    public interface SystemProperties
+    {
+        String ENABLE_TRACY = "flare.enableTracy";
+
+        static boolean booleanProperty(String property)
+        {
+            String val = System.getProperty(property);
+            return val != null && (val.isEmpty() || Boolean.parseBoolean(val));
+        }
+    }
+
     /*
      * File paths
      */
@@ -64,8 +76,10 @@ public class FlareConstants
     /// Folder for generated debug atlases
     public static final File FLARE_DEBUG_ATLAS = new File(FLARE_DEBUG_FOLDER, "atlas");
 
-    /// Folder for generated debug files
+    /// Exported executable for MSDF
     public static final File MSDF_EXE = new File(GENERATED_FLARE, "msdf_atlas_gen.exe");
+    /// Exported natives for Tracy
+    public static final File TRACY_NATIVE = new File(GENERATED_FLARE, "tracy-jni-amd64.dll");
 
     public static final File FLARE_MODULE = new File(SteveCore.MODULES, NAMESPACE);
 

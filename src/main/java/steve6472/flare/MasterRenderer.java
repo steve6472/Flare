@@ -11,6 +11,8 @@ import steve6472.flare.pipeline.Pipelines;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.render.*;
 import steve6472.flare.struct.def.UBO;
+import steve6472.flare.tracy.FlareProfiler;
+import steve6472.flare.tracy.Profiler;
 import steve6472.flare.ui.font.render.TextRender;
 import steve6472.flare.vr.VrData;
 
@@ -125,15 +127,20 @@ public class MasterRenderer
     {
         if (isFrameStarted)
             throw new RuntimeException("Can't call beginFrame while already in progress");
+        Profiler profiler = FlareProfiler.frame();
+        profiler.push("beginFrame");
 
         thisFrame = swapChain.inFlightFrames.get(swapChain.currentFrame);
 
+        profiler.push("acquireNextImage");
         int vkResult = swapChain.acquireNextImage(device, pImageIndex, thisFrame);
         currentImageIndex = pImageIndex.get(0);
 
         if (vkResult == VK_ERROR_OUT_OF_DATE_KHR)
         {
+            profiler.popPush("recreateSwapChain");
             swapChain.recreateSwapChain();
+            profiler.pop();
             return null;
         } else if (vkResult != VK_SUCCESS)
         {
@@ -142,6 +149,7 @@ public class MasterRenderer
 
         isFrameStarted = true;
 
+        profiler.popPush("waitForFence");
         if (swapChain.imagesInFlight.containsKey(currentImageIndex))
             vkWaitForFences(device, swapChain.imagesInFlight.get(currentImageIndex).fence(), true, VulkanUtil.UINT64_MAX);
 
@@ -152,11 +160,14 @@ public class MasterRenderer
         VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.calloc(stack);
         beginInfo.sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO);
 
+        profiler.popPush("beginCommandBuffer");
         if (vkBeginCommandBuffer(commandBuffer, beginInfo) != VK_SUCCESS)
         {
             throw new RuntimeException(ErrorCode.BEGIN_COMMAND_RECORDING.format());
         }
 
+        profiler.pop();
+        profiler.pop();
         return commandBuffer;
     }
 

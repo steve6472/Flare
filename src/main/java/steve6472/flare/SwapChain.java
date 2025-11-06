@@ -7,6 +7,8 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 import steve6472.flare.settings.VisualSettings;
+import steve6472.flare.tracy.FlareProfiler;
+import steve6472.flare.tracy.Profiler;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
@@ -476,9 +478,14 @@ public class SwapChain
 
     public int acquireNextImage(VkDevice device, IntBuffer pImageIndex, SyncFrame thisFrame)
     {
+        Profiler profiler = FlareProfiler.frame();
+        profiler.push("waitForFences");
         vkWaitForFences(device, thisFrame.pFence(), true, VulkanUtil.UINT64_MAX);
 
-        return vkAcquireNextImageKHR(device, swapChain, VulkanUtil.UINT64_MAX, thisFrame.imageAvailableSemaphore(), VK_NULL_HANDLE, pImageIndex);
+        profiler.popPush("acquireImageKHR");
+        int i = vkAcquireNextImageKHR(device, swapChain, VulkanUtil.UINT64_MAX, thisFrame.imageAvailableSemaphore(), VK_NULL_HANDLE, pImageIndex);
+        profiler.pop();
+        return i;
     }
 
     public int submitCommandBuffers(VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, VkCommandBuffer commandBuffer, IntBuffer pImageIndex, MemoryStack stack, SyncFrame thisFrame)

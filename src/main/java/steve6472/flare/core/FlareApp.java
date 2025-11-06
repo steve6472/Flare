@@ -2,18 +2,13 @@ package steve6472.flare.core;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
-import steve6472.core.registry.Key;
 import steve6472.core.registry.ObjectRegistry;
 import steve6472.core.registry.Registry;
 import steve6472.flare.Camera;
 import steve6472.flare.MasterRenderer;
-import steve6472.flare.assets.atlas.Atlas;
-import steve6472.flare.assets.atlas.SpriteAtlas;
 import steve6472.flare.input.UserInput;
 import steve6472.flare.Window;
 import steve6472.flare.pipeline.builder.PipelineConstructor;
-import steve6472.flare.registry.FlareRegistries;
-import steve6472.flare.render.AnimateTextureSystem;
 import steve6472.flare.render.RenderSystem;
 import steve6472.flare.ui.font.render.TextRender;
 import steve6472.flare.vr.VrData;
@@ -45,9 +40,6 @@ public abstract class FlareApp
 
     protected abstract void createRenderSystems();
     public abstract void postInit();
-
-    public void beginFrame() {}
-    public void endFrame() {}
 
     public abstract void render(FrameInfo frameInfo, MemoryStack stack);
 
