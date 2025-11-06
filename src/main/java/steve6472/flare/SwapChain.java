@@ -60,18 +60,30 @@ public class SwapChain
 
     public void createSwapChainObjects()
     {
+        Profiler profiler = FlareProfiler.frame();
+        profiler.push("createSwapChain");
         createSwapChain(surface, device, window.window());
+        profiler.popPush("createImageViews");
         createImageViews(device);
+        profiler.popPush("createRenderPass");
         createRenderPass(device);
+        profiler.popPush("rebuildPipelines");
         masterRenderer.rebuildPipelines();
+        profiler.popPush("createDepthResources");
         createDepthResources(device, masterRenderer.getCommands().commandPool, masterRenderer.getGraphicsQueue());
+        profiler.popPush("createFrameBuffers");
         createFrameBuffers(device);
+        profiler.popPush("createCommandBuffers");
         masterRenderer.getCommands().createCommandBuffers(device);
+        profiler.popPush("createSyncObjects");
         createSyncObjects(device);
+        profiler.pop();
     }
 
     public void recreateSwapChain()
     {
+        Profiler profiler = FlareProfiler.frame();
+        profiler.push("glfwWait");
         try (MemoryStack stack = MemoryStack.stackPush())
         {
             IntBuffer width = stack.ints(0);
@@ -83,10 +95,14 @@ public class SwapChain
                 glfwWaitEvents();
             }
         }
+        profiler.popPush("waitIdle");
         vkDeviceWaitIdle(device);
 
+        profiler.popPush("cleanupOldSwapchain");
         cleanupSwapChain();
+        profiler.popPush("createSpawChainObjects");
         createSwapChainObjects();
+        profiler.pop();
     }
 
     public void cleanupSwapChain()

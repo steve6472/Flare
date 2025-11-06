@@ -276,7 +276,7 @@ public class Flare
 
                     profiler.popPush("beingSwapChainPass");
                     renderer.beginSwapChainRenderPass(commandBuffer, stack);
-                    profiler.popPush("appRender");
+                    profiler.popPush("renderSystems");
                     renderer.render(frameInfo, stack);
                     profiler.popPush("endRenderPass");
                     renderer.endRenderPass(commandBuffer);
@@ -294,9 +294,11 @@ public class Flare
                         secondCounter = System.nanoTime();
                     }
 
-                    profiler.popPush("titleFps");
                     if (VisualSettings.TITLE_FPS.get())
+                    {
+                        profiler.popPush("titleFps");
                         window.setWindowTitle("FPS: %.4f,  Frame time: %.4fms %n".formatted(lastFps, frameTime * 1e3f));
+                    }
 
                     profiler.popPush("updateVr");
                     vrData.updateHDMMatrixPose();

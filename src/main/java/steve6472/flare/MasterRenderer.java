@@ -176,6 +176,8 @@ public class MasterRenderer
         if (!isFrameStarted)
             throw new RuntimeException("Can't call endFrame while frame is not in progress");
 
+        Profiler profiler = FlareProfiler.frame();
+
         VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
 
         if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
@@ -187,8 +189,10 @@ public class MasterRenderer
 
         if (vkResult == VK_ERROR_OUT_OF_DATE_KHR || vkResult == VK_SUBOPTIMAL_KHR || window.isFramebufferResize())
         {
+            profiler.push("recreateSwapChain");
             window.resetFramebufferResizeFlag();
             swapChain.recreateSwapChain();
+            profiler.pop();
         } else if (vkResult != VK_SUCCESS)
         {
             throw new RuntimeException("Failed to present swap chain image");
@@ -225,10 +229,13 @@ public class MasterRenderer
     {
         if (frameInfo.camera().cameraIndex >= UBO.GLOBAL_CAMERA_MAX_COUNT)
             throw new RuntimeException("Too many scene renders within one frame!");
+        Profiler profiler = FlareProfiler.frame();
 
         for (RenderSystem renderSystem : renderSystems)
         {
+            profiler.push(renderSystem.getClass().getSimpleName());
             renderSystem.render(frameInfo, stack);
+            profiler.pop();
         }
 
 //        if (VisualSettings.DEBUG_LINE_SINGLE_BUFFER.get())
