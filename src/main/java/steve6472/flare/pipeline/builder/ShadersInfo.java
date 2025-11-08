@@ -3,6 +3,7 @@ package steve6472.flare.pipeline.builder;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkPipelineShaderStageCreateInfo;
+import steve6472.flare.pipeline.shader.Shader;
 
 import java.util.ArrayList;
 import java.util.List;

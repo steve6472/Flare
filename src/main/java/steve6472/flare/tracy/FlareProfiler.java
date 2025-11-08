@@ -13,7 +13,8 @@ import java.util.Map;
  */
 public class FlareProfiler
 {
-    private static final boolean ENABLE_TRACY = FlareConstants.SystemProperties.booleanProperty(FlareConstants.SystemProperties.ENABLE_TRACY);
+    // TODO: message
+    public static final boolean ENABLE_TRACY = FlareConstants.SystemProperties.booleanProperty(FlareConstants.SystemProperties.ENABLE_TRACY);
 
     private final static Map<String, Profiler> PROFILERS = new HashMap<>();
 

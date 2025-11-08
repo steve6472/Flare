@@ -9,8 +9,13 @@ import org.lwjgl.vulkan.VkPipelineLayoutCreateInfo;
 import steve6472.flare.ErrorCode;
 import steve6472.flare.ShaderSPIRVUtils;
 import steve6472.flare.pipeline.Pipeline;
+import steve6472.flare.pipeline.shader.Shader;
+import steve6472.flare.pipeline.shader.ShaderCache;
+import steve6472.flare.pipeline.shader.ShaderId;
 import steve6472.flare.struct.type.StructPush;
 import steve6472.flare.struct.type.StructVertex;
+import steve6472.flare.tracy.FlareProfiler;
+import steve6472.flare.tracy.Profiler;
 
 import java.nio.LongBuffer;
 
@@ -102,19 +107,31 @@ public final class PipelineBuilder
         if (device == null)
             return new Pipeline(0, 0, vertexInputInfo);
 
+        Profiler profiler = FlareProfiler.frame();
+        profiler.push("buildPipeline");
+
         try (MemoryStack stack = MemoryStack.stackPush())
         {
+            profiler.push("createPipelineLayout");
             long pipelineLayout = createPipelineLayout(device, stack, setLayouts);
 
             VkGraphicsPipelineCreateInfo.Buffer pipelineInfo = VkGraphicsPipelineCreateInfo.calloc(1, stack);
             pipelineInfo.sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO);
+            profiler.popPush("createShaders");
             pipelineInfo.pStages(shadersInfo.createInfo(device, stack));
+            profiler.popPush("vertexInputState");
             pipelineInfo.pVertexInputState(vertexInputInfo.createVertexInputInfo(stack));
+            profiler.popPush("inputAssemblyState");
             pipelineInfo.pInputAssemblyState(inputAssembly.createInfo(stack));
+            profiler.popPush("viewportState");
             pipelineInfo.pViewportState(viewportInfo.createInfo(stack));
+            profiler.popPush("rasterizationState");
             pipelineInfo.pRasterizationState(rasterizationInfo.createInfo(stack));
+            profiler.popPush("multisampleState");
             pipelineInfo.pMultisampleState(multisampleInfo.createInfo(stack));
+            profiler.popPush("depthStencilState");
             pipelineInfo.pDepthStencilState(depthStencilInfo.createInfo(stack));
+            profiler.popPush("colorBlendState");
             pipelineInfo.pColorBlendState(colorBlendInfo.createInfo(stack));
             pipelineInfo.layout(pipelineLayout);
             pipelineInfo.renderPass(renderPass);
@@ -129,9 +146,13 @@ public final class PipelineBuilder
                 throw new RuntimeException(ErrorCode.GRAPHICS_PIPELINE_CREATION.format());
             }
 
-            shadersInfo.cleanup(device);
+            profiler.popPush("cleanupShadersInfo");
 
             return new Pipeline(pGraphicsPipeline.get(0), pipelineLayout, vertexInputInfo);
+        } finally
+        {
+            profiler.pop();
+            profiler.pop();
         }
     }
 
@@ -240,22 +261,17 @@ public final class PipelineBuilder
     {
         public ShadersBuilder addShader(ShaderSPIRVUtils.ShaderKind kind, String shaderFile, int stage)
         {
-            Shader shader = new Shader();
-            shader.kind = kind;
-            shader.shaderFile = shaderFile;
-            shader.stage = stage;
+            ShaderId shaderId = new ShaderId(shaderFile, kind, stage);
+            Shader shader = ShaderCache.getShader(shaderId);
             shadersInfo.shaders.add(shader);
             return this;
         }
 
-        /**
-         * Default: "main"
-         * @param newEntryPoint new entry point
-         * @return builder
-         */
-        public ShadersBuilder changeEntryPoint(String newEntryPoint)
+        public ShadersBuilder addShader(ShaderSPIRVUtils.ShaderKind kind, String shaderFile, int stage, String entryPoint)
         {
-            shadersInfo.shaders.getLast().entryPoint = newEntryPoint;
+            ShaderId shaderId = new ShaderId(shaderFile, kind, stage, entryPoint);
+            Shader shader = ShaderCache.getShader(shaderId);
+            shadersInfo.shaders.add(shader);
             return this;
         }
     }

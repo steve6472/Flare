@@ -16,6 +16,7 @@ import steve6472.flare.*;
 import steve6472.flare.assets.atlas.Atlas;
 import steve6472.flare.assets.atlas.SpriteAtlas;
 import steve6472.flare.input.UserInput;
+import steve6472.flare.pipeline.shader.ShaderCache;
 import steve6472.flare.registry.RegistryCreators;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.settings.ValidationLevel;
@@ -332,6 +333,7 @@ public class Flare
         LOGGER.fine("Cleanup");
 
         renderer.cleanup();
+        ShaderCache.cleanup(device);
         vrData.cleanup();
         app.cleanup();
 

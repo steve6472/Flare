@@ -8,6 +8,7 @@ import steve6472.flare.assets.atlas.SpriteAtlas;
 import steve6472.flare.core.FrameInfo;
 import steve6472.flare.framebuffer.AnimatedAtlasFrameBuffer;
 import steve6472.flare.pipeline.Pipelines;
+import steve6472.flare.pipeline.shader.ShaderCache;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.render.*;
 import steve6472.flare.struct.def.UBO;
