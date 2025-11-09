@@ -39,6 +39,7 @@ public final class PipelineBuilder
     private final DepthStencilInfo depthStencilInfo = new DepthStencilInfo();
     private final ColorBlendInfo colorBlendInfo = new ColorBlendInfo();
     private final PushConstantRange pushConstantRange = new PushConstantRange();
+    private final DynamicStateInfo dynamicStateInfo = new DynamicStateInfo();
 
     private PipelineBuilder(@Nullable VkDevice device)
     {
@@ -60,6 +61,15 @@ public final class PipelineBuilder
     {
         this.inputAssembly.topology = topology;
         this.inputAssembly.primitiveRestartEnable = primitiveRestartEnable;
+        return this;
+    }
+
+    public PipelineBuilder dynamicStates(int... dynamicStates)
+    {
+        for (int dynamicState : dynamicStates)
+        {
+            dynamicStateInfo.states.add(dynamicState);
+        }
         return this;
     }
 
@@ -133,6 +143,8 @@ public final class PipelineBuilder
             pipelineInfo.pDepthStencilState(depthStencilInfo.createInfo(stack));
             profiler.popPush("colorBlendState");
             pipelineInfo.pColorBlendState(colorBlendInfo.createInfo(stack));
+            profiler.popPush("dynamicState");
+            pipelineInfo.pDynamicState(dynamicStateInfo.createInfo(stack));
             pipelineInfo.layout(pipelineLayout);
             pipelineInfo.renderPass(renderPass);
             pipelineInfo.subpass(0);

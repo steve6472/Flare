@@ -4,7 +4,6 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkPipelineShaderStageCreateInfo;
 import org.lwjgl.vulkan.VkShaderModuleCreateInfo;
-import steve6472.core.util.Preconditions;
 import steve6472.flare.ErrorCode;
 import steve6472.flare.ShaderSPIRVUtils;
 
@@ -34,7 +33,7 @@ public class Shader
     {
         if (spirv == null)
         {
-            spirv = ShaderSPIRVUtils.compileShaderFile(shaderId.file(), shaderId.kind());
+            spirv = ShaderCache.getOrCompileShader(shaderId.file(), shaderId.kind());
             shaderModule = createShaderModule(spirv.bytecode(), device);
         }
 

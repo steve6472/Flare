@@ -29,6 +29,7 @@ import steve6472.flare.ui.font.style.FontStyleEntry;
 import steve6472.flare.vr.VrData;
 import steve6472.flare.vr.VrUtil;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.IntBuffer;
@@ -137,6 +138,23 @@ public class Flare
         JarExport.createFolderOrError(FlareConstants.FLARE_DEBUG_FOLDER);
         JarExport.createFolderOrError(SteveCore.MODULES);
         JarExport.createFolderOrError(FlareConstants.FLARE_MODULE);
+        JarExport.createFolderOrError(FlareConstants.SHADER_CACHE);
+
+        if (FlareConstants.SystemProperties.booleanProperty(FlareConstants.SystemProperties.PURGE_SHADER_CACHE))
+        {
+            File[] files = FlareConstants.SHADER_CACHE.listFiles();
+            if (files != null)
+            {
+                for (File file : files)
+                {
+                    if (!file.delete())
+                    {
+                        throw new RuntimeException("Unable to purge shader at '%s' please delete the '%s' file manually."
+                            .formatted(file.getAbsolutePath(), FlareConstants.SHADER_CACHE.getAbsolutePath()));
+                    }
+                }
+            }
+        }
     }
 
     private void exportBuiltinResources()

@@ -78,11 +78,20 @@ public class ShaderSPIRVUtils
     public static final class SPIRV implements NativeResource
     {
         private final long handle;
+        private final boolean hasHandle;
         private ByteBuffer bytecode;
 
         public SPIRV(long handle, ByteBuffer bytecode)
         {
             this.handle = handle;
+            this.bytecode = bytecode;
+            this.hasHandle = true;
+        }
+
+        public SPIRV(ByteBuffer bytecode)
+        {
+            this.hasHandle = false;
+            this.handle = 0;
             this.bytecode = bytecode;
         }
 
@@ -94,7 +103,10 @@ public class ShaderSPIRVUtils
         @Override
         public void free()
         {
-            shaderc_result_release(handle);
+            if (hasHandle)
+            {
+                shaderc_result_release(handle);
+            }
             bytecode = null; // Help the GC
         }
     }

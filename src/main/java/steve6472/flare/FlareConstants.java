@@ -47,6 +47,9 @@ public class FlareConstants
     {
         String ENABLE_TRACY = "flare.enableTracy";
 
+        /// Purges shader cache at startup
+        String PURGE_SHADER_CACHE = "flare.purgeShaderCache";
+
         static boolean booleanProperty(String property)
         {
             String val = System.getProperty(property);
@@ -69,6 +72,9 @@ public class FlareConstants
 
     /// Root folder for generated resources
     public static final File GENERATED_FLARE = new File(GENERATED_FOLDER, NAMESPACE);
+
+    /// Shader cache
+    public static final File SHADER_CACHE = new File(GENERATED_FLARE, "shadercache");
 
     /// Folder for generated debug files
     public static final File FLARE_DEBUG_FOLDER = new File(GENERATED_FLARE, "debug");
