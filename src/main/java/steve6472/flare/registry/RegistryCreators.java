@@ -6,6 +6,8 @@ import steve6472.core.log.Log;
 import steve6472.core.registry.*;
 import steve6472.core.util.Preconditions;
 import steve6472.flare.Commands;
+import steve6472.flare.tracy.FlareProfiler;
+import steve6472.flare.tracy.Profiler;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -64,10 +66,13 @@ public class RegistryCreators extends RegistryRegister
 
     public static void createVkContents(VkDevice device, Commands commands, VkQueue graphicsQueue)
     {
+        Profiler profiler = FlareProfiler.frame();
         LOGGER.finest("Creating VK content");
         VK_LOADERS.forEach((key, loader) -> {
+            profiler.push(key.toString());
             LOGGER.finest("Bootstrapping VK '" + key + "'");
             loader.apply(device, commands, graphicsQueue);
+            profiler.pop();
         });
     }
 }

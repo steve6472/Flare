@@ -20,6 +20,8 @@ import steve6472.flare.registry.VkContent;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.assets.atlas.SpriteLoader;
 import steve6472.flare.settings.VisualSettings;
+import steve6472.flare.tracy.FlareProfiler;
+import steve6472.flare.tracy.Profiler;
 
 import java.awt.*;
 import java.io.File;
@@ -41,6 +43,8 @@ public final class SamplerLoader
 
     public static TextureSampler loadSamplers(VkDevice device, Commands commands, VkQueue graphicsQueue)
     {
+        Profiler profiler = FlareProfiler.frame();
+        profiler.push("iterateAtlases");
         File debugAtlasFolder = Debug.getFile("/atlas_data");
 
         for (Key key : FlareRegistries.ATLAS.keys())
@@ -58,11 +62,13 @@ public final class SamplerLoader
             }
         }
 
+        profiler.popPush("loadSamplers");
         SAMPLER_LOADERS.forEach(loader ->
         {
             TextureSampler sampler = loader.apply(device, commands, graphicsQueue);
             FlareRegistries.SAMPLER.register(sampler);
         });
+        profiler.pop();
 
         return null;
     }

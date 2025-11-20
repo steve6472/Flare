@@ -13,7 +13,6 @@ import java.util.Map;
  */
 public class FlareProfiler
 {
-    // TODO: message
     public static final boolean ENABLE_TRACY = FlareConstants.SystemProperties.booleanProperty(FlareConstants.SystemProperties.ENABLE_TRACY);
 
     private final static Map<String, Profiler> PROFILERS = new HashMap<>();
@@ -43,6 +42,11 @@ public class FlareProfiler
         return get("World");
     }
 
+    public static Profiler network()
+    {
+        return get("Network");
+    }
+
     public static Profiler get(String name)
     {
         return PROFILERS.computeIfAbsent(name, n -> {
@@ -63,5 +67,23 @@ public class FlareProfiler
     {
         if (ENABLE_TRACY)
             Tracy.shutdownProfiler();
+    }
+
+    public static void message(String message)
+    {
+        if (ENABLE_TRACY)
+            Tracy.message(message);
+    }
+
+    public static void plot(String name, float value)
+    {
+        if (ENABLE_TRACY)
+            Tracy.plotFloat(name, value);
+    }
+
+    public static void plot(String name, double value)
+    {
+        if (ENABLE_TRACY)
+            Tracy.plot(name, value);
     }
 }

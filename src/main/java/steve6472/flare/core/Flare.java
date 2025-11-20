@@ -221,20 +221,32 @@ public class Flare
 
     private void initVulkan()
     {
+        Profiler profiler = FlareProfiler.frame();
+        profiler.push("createInstance");
         createInstance();
+        profiler.popPush("setupDebugMessenger");
         debugMessenger = VulkanValidation.setupDebugMessenger(instance);
+        profiler.popPush("createSurface");
         createSurface();
         Commands commands = new Commands();
         vrData = new VrData();
+        profiler.popPush("pickPhysicalDevice");
         physicalDevice = PhysicalDevicePicker.pickPhysicalDevice(instance, surface, PhysicalDevicePicker.DEVICE_EXTENSIONS);
+        profiler.popPush("createLogicalDevice");
         createLogicalDevice();
+        profiler.popPush("createVrResources");
         vrData.createVkResources(device, graphicsQueue);
+        profiler.popPush("createCommandPool");
         commands.createCommandPool(device, surface);
+        profiler.popPush("createVkContents");
         RegistryCreators.createVkContents(device, commands, graphicsQueue);
         renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, commands, surface, vrData);
+        profiler.popPush("createRenderSystems");
         app.createRenderSystems(renderer);
         renderer.builtinLast();
+        profiler.popPush("createSwapChainObjects");
         renderer.getSwapChain().createSwapChainObjects();
+        profiler.pop();
     }
 
     private void mainLoop()
