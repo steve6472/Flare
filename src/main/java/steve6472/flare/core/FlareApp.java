@@ -11,8 +11,6 @@ import steve6472.flare.Window;
 import steve6472.flare.pipeline.builder.PipelineConstructor;
 import steve6472.flare.render.RenderSystem;
 import steve6472.flare.ui.font.render.TextRender;
-import steve6472.flare.vr.VrData;
-import steve6472.flare.vr.VrInput;
 
 import java.util.function.BiFunction;
 
@@ -79,9 +77,7 @@ public abstract class FlareApp
      */
 
     public VkDevice device()  { return masterRenderer.getDevice(); }
-    public VrData vrData() { return masterRenderer.getVrData(); }
     public UserInput input()  { return userInput; }
-    public VrInput vrInput()  { return vrData().vrInput(); }
     public Window window()  { return masterRenderer.getWindow(); }
     public float aspectRatio()  { return masterRenderer.getAspectRatio(); }
     public MasterRenderer masterRenderer() { return masterRenderer; }

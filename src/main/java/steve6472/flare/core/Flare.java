@@ -26,8 +26,6 @@ import steve6472.flare.tracy.Profiler;
 import steve6472.flare.ui.font.FontEntry;
 import steve6472.flare.ui.font.UnknownCharacter;
 import steve6472.flare.ui.font.style.FontStyleEntry;
-import steve6472.flare.vr.VrData;
-import steve6472.flare.vr.VrUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +69,6 @@ public class Flare
     private VkDevice device;
     private VkQueue graphicsQueue;
     private VkQueue presentQueue;
-    private VrData vrData;
     private ModuleManager moduleManager;
 
     // ======= METHODS ======= //
@@ -229,18 +226,16 @@ public class Flare
         profiler.popPush("createSurface");
         createSurface();
         Commands commands = new Commands();
-        vrData = new VrData();
         profiler.popPush("pickPhysicalDevice");
         physicalDevice = PhysicalDevicePicker.pickPhysicalDevice(instance, surface, PhysicalDevicePicker.DEVICE_EXTENSIONS);
         profiler.popPush("createLogicalDevice");
         createLogicalDevice();
         profiler.popPush("createVrResources");
-        vrData.createVkResources(device, graphicsQueue);
         profiler.popPush("createCommandPool");
         commands.createCommandPool(device, surface);
         profiler.popPush("createVkContents");
         RegistryCreators.createVkContents(device, commands, graphicsQueue);
-        renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, commands, surface, vrData);
+        renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, commands, surface);
         profiler.popPush("createRenderSystems");
         app.createRenderSystems(renderer);
         renderer.builtinLast();
@@ -312,8 +307,6 @@ public class Flare
                     profiler.popPush("endRenderPass");
                     renderer.endRenderPass(commandBuffer);
 
-                    profiler.popPush("vrFrame");
-                    vrData.frame(device, instance, renderer, frameInfo);
 //                    renderer.maxRenderCount = renderer.totalRenderCount;
 
                     profiler.popPush("endFrame");
@@ -330,10 +323,6 @@ public class Flare
                         profiler.popPush("titleFps");
                         window.setWindowTitle("FPS: %.4f,  Frame time: %.4fms %n".formatted(lastFps, frameTime * 1e3f));
                     }
-
-                    profiler.popPush("updateVr");
-                    vrData.updateHDMMatrixPose();
-                    vrData.updateEyes(frameInfo.camera);
 
                     profiler.pop();
                 }
@@ -364,7 +353,6 @@ public class Flare
 
         renderer.cleanup();
         ShaderCache.cleanup(device);
-        vrData.cleanup();
         app.cleanup();
 
         FlareRegistries.STATIC_MODEL.keys().forEach(key -> FlareRegistries.STATIC_MODEL.get(key).destroy());
@@ -475,12 +463,6 @@ public class Flare
             createInfo.pEnabledFeatures(deviceFeatures);
 
             Collection<String> extensions = new HashSet<>(PhysicalDevicePicker.DEVICE_EXTENSIONS);
-
-            if (VrData.VR_ON)
-            {
-                String requiredExtensions = VrUtil.getRequiredExtensions(physicalDevice.address());
-                Collections.addAll(extensions, requiredExtensions.split(" "));
-            }
 
             createInfo.ppEnabledExtensionNames(VulkanUtil.asPointerBuffer(stack, extensions));
 

@@ -8,14 +8,12 @@ import steve6472.flare.assets.atlas.SpriteAtlas;
 import steve6472.flare.core.FrameInfo;
 import steve6472.flare.framebuffer.AnimatedAtlasFrameBuffer;
 import steve6472.flare.pipeline.Pipelines;
-import steve6472.flare.pipeline.shader.ShaderCache;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.render.*;
 import steve6472.flare.struct.def.UBO;
 import steve6472.flare.tracy.FlareProfiler;
 import steve6472.flare.tracy.Profiler;
 import steve6472.flare.ui.font.render.TextRender;
-import steve6472.flare.vr.VrData;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -38,7 +36,6 @@ public class MasterRenderer
 
     private final SwapChain swapChain;
     private final Commands commands;
-    private final VrData vrData;
     private final TextRender textRender;
 
     private int currentFrameIndex;
@@ -50,14 +47,13 @@ public class MasterRenderer
     private final List<AnimateTextureSystem> atlasAnimations = new ArrayList<>();
     private final List<RenderSystem> renderSystems = new ArrayList<>();
 
-    public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, Commands commands, long surface, VrData vrData)
+    public MasterRenderer(Window window, VkDevice device, VkQueue graphicsQueue, VkQueue presentQueue, Commands commands, long surface)
     {
         this.window = window;
         this.device = device;
         this.graphicsQueue = graphicsQueue;
         this.presentQueue = presentQueue;
         this.commands = commands;
-        this.vrData = vrData;
         this.textRender = new TextRender();
 
         swapChain = new SwapChain(device, window, surface, this);
@@ -93,24 +89,12 @@ public class MasterRenderer
     {
         renderSystems.forEach(renderSystem -> renderSystem._getPipeline().rebuild(device, swapChain, renderSystem.setLayouts()));
         atlasAnimations.forEach(renderSystem -> renderSystem._getPipeline().rebuild(device, renderSystem.atlas.frameBuffer.extent, renderSystem.atlas.frameBuffer.renderPass, renderSystem.setLayouts()));
-
-        if (VrData.VR_ON)
-        {
-            try (MemoryStack stack = MemoryStack.stackPush())
-            {
-                VkExtent2D extent = VkExtent2D.calloc(stack).set(vrData.width(), vrData.height());
-                long renderPass = vrData.renderPass();
-                renderSystems.forEach(renderSystem -> renderSystem._getVrPipeline().rebuild(device, extent, renderPass, renderSystem.setLayouts()));
-            }
-        }
     }
 
     public void destroyPipelines()
     {
         renderSystems.forEach(renderSystem -> renderSystem._getPipeline().cleanup(device));
         atlasAnimations.forEach(renderSystem -> renderSystem._getPipeline().cleanup(device));
-        if (VrData.VR_ON)
-            renderSystems.forEach(renderSystem -> renderSystem._getVrPipeline().cleanup(device));
     }
 
     public void cleanup()
@@ -325,11 +309,6 @@ public class MasterRenderer
     public VkDevice getDevice()
     {
         return device;
-    }
-
-    public VrData getVrData()
-    {
-        return vrData;
     }
 
     public Window getWindow()

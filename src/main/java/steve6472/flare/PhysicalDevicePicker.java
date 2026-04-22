@@ -2,10 +2,9 @@ package steve6472.flare;
 
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.*;
 import steve6472.core.log.Log;
-import steve6472.flare.vr.VrData;
-import steve6472.flare.vr.VrUtil;
 
 import java.nio.IntBuffer;
 import java.util.*;
@@ -99,7 +98,22 @@ public class PhysicalDevicePicker
 
     private static boolean checkDeviceExtensionSupport(VkPhysicalDevice device, Collection<String> deviceExtensions)
     {
-        try (MemoryStack stack = MemoryStack.stackPush())
+        IntBuffer extensionCount = MemoryUtil.memAllocInt(1);
+        VK13.vkEnumerateDeviceExtensionProperties(device, (String) null, extensionCount, null);
+
+        try (VkExtensionProperties.Buffer availableExtensions = VkExtensionProperties.malloc(extensionCount.get(0)))
+        {
+            VK13.vkEnumerateDeviceExtensionProperties(device, (String) null, extensionCount, availableExtensions);
+
+            Collection<String> extensions = new HashSet<>(deviceExtensions);
+
+            return availableExtensions
+                .stream()
+                .map(VkExtensionProperties::extensionNameString)
+                .collect(Collectors.toSet())
+                .containsAll(extensions);
+        }
+        /*try (MemoryStack stack = MemoryStack.stackPush())
         {
             IntBuffer extensionCount = stack.ints(0);
 
@@ -111,17 +125,11 @@ public class PhysicalDevicePicker
 
             Collection<String> extensions = new HashSet<>(deviceExtensions);
 
-            if (VrData.VR_ON)
-            {
-                String requiredExtensions = VrUtil.getRequiredExtensions(device.address());
-                Collections.addAll(extensions, requiredExtensions.split(" "));
-            }
-
             return availableExtensions
                 .stream()
                 .map(VkExtensionProperties::extensionNameString)
                 .collect(Collectors.toSet())
                 .containsAll(extensions);
-        }
+        }*/
     }
 }
