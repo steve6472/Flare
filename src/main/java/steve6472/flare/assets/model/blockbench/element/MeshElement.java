@@ -1,6 +1,7 @@
 package steve6472.flare.assets.model.blockbench.element;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.*;
 import steve6472.core.log.Log;
@@ -24,7 +25,7 @@ public record MeshElement(UUID uuid, String name, Vector3f rotation, Vector3f or
 {
     private static final Logger LOGGER = Log.getLogger(MeshElement.class);
 
-    public static final Codec<MeshElement> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final MapCodec<MeshElement> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
         ExtraCodecs.UUID.fieldOf("uuid").forGetter(o -> o.uuid),
         Codec.STRING.fieldOf("name").forGetter(o -> o.name),
         ExtraCodecs.VEC_3F.fieldOf("rotation").forGetter(o -> o.rotation),
@@ -45,12 +46,6 @@ public record MeshElement(UUID uuid, String name, Vector3f rotation, Vector3f or
     {
         vertices.forEach((_, v) -> v.mul(FlareConstants.BB_MODEL_SCALE));
         return vertices;
-    }
-
-    @Override
-    public ElementType<?> getType()
-    {
-        return ElementType.MESH;
     }
 
     @Override
@@ -173,5 +168,11 @@ public record MeshElement(UUID uuid, String name, Vector3f rotation, Vector3f or
         {
             return List.of(verts.get(3), verts.get(0), verts.get(1), verts.get(2), verts.get(3), verts.get(1));
         }
+    }
+
+    @Override
+    public MapCodec<? extends Element> codec()
+    {
+        return CODEC;
     }
 }

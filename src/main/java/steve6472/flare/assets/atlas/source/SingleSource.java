@@ -1,14 +1,14 @@
 package steve6472.flare.assets.atlas.source;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import steve6472.core.module.Module;
-import steve6472.core.module.ResourceCrawl;
 import steve6472.core.registry.Key;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.FlareParts;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -20,9 +20,9 @@ import java.util.Optional;
  */
 public record SingleSource(String resource, Optional<Key> name) implements Source
 {
-    public static final Codec<SingleSource> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final MapCodec<SingleSource> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
         Codec.STRING.fieldOf("resource").forGetter(SingleSource::resource),
-        Key.CODEC.optionalFieldOf("name").forGetter(SingleSource::name)
+        FlareConstants.FLARE_KEY_CODEC.optionalFieldOf("name").forGetter(SingleSource::name)
     ).apply(instance, SingleSource::new));
 
     public SingleSource
@@ -32,15 +32,9 @@ public record SingleSource(String resource, Optional<Key> name) implements Sourc
     }
 
     @Override
-    public SourceType<?> getType()
-    {
-        return SourceType.SINGLE;
-    }
-
-    @Override
     public Collection<SourceResult> load(Module module, String namespace)
     {
-        Key parse = Key.parse(resource);
+        Key parse = Key.parse(FlareConstants.NAMESPACE, resource);
 
         if (!parse.namespace().equals(namespace))
             return List.of();
@@ -50,5 +44,11 @@ public record SingleSource(String resource, Optional<Key> name) implements Sourc
             return List.of();
 
         return List.of(new SourceResult(sourceFile, name.orElse(parse)));
+    }
+
+    @Override
+    public MapCodec<? extends Source> codec()
+    {
+        return CODEC;
     }
 }

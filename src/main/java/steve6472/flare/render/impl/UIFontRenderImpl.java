@@ -3,7 +3,7 @@ package steve6472.flare.render.impl;
 import org.joml.*;
 import steve6472.core.registry.Key;
 import steve6472.core.util.RandomUtil;
-import steve6472.flare.registry.FlareRegistries;
+import steve6472.flare.registry.BuiltInFlareRegistries;
 import steve6472.flare.struct.def.Vertex;
 import steve6472.flare.ui.font.Font;
 import steve6472.flare.ui.font.FontEntry;
@@ -338,7 +338,7 @@ public abstract class UIFontRenderImpl extends RenderImpl
 
     protected final FontStyleEntry getStyleEntry(Key styleKey)
     {
-        return FlareRegistries.FONT_STYLE.get(styleKey);
+        return BuiltInFlareRegistries.FONT_STYLE.get(styleKey).orElseThrow().value();
     }
 
     protected final FontStyle getStyle(Key styleKey)
@@ -348,7 +348,7 @@ public abstract class UIFontRenderImpl extends RenderImpl
 
     protected final FontEntry getFontEntry(Key fontKey)
     {
-        return FlareRegistries.FONT.get(fontKey);
+        return BuiltInFlareRegistries.FONT.get(fontKey).orElseThrow().value();
     }
 
     protected final Font getFont(Key fontKey)

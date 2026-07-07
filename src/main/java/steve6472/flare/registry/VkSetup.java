@@ -6,11 +6,10 @@ import steve6472.flare.Commands;
 
 /**
  * Created by steve6472
- * Date: 9/29/2024
+ * Date: 6/7/2026
  * Project: Flare <br>
+ *
  */
-@FunctionalInterface
-public interface VkContent<T>
+public record VkSetup(VkDevice device, Commands commands, VkQueue graphicsQueue)
 {
-    T apply(VkDevice device, Commands commands, VkQueue graphicsQueue);
 }

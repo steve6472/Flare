@@ -1,13 +1,13 @@
 package steve6472.flare.assets.model.blockbench.element;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import steve6472.core.log.Log;
-import steve6472.core.registry.Key;
 import steve6472.core.util.ExtraCodecs;
 import steve6472.core.util.ImagePacker;
 import steve6472.core.util.Preconditions;
@@ -28,7 +28,7 @@ public record CubeElement(UUID uuid, String name, Vector3f from, Vector3f to, Ve
 {
     private static final Logger LOGGER = Log.getLogger(CubeElement.class);
 
-    public static final Codec<CubeElement> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final MapCodec<CubeElement> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
         ExtraCodecs.UUID.fieldOf("uuid").forGetter(o -> o.uuid),
         Codec.STRING.fieldOf("name").forGetter(o -> o.name),
         ExtraCodecs.VEC_3F.fieldOf("from").forGetter(o -> o.from),
@@ -57,12 +57,6 @@ public record CubeElement(UUID uuid, String name, Vector3f from, Vector3f to, Ve
                 newFaces);
         })
     );
-
-    @Override
-    public ElementType<?> getType()
-    {
-        return ElementType.CUBE;
-    }
 
     @Override
     public void fixUvs(LoadedModel model, ImagePacker packer)
@@ -222,5 +216,11 @@ public record CubeElement(UUID uuid, String name, Vector3f from, Vector3f to, Ve
         }
 
         return uvCoords;
+    }
+
+    @Override
+    public MapCodec<? extends Element> codec()
+    {
+        return CODEC;
     }
 }

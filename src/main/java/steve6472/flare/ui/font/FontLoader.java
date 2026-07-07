@@ -3,9 +3,9 @@ package steve6472.flare.ui.font;
 import com.mojang.datafixers.util.Pair;
 import steve6472.core.registry.Key;
 import steve6472.core.module.Module;
+import steve6472.core.registry.Registry;
 import steve6472.flare.FlareParts;
 import steve6472.flare.core.Flare;
-import steve6472.flare.registry.FlareRegistries;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public class FontLoader
 {
-    public static void bootstrap()
+    public static void bootstrap(Registry<FontEntry> registry)
     {
         Map<Key, Pair<FontEntry, Module>> fonts = new LinkedHashMap<>();
 
@@ -32,7 +32,7 @@ public class FontLoader
         {
             FontEntry font = pair.getFirst();
             font.font().init(pair.getSecond(), font.key());
-            FlareRegistries.FONT.register(font);
+            Registry.register(registry, font.key(), font);
         }
     }
 }

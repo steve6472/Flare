@@ -1,6 +1,7 @@
 package steve6472.flare.ui.textures.type;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Vector4i;
 
@@ -20,15 +21,15 @@ public record NineSlice(Stretch stretch, Vector4i border) implements SpriteUI
 
     private static final Codec<Vector4i> SINGLE_OR_ALL = Codec.withAlternative(BORDER, Codec.INT, Vector4i::new);
 
-    public static final Codec<NineSlice> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final MapCodec<NineSlice> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
         Stretch.CODEC.optionalFieldOf("stretch", Stretch.DEFAULT).forGetter(NineSlice::stretch),
         SINGLE_OR_ALL.fieldOf("border").forGetter(NineSlice::border)
     ).apply(instance, NineSlice::new));
 
     @Override
-    public SpriteUIType<?> getType()
+    public MapCodec<? extends SpriteUI> codec()
     {
-        return SpriteUIType.NINE_SLICE;
+        return CODEC;
     }
 
     public record Stretch(boolean inner, boolean left, boolean right, boolean top, boolean bottom)

@@ -1,12 +1,11 @@
 package steve6472.flare.assets.atlas.source;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import steve6472.core.module.Module;
 import steve6472.core.util.ExtraCodecs;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -17,7 +16,7 @@ import java.util.regex.Pattern;
  */
 public record FilterSource(Optional<Pattern> namespace, Optional<Pattern> path) implements Source
 {
-    public static final Codec<FilterSource> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final MapCodec<FilterSource> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
         ExtraCodecs.PATTERN.optionalFieldOf("namespace").forGetter(FilterSource::namespace),
         ExtraCodecs.PATTERN.optionalFieldOf("path").forGetter(FilterSource::path)
     ).apply(instance, FilterSource::new));
@@ -30,8 +29,8 @@ public record FilterSource(Optional<Pattern> namespace, Optional<Pattern> path) 
     }
 
     @Override
-    public SourceType<?> getType()
+    public MapCodec<? extends Source> codec()
     {
-        return SourceType.FILTER;
+        return CODEC;
     }
 }

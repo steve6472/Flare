@@ -2,8 +2,6 @@ package steve6472.flare.core;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
-import steve6472.core.registry.ObjectRegistry;
-import steve6472.core.registry.Registry;
 import steve6472.flare.Camera;
 import steve6472.flare.MasterRenderer;
 import steve6472.flare.input.UserInput;
@@ -30,11 +28,9 @@ public abstract class FlareApp
      * Init methods in order of execution
      */
 
-    protected abstract void preInit();
+    protected abstract void setup(Setup events);
+
     protected abstract Camera setupCamera();
-    /// Call [FlareApp#initRegistry(Registry)] to make sure registries are filled
-    protected abstract void initRegistries();
-    public abstract void loadSettings();
 
     protected abstract void createRenderSystems();
     public abstract void postInit();
@@ -43,13 +39,6 @@ public abstract class FlareApp
 
     public abstract void saveSettings();
     public abstract void cleanup();
-
-    /*
-     * Abstract getters
-     */
-
-    public abstract String windowTitle();
-    public abstract String defaultNamespace();
 
     /*
      * Protected methods, utils
@@ -66,11 +55,6 @@ public abstract class FlareApp
     {
         masterRenderer.addRenderSystem(renderSystem);
     }
-
-    /// This method simply ensures that the fields in a static class are loaded.
-    protected static void initRegistry(Registry<?> dummyRegistry) { }
-    /// This method simply ensures that the fields in a static class are loaded.
-    protected static void initRegistry(ObjectRegistry<?> dummyRegistry) { }
 
     /*
      * Global getters

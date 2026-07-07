@@ -14,8 +14,10 @@ import steve6472.core.util.GsonUtil;
 import steve6472.core.util.ImagePacker;
 import steve6472.flare.Commands;
 import steve6472.flare.FlareConstants;
+import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.assets.atlas.source.SourceResult;
 import steve6472.flare.assets.model.blockbench.ErrorModel;
+import steve6472.flare.registry.VkSetup;
 import steve6472.flare.ui.textures.SpriteData;
 import steve6472.flare.ui.textures.SpriteEntry;
 import steve6472.flare.ui.textures.animation.SpriteAnimation;
@@ -163,7 +165,7 @@ public class SpriteLoader
         return SpriteData.DEFAULT;
     }
 
-    public static ImagePacker createTexture(Atlas atlas, VkDevice device, Commands commands, VkQueue graphicsQueue)
+    public static Pair<ImagePacker, TextureSampler> createTexture(Atlas atlas, VkSetup setup)
     {
         Map<Key, BufferedImage> images = atlas.tempImages;
         atlas.tempImages = null;
@@ -175,9 +177,9 @@ public class SpriteLoader
 
         BufferedImage image = packer.getImage();
         saveDebugAtlas(atlas, image);
-        atlas.createVkResource(image, device, commands, graphicsQueue);
+        TextureSampler vkResource = atlas.createVkResource(image, setup);
         fixUvs(atlas, packer);
-        return packer;
+        return Pair.of(packer, vkResource);
     }
 
     private static void fixUvs(Atlas atlas, ImagePacker packer)

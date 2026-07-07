@@ -1,22 +1,21 @@
 package steve6472.flare;
 
 import com.google.gson.JsonElement;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import org.lwjgl.vulkan.VkDevice;
-import org.lwjgl.vulkan.VkQueue;
 import steve6472.core.log.Log;
-import steve6472.core.registry.Key;
+import steve6472.core.registry.Registry;
 import steve6472.core.util.GsonUtil;
 import steve6472.core.util.ImagePacker;
 import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.assets.atlas.Atlas;
 import steve6472.flare.assets.model.blockbench.BlockbenchLoader;
-import steve6472.flare.registry.VkContent;
-import steve6472.flare.registry.FlareRegistries;
+import steve6472.flare.registry.BuiltInFlareRegistries;
 import steve6472.flare.assets.atlas.SpriteLoader;
+import steve6472.flare.registry.VkSetup;
 import steve6472.flare.settings.VisualSettings;
 import steve6472.flare.tracy.FlareProfiler;
 import steve6472.flare.tracy.Profiler;
@@ -25,6 +24,7 @@ import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 /**
@@ -37,41 +37,41 @@ public final class SamplerLoader
 {
     private SamplerLoader() {}
 
-    private static final List<VkContent<TextureSampler>> SAMPLER_LOADERS = new ArrayList<>();
+    private static final List<Function<VkSetup, TextureSampler>> SAMPLER_LOADERS = new ArrayList<>();
 
-    public static TextureSampler loadSamplers(VkDevice device, Commands commands, VkQueue graphicsQueue)
+    public static void loadSamplers(Registry<TextureSampler> registry, VkSetup setup)
     {
         Profiler profiler = FlareProfiler.frame();
         profiler.push("iterateAtlases");
         File debugAtlasFolder = Debug.getFile("/atlas_data");
 
-        for (Key key : FlareRegistries.ATLAS.keys())
-        {
-            Atlas atlas = FlareRegistries.ATLAS.get(key);
-            ImagePacker packer = SpriteLoader.createTexture(atlas, device, commands, graphicsQueue);
+        BuiltInFlareRegistries.ATLAS.listElements().forEach(ref -> {
+            Atlas atlas = ref.value();
+            Pair<ImagePacker, TextureSampler> pair = SpriteLoader.createTexture(atlas, setup);
             if (atlas.key().equals(FlareConstants.ATLAS_BLOCKBENCH))
             {
-                BlockbenchLoader.fixModelUvs(packer);
+                BlockbenchLoader.fixModelUvs(pair.getFirst());
             }
 
             if (VisualSettings.GENERATE_STARTUP_ATLAS_DATA.get())
             {
-                Debug.generateFromAtlasAndImagePacker(debugAtlasFolder, atlas, packer);
+                Debug.generateFromAtlasAndImagePacker(debugAtlasFolder, atlas, pair.getFirst());
             }
-        }
+
+            Registry.register(registry, pair.getSecond().key(), pair.getSecond());
+        });
 
         profiler.popPush("loadSamplers");
         SAMPLER_LOADERS.forEach(loader ->
         {
-            TextureSampler sampler = loader.apply(device, commands, graphicsQueue);
-            FlareRegistries.SAMPLER.register(sampler);
+            TextureSampler sampler = loader.apply(setup);
+            Registry.register(registry, sampler.key(), sampler);
         });
+        SAMPLER_LOADERS.clear();
         profiler.pop();
-
-        return null;
     }
 
-    public static void addSamplerLoader(VkContent<TextureSampler> loader)
+    public static void addSamplerLoader(Function<VkSetup, TextureSampler> loader)
     {
         SAMPLER_LOADERS.add(loader);
     }

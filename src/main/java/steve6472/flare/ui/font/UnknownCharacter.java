@@ -2,6 +2,7 @@ package steve6472.flare.ui.font;
 
 import steve6472.core.registry.Key;
 import steve6472.flare.FlareConstants;
+import steve6472.flare.registry.BuiltInFlareRegistries;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.ui.font.layout.GlyphInfo;
 import steve6472.flare.ui.font.style.FontStyleEntry;
@@ -23,8 +24,8 @@ public class UnknownCharacter
 
     public static void init()
     {
-        fontEntry = FlareRegistries.FONT.get(FONT_KEY);
-        styleEntry = FlareRegistries.FONT_STYLE.get(STYLE_KEY);
+        fontEntry = BuiltInFlareRegistries.FONT.get(FONT_KEY).orElseThrow().value();
+        styleEntry = BuiltInFlareRegistries.FONT_STYLE.get(STYLE_KEY).orElseThrow().value();
         unknownGlyph = fontEntry().font().glyphInfo('A');
     }
 

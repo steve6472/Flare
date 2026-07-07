@@ -11,7 +11,7 @@ import steve6472.flare.assets.model.blockbench.animation.controller.AnimationQue
 import steve6472.flare.core.FrameInfo;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
 import steve6472.flare.pipeline.builder.PipelineConstructor;
-import steve6472.flare.registry.FlareRegistries;
+import steve6472.flare.registry.BuiltInFlareRegistries;
 import steve6472.flare.render.common.CommonBuilder;
 import steve6472.flare.render.common.CommonRenderSystem;
 import steve6472.flare.render.common.FlightFrame;
@@ -22,7 +22,6 @@ import steve6472.flare.struct.def.SBO;
 import steve6472.orlang.*;
 import steve6472.test.TestKeybinds;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -50,16 +49,16 @@ public class SkinRenderSystem extends CommonRenderSystem
     {
         super(masterRenderer, pipeline, CommonBuilder.create()
             .entrySBO(SBO.BONES.sizeof(), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, VK_SHADER_STAGE_VERTEX_BIT)
-            .entryImage(FlareRegistries.ATLAS.get(FlareConstants.ATLAS_BLOCKBENCH).getSampler()));
+            .entryImage(BuiltInFlareRegistries.ATLAS.get(FlareConstants.ATLAS_BLOCKBENCH).orElseThrow().value().getSampler()));
 
-        LoadedModel loadedModel = FlareRegistries.ANIMATED_LOADED_MODEL.get(MODEL_KEY);
+        LoadedModel loadedModel = BuiltInFlareRegistries.ANIMATED_LOADED_MODEL.get(MODEL_KEY).orElseThrow().value();
         environment = new OrlangEnvironment();
         environment.queryFunctionSet = new AnimQuery();
 
-        animationController = FlareRegistries.ANIMATION_CONTROLLER.get(Key.withNamespace("test", "long_chain")).createForModel(loadedModel);
+        animationController = BuiltInFlareRegistries.ANIMATION_CONTROLLER.get(Key.withNamespace("test", "long_chain")).orElseThrow().value().createForModel(loadedModel);
         environment.setValue(new AST.Node.Identifier(VarContext.VARIABLE, "flag"), OrlangValue.bool(false));
 
-        model3d = FlareRegistries.ANIMATED_MODEL.get(MODEL_KEY);
+        model3d = BuiltInFlareRegistries.ANIMATED_MODEL.get(MODEL_KEY).orElseThrow().value();
     }
 
     @Override

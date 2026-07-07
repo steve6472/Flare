@@ -1,18 +1,16 @@
 package steve6472.flare.assets.model.blockbench;
 
 import com.mojang.datafixers.util.Pair;
-import org.lwjgl.vulkan.VkDevice;
-import org.lwjgl.vulkan.VkQueue;
 import steve6472.core.module.ModulePart;
 import steve6472.core.registry.Key;
-import steve6472.core.registry.ObjectRegistry;
+import steve6472.core.registry.Registry;
 import steve6472.core.util.ImagePacker;
-import steve6472.flare.Commands;
 import steve6472.flare.FlareParts;
 import steve6472.flare.core.Flare;
-import steve6472.flare.registry.FlareRegistries;
+import steve6472.flare.registry.BuiltInFlareRegistries;
 import steve6472.flare.assets.model.Model;
 import steve6472.flare.assets.model.primitive.PrimitiveModel;
+import steve6472.flare.registry.VkSetup;
 
 import java.util.*;
 import java.util.function.Function;
@@ -26,63 +24,56 @@ public class BlockbenchLoader
 {
     public static void fixModelUvs(ImagePacker imagePacker)
     {
-        FlareRegistries.ANIMATED_LOADED_MODEL.keys().forEach(key ->
-        {
-            LoadedModel model = FlareRegistries.ANIMATED_LOADED_MODEL.get(key);
+        BuiltInFlareRegistries.ANIMATED_LOADED_MODEL.listElements().forEach(ref -> {
+            LoadedModel model = ref.value();
             model.elements().forEach(el -> el.fixUvs(model, imagePacker));
         });
 
-        FlareRegistries.STATIC_LOADED_MODEL.keys().forEach(key ->
-        {
-            LoadedModel model = FlareRegistries.STATIC_LOADED_MODEL.get(key);
+        BuiltInFlareRegistries.STATIC_LOADED_MODEL.listElements().forEach(ref -> {
+            LoadedModel model = ref.value();
             model.elements().forEach(el -> el.fixUvs(model, imagePacker));
         });
 
         ErrorModel.INSTANCE.elements().forEach(el -> el.fixUvs(ErrorModel.INSTANCE, imagePacker));
     }
 
-    public static void loadStaticModels()
+    public static void loadStaticModels(Registry<LoadedModel> registry)
     {
-        loadModels(FlareParts.MODEL_STATIC, FlareRegistries.STATIC_LOADED_MODEL);
+        loadModels(FlareParts.MODEL_STATIC, registry);
     }
 
-    public static void loadAnimatedModels()
+    public static void loadAnimatedModels(Registry<LoadedModel> registry)
     {
-        loadModels(FlareParts.MODEL_ANIMATED, FlareRegistries.ANIMATED_LOADED_MODEL);
+        loadModels(FlareParts.MODEL_ANIMATED, registry);
     }
 
-    public static Model createStaticModels(VkDevice device, Commands commands, VkQueue graphicsQueue)
+    public static void createStaticModels(Registry<Model> registry, VkSetup setup)
     {
-        ErrorModel.VK_STATIC_INSTANCE.createVertexBuffer(device, commands, graphicsQueue, ErrorModel.INSTANCE.toPrimitiveModel());
-        FlareRegistries.STATIC_MODEL.register(ErrorModel.VK_STATIC_INSTANCE);
+        ErrorModel.VK_STATIC_INSTANCE.createVertexBuffer(setup.device(), setup.commands(), setup.graphicsQueue(), ErrorModel.INSTANCE.toPrimitiveModel());
+        Registry.register(registry, ErrorModel.KEY, ErrorModel.VK_STATIC_INSTANCE);
 
-        return createModels(device, commands, graphicsQueue, FlareRegistries.STATIC_LOADED_MODEL, FlareRegistries.STATIC_MODEL, LoadedModel::toPrimitiveModel);
+        createModels(setup, BuiltInFlareRegistries.STATIC_LOADED_MODEL, registry, LoadedModel::toPrimitiveModel);
     }
 
-    public static Model createAnimatedModels(VkDevice device, Commands commands, VkQueue graphicsQueue)
+    public static void createAnimatedModels(Registry<Model> registry, VkSetup setup)
     {
-        ErrorModel.VK_ANIMATED_INSTANCE.createVertexBuffer(device, commands, graphicsQueue, ErrorModel.INSTANCE.toPrimitiveSkinModel());
-        FlareRegistries.ANIMATED_MODEL.register(ErrorModel.VK_ANIMATED_INSTANCE);
+        ErrorModel.VK_ANIMATED_INSTANCE.createVertexBuffer(setup.device(), setup.commands(), setup.graphicsQueue(), ErrorModel.INSTANCE.toPrimitiveSkinModel());
+        Registry.register(registry, ErrorModel.KEY, ErrorModel.VK_ANIMATED_INSTANCE);
 
-        return createModels(device, commands, graphicsQueue, FlareRegistries.ANIMATED_LOADED_MODEL, FlareRegistries.ANIMATED_MODEL, LoadedModel::toPrimitiveSkinModel);
+        createModels(setup, BuiltInFlareRegistries.ANIMATED_LOADED_MODEL, registry, LoadedModel::toPrimitiveSkinModel);
     }
 
-    private static Model createModels(VkDevice device, Commands commands, VkQueue graphicsQueue, ObjectRegistry<LoadedModel> from, ObjectRegistry<Model> to, Function<LoadedModel, PrimitiveModel> converter)
+    private static void createModels(VkSetup setup, Registry<LoadedModel> from, Registry<Model> to, Function<LoadedModel, PrimitiveModel> converter)
     {
-        Model first = null;
-        for (Key key : from.keys())
-        {
-            LoadedModel loadedModel = from.get(key);
-            Model model = new Model(key);
-            model.createVertexBuffer(device, commands, graphicsQueue, converter.apply(loadedModel));
-            if (first == null)
-                first = model;
-            to.register(model);
-        }
-        return first;
+        from.listElements().forEach(ref -> {
+            LoadedModel loadedModel = ref.value();
+            Model model = new Model(ref.key().resource());
+            model.createVertexBuffer(setup.device(), setup.commands(), setup.graphicsQueue(), converter.apply(loadedModel));
+            Registry.register(to, ref.key().resource(), model);
+        });
     }
 
-    private static void loadModels(ModulePart part, ObjectRegistry<LoadedModel> modelRegistry)
+    private static void loadModels(ModulePart<LoadedModel> part, Registry<LoadedModel> registry)
     {
         Map<Key, Pair<LoadedModel, String>> models = new LinkedHashMap<>();
 
@@ -95,7 +86,7 @@ public class BlockbenchLoader
         for (Pair<LoadedModel, String> value : models.values())
         {
             LoadedModel model = value.getFirst();
-            modelRegistry.register(model.key(), model);
+            Registry.register(registry, model.key(), model);
         }
     }
 

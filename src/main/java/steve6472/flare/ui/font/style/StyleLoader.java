@@ -1,9 +1,9 @@
 package steve6472.flare.ui.font.style;
 
 import steve6472.core.registry.Key;
+import steve6472.core.registry.Registry;
 import steve6472.flare.FlareParts;
 import steve6472.flare.core.Flare;
-import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.ui.font.UnknownCharacter;
 
 import java.util.LinkedHashMap;
@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public class StyleLoader
 {
-    public static void bootstrap()
+    public static void bootstrap(Registry<FontStyleEntry> registry)
     {
         Map<Key, FontStyleEntry> styles = new LinkedHashMap<>();
 
@@ -26,7 +26,6 @@ public class StyleLoader
             styles.put(key, entry);
         });
 
-        styles.forEach(FlareRegistries.FONT_STYLE::register);
-        UnknownCharacter.init();
+        styles.forEach((key, style) -> Registry.register(registry, key, style));
     }
 }

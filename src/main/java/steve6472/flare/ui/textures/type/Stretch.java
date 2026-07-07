@@ -1,6 +1,6 @@
 package steve6472.flare.ui.textures.type;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 /**
  * Created by steve6472
@@ -10,20 +10,20 @@ import com.mojang.serialization.Codec;
 public final class Stretch implements SpriteUI
 {
     private static final Stretch INSTANCE = new Stretch();
-    public static final Codec<Stretch> CODEC = Codec.unit(INSTANCE);
+    public static final MapCodec<Stretch> CODEC = MapCodec.unit(INSTANCE);
 
     private Stretch()
     {
     }
 
-    @Override
-    public SpriteUIType<?> getType()
-    {
-        return SpriteUIType.STRETCH;
-    }
-
     public static Stretch instance()
     {
         return INSTANCE;
+    }
+
+    @Override
+    public MapCodec<? extends SpriteUI> codec()
+    {
+        return CODEC;
     }
 }

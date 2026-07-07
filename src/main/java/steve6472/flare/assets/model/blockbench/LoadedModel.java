@@ -7,6 +7,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.Keyable;
+import steve6472.flare.FlareConstants;
 import steve6472.flare.assets.model.blockbench.animation.Animation;
 import steve6472.flare.assets.model.blockbench.element.LocatorElement;
 import steve6472.flare.assets.model.blockbench.outliner.OutlinerElement;
@@ -26,7 +27,7 @@ public record LoadedModel(ModelMeta meta, Key key, Resolution resolution, List<E
 {
     public static Codec<LoadedModel> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         ModelMeta.CODEC.fieldOf("meta").forGetter(o -> o.meta),
-        Key.CODEC.fieldOf("model_identifier").forGetter(o -> o.key),
+        FlareConstants.FLARE_KEY_CODEC.fieldOf("model_identifier").forGetter(o -> o.key),
         Resolution.CODEC.fieldOf("resolution").forGetter(o -> o.resolution),
         Element.CODEC.listOf().fieldOf("elements").forGetter(o -> o.elements),
         OutlinerElement.CODEC.listOf().fieldOf("outliner").forGetter(o -> o.outliner),

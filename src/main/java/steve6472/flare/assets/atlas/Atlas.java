@@ -7,6 +7,7 @@ import steve6472.core.registry.Key;
 import steve6472.core.registry.Keyable;
 import steve6472.flare.Commands;
 import steve6472.flare.assets.TextureSampler;
+import steve6472.flare.registry.VkSetup;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.ui.textures.SpriteEntry;
 
@@ -34,7 +35,7 @@ public abstract class Atlas implements Keyable
 
     abstract void mergeWith(Atlas other);
     abstract void create();
-    abstract void createVkResource(BufferedImage image, VkDevice device, Commands commands, VkQueue graphicsQueue);
+    abstract TextureSampler createVkResource(BufferedImage image, VkSetup setup);
 
     /// Just don't
     @ApiStatus.Internal

@@ -115,7 +115,7 @@ public class Font
             throw new RuntimeException(e);
         }
 
-        SamplerLoader.addSamplerLoader((device, commands, queue) -> getSamplerLoader(device, commands, queue, fontTexture, key));
+        SamplerLoader.addSamplerLoader(setup -> getSamplerLoader(setup.device(), setup.commands(), setup.graphicsQueue(), fontTexture, key));
     }
 
     private void generateCharset(File fontCharset)

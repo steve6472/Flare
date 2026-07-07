@@ -12,9 +12,9 @@ import java.util.List;
  */
 public abstract class EffectKeyframeChannel<T extends DataPoint> extends KeyframeChannel<T>
 {
-    public EffectKeyframeChannel(Interpolation interpolation, double time, List<T> dataPoints)
+    public EffectKeyframeChannel(KeyframeType type, Interpolation interpolation, double time, List<T> dataPoints)
     {
-        super(interpolation, time, dataPoints);
+        super(type, interpolation, time, dataPoints);
     }
 
     public abstract void processKeyframe(T effect);

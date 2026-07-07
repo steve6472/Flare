@@ -8,6 +8,7 @@ import steve6472.flare.Commands;
 import steve6472.flare.assets.Texture;
 import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.registry.FlareRegistries;
+import steve6472.flare.registry.VkSetup;
 import steve6472.flare.ui.textures.SpriteEntry;
 
 import java.awt.image.BufferedImage;
@@ -39,13 +40,13 @@ public class AnimationAtlas extends Atlas
     }
 
     @Override
-    void createVkResource(BufferedImage image, VkDevice device, Commands commands, VkQueue graphicsQueue)
+    TextureSampler createVkResource(BufferedImage image, VkSetup setup)
     {
         Texture texture = new Texture();
-        texture.createTextureImageFromBufferedImage(device, image, commands.commandPool, graphicsQueue);
-        TextureSampler sampler = new TextureSampler(texture, device, key(), VK_FILTER_NEAREST, VK_SAMPLER_MIPMAP_MODE_NEAREST, false);
-        FlareRegistries.SAMPLER.register(sampler);
+        texture.createTextureImageFromBufferedImage(setup.device(), image, setup.commands().commandPool, setup.graphicsQueue());
+        TextureSampler sampler = new TextureSampler(texture, setup.device(), key(), VK_FILTER_NEAREST, VK_SAMPLER_MIPMAP_MODE_NEAREST, false);
         this.sampler = sampler;
+        return sampler;
     }
 
     @Override

@@ -13,7 +13,7 @@ import java.util.*;
  */
 public class Timeline
 {
-    private final Map<String, Map<KeyframeType<?>, TreeMap<Double, KeyframeChannel<?>>>> timeline = new HashMap<>();
+    private final Map<String, Map<KeyframeType, TreeMap<Double, KeyframeChannel<?>>>> timeline = new HashMap<>();
     private final Set<String> boneNames;
 
     public Timeline(Animation animation)
@@ -28,8 +28,8 @@ public class Timeline
         {
             for (KeyFrame keyframe : animator.keyframes())
             {
-                KeyframeType<?> type = keyframe.getType();
-                Map<KeyframeType<?>, TreeMap<Double, KeyframeChannel<?>>> bone = timeline.computeIfAbsent(boneName, _ -> new HashMap<>());
+                KeyframeType type = keyframe.type();
+                Map<KeyframeType, TreeMap<Double, KeyframeChannel<?>>> bone = timeline.computeIfAbsent(boneName, _ -> new HashMap<>());
                 TreeMap<Double, KeyframeChannel<?>> boneByType = bone.computeIfAbsent(type, _ -> new TreeMap<>());
 
                 if (KeyframeChannel.class.isAssignableFrom(keyframe.getClass()))
@@ -40,7 +40,7 @@ public class Timeline
         });
     }
 
-    public KeyframeChannel<?> getNextKeyframe(KeyframeType<?> type, double time, String boneName)
+    public KeyframeChannel<?> getNextKeyframe(KeyframeType type, double time, String boneName)
     {
         var keyframesForBone = timeline.get(boneName);
         if (keyframesForBone == null) return null;
@@ -56,7 +56,7 @@ public class Timeline
         return keyframesByType.lastEntry().getValue();
     }
 
-    public KeyframeChannel<?> getLastKeyframe(KeyframeType<?> type, double time, String boneName)
+    public KeyframeChannel<?> getLastKeyframe(KeyframeType type, double time, String boneName)
     {
         var keyframesForBone = timeline.get(boneName);
         if (keyframesForBone == null) return null;

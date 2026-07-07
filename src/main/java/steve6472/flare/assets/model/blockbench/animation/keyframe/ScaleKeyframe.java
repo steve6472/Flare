@@ -1,6 +1,6 @@
 package steve6472.flare.assets.model.blockbench.animation.keyframe;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import org.joml.Matrix4f;
 import steve6472.core.util.MathUtil;
 import steve6472.flare.assets.model.blockbench.animation.Interpolation;
@@ -16,17 +16,11 @@ import java.util.List;
  */
 public final class ScaleKeyframe extends AnimationKeyframeChannel<Vec3DataPoint>
 {
-    public static final Codec<ScaleKeyframe> CODEC = createKeyframe(Vec3DataPoint.CODEC, ScaleKeyframe::new);
+    public static final MapCodec<ScaleKeyframe> CODEC = createKeyframe(Vec3DataPoint.CODEC, ScaleKeyframe::new);
 
     public ScaleKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)
     {
-        super(interpolation, time, dataPoints);
-    }
-
-    @Override
-    public KeyframeType<?> getType()
-    {
-        return KeyframeType.SCALE;
+        super(KeyframeType.SCALE, interpolation, time, dataPoints);
     }
 
     @Override
@@ -40,5 +34,11 @@ public final class ScaleKeyframe extends AnimationKeyframeChannel<Vec3DataPoint>
         double z = MathUtil.lerp(first.xyz().z(), second.xyz().z(), ticks);
 
         transform.scale((float) x * (invert ? -1f : 1f), (float) y * (invert ? -1f : 1f), (float) z * (invert ? -1f : 1f));
+    }
+
+    @Override
+    public MapCodec<? extends KeyFrame> codec()
+    {
+        return CODEC;
     }
 }

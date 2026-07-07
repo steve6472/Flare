@@ -5,14 +5,12 @@ import org.joml.Vector3f;
 import steve6472.core.log.Log;
 import steve6472.core.registry.Key;
 import steve6472.flare.FlareConstants;
-import steve6472.flare.registry.FlareRegistries;
+import steve6472.flare.registry.BuiltInFlareRegistries;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.Vertex;
 import steve6472.flare.ui.textures.SpriteEntry;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -41,7 +39,7 @@ public abstract class UIRenderImpl
 
     protected final SpriteEntry getTextureEntry(Key textureKey)
     {
-        SpriteEntry uiTextureEntry = FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).getSprite(textureKey);
+        SpriteEntry uiTextureEntry = BuiltInFlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).orElseThrow().value().getSprite(textureKey);
         if (uiTextureEntry.key().equals(FlareConstants.ERROR_TEXTURE))
         {
             Log.warningOnce(LOGGER, "Missing UI Texture for " + textureKey);

@@ -1,9 +1,9 @@
 package steve6472.flare.assets.atlas;
 
 import steve6472.core.registry.Key;
+import steve6472.core.registry.Registry;
 import steve6472.flare.FlareParts;
 import steve6472.flare.core.Flare;
-import steve6472.flare.registry.FlareRegistries;
 
 import java.util.*;
 
@@ -14,14 +14,18 @@ import java.util.*;
  */
 public class AtlasLoader
 {
-    public static void boostrap()
+    public static void boostrap(Registry<Atlas> registry)
     {
         Map<Key, List<Atlas>> atlases = new LinkedHashMap<>();
 
+        // Load all atlases, do not repleace if key collision occures
         Flare.getModuleManager().loadParts(FlareParts.ATLAS, SpriteAtlas.CODEC, (atlas, key) -> {
             atlas.key = key;
             atlases.computeIfAbsent(key, _ -> new ArrayList<>()).add(atlas);
         });
+
+        // Merge atlases with the same key
+        List<Atlas> mergedAtlases = new ArrayList<>(atlases.size());
 
         atlases.forEach((_, arr) ->
         {
@@ -32,19 +36,19 @@ public class AtlasLoader
                 last.mergeWith(arr.get(i));
             }
 
-            FlareRegistries.ATLAS.register(last);
+            mergedAtlases.add(last);
+            Registry.register(registry, last.key, last);
         });
 
         // Load the sprites
-        Collection<Key> keys = List.copyOf(FlareRegistries.ATLAS.keys());
-        keys.forEach(key ->
+        for (Atlas atlas : mergedAtlases)
         {
-            Atlas atlas = FlareRegistries.ATLAS.get(key);
             atlas.create();
 
-            if (atlas instanceof SpriteAtlas spriteAtlas)
-                if (spriteAtlas.getAnimationAtlas() != null)
-                    FlareRegistries.ATLAS.register(spriteAtlas.getAnimationAtlas());
-        });
+            if (atlas instanceof SpriteAtlas spriteAtlas && spriteAtlas.getAnimationAtlas() != null)
+            {
+                Registry.register(registry, spriteAtlas.getAnimationAtlas().key, spriteAtlas.getAnimationAtlas());
+            }
+        }
     }
 }

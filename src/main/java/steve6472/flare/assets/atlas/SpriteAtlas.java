@@ -13,11 +13,13 @@ import steve6472.flare.assets.atlas.source.SourceResult;
 import steve6472.flare.core.Flare;
 import steve6472.flare.framebuffer.AnimatedAtlasFrameBuffer;
 import steve6472.flare.registry.FlareRegistries;
+import steve6472.flare.registry.VkSetup;
 
 import java.awt.image.BufferedImage;
 import java.util.*;
 
 import static org.lwjgl.vulkan.VK10.*;
+
 /**
  * Created by steve6472
  * Date: 7/18/2025
@@ -78,13 +80,13 @@ public class SpriteAtlas extends Atlas
     }
 
     @Override
-    void createVkResource(BufferedImage image, VkDevice device, Commands commands, VkQueue graphicsQueue)
+    TextureSampler createVkResource(BufferedImage image, VkSetup setup)
     {
         if (animationAtlas != null)
         {
-            this.frameBuffer = new AnimatedAtlasFrameBuffer(device, image.getWidth(), image.getHeight(), VK_FORMAT_R8G8B8A8_UNORM,
+            this.frameBuffer = new AnimatedAtlasFrameBuffer(setup.device(), image.getWidth(), image.getHeight(), VK_FORMAT_R8G8B8A8_UNORM,
                 VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
-            this.frameBuffer.fromImage(image, device, commands, graphicsQueue);
+            this.frameBuffer.fromImage(image, setup.device(), setup.commands(), setup.graphicsQueue());
             this.frameBuffer.createRenderPass();
             this.frameBuffer.createFrameBuffer();
 
@@ -96,17 +98,16 @@ public class SpriteAtlas extends Atlas
             TextureSampler sampler = new TextureSampler(key());
             sampler.texture = texture;
             sampler.textureImageView = frameBuffer.imageView;
-            sampler.textureSampler = sampler.createSampler(device, VK_FILTER_NEAREST, VK_SAMPLER_MIPMAP_MODE_NEAREST, false);
+            sampler.textureSampler = sampler.createSampler(setup.device(), VK_FILTER_NEAREST, VK_SAMPLER_MIPMAP_MODE_NEAREST, false);
             this.sampler = sampler;
-            FlareRegistries.SAMPLER.register(sampler);
-
+            return sampler;
         } else
         {
             Texture texture = new Texture();
-            texture.createTextureImageFromBufferedImage(device, image, commands.commandPool, graphicsQueue);
-            TextureSampler sampler = new TextureSampler(texture, device, key(), VK_FILTER_NEAREST, VK_SAMPLER_MIPMAP_MODE_NEAREST, false);
+            texture.createTextureImageFromBufferedImage(setup.device(), image, setup.commands().commandPool, setup.graphicsQueue());
+            TextureSampler sampler = new TextureSampler(texture, setup.device(), key(), VK_FILTER_NEAREST, VK_SAMPLER_MIPMAP_MODE_NEAREST, false);
             this.sampler = sampler;
-            FlareRegistries.SAMPLER.register(sampler);
+            return sampler;
         }
     }
 

@@ -1,6 +1,5 @@
 package steve6472.flare.input;
 
-import steve6472.core.registry.ObjectRegistry;
 import steve6472.core.registry.Registry;
 
 import java.util.Collection;
@@ -17,13 +16,8 @@ public class KeybindUpdater
         keybinds.forEach(keybind -> keybind.input = input);
     }
 
-    public static void updateKeybinds(ObjectRegistry<Keybind> keybinds, UserInput input)
-    {
-        keybinds.keys().forEach(key -> keybinds.get(key).input = input);
-    }
-
     public static void updateKeybinds(Registry<Keybind> keybinds, UserInput input)
     {
-        keybinds.getMap().forEach((_, keybind) -> keybind.input = input);
+        keybinds.listElements().forEach(ref -> ref.value().input = input);
     }
 }

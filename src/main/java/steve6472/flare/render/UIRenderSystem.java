@@ -12,6 +12,7 @@ import steve6472.flare.descriptors.DescriptorPool;
 import steve6472.flare.descriptors.DescriptorSetLayout;
 import steve6472.flare.descriptors.DescriptorWriter;
 import steve6472.flare.pipeline.Pipelines;
+import steve6472.flare.registry.BuiltInFlareRegistries;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.render.impl.UIRenderImpl;
 import steve6472.flare.struct.Struct;
@@ -89,7 +90,7 @@ public final class UIRenderSystem extends RenderSystem
                 DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
                 frame.descriptorSet = descriptorWriter
                     .writeBuffer(0, stack, frame.uboBuffer, UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT)
-                    .writeImage(1, stack, FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).getSampler())
+                    .writeImage(1, stack, BuiltInFlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).orElseThrow().value().getSampler())
                     .writeBuffer(2, stack, frame.sboTextureSettings)
                     .build();
             }
@@ -156,7 +157,7 @@ public final class UIRenderSystem extends RenderSystem
 
     private Struct updateUITextures()
     {
-        Struct[] textureSettings = FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).createTextureSettings();
+        Struct[] textureSettings = BuiltInFlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).orElseThrow().value().createTextureSettings();
         return SBO.SPRITE_ENTRIES.create((Object) textureSettings);
     }
 

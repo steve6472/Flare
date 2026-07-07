@@ -16,19 +16,12 @@ import java.util.stream.IntStream;
  */
 public class Keybind implements Keyable, Serializable<Keybind>
 {
-    private static final Codec<Keybind> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-        Key.CODEC.fieldOf("key").forGetter(o -> o.key),
-        KeybindType.CODEC.fieldOf("type").forGetter(o -> o.keybindType),
-        Codec.BOOL.fieldOf("require_order").forGetter(o -> o.requireOrder),
-        Codec.BOOL.fieldOf("mouse").forGetter(o -> o.mouse),
-        Codec.INT.listOf().fieldOf("keys").forGetter(o -> IntStream.of(o.keys).boxed().toList())
-    ).apply(instance, (key, keybindType, requireOrder, mouse, keys) -> new Keybind(key, keybindType, requireOrder, mouse, keys.stream().mapToInt(i -> i).toArray())));
-
     private final Key key;
     private final KeybindType keybindType;
     private final boolean requireOrder;
     private final boolean mouse;
     private final int[] keys;
+    private final Codec<Keybind> codec;
 
     UserInput input;
 
@@ -42,6 +35,7 @@ public class Keybind implements Keyable, Serializable<Keybind>
         this.requireOrder = requireOrder;
         this.mouse = mouse;
         this.keys = keys;
+        this.codec = makeCodec();
 
         if (IntStream.of(keys).unordered().distinct().count() != keys.length)
             throw new RuntimeException("Keybind invalid, contains multiple of the same key!");
@@ -55,6 +49,17 @@ public class Keybind implements Keyable, Serializable<Keybind>
     public static Keybind mouse(Key key, KeybindType keybindType, int mouseKey)
     {
         return new Keybind(key, keybindType, false, true, mouseKey);
+    }
+    
+    private Codec<Keybind> makeCodec()
+    {
+        return RecordCodecBuilder.create(instance -> instance.group(
+            Key.makeCodec(key.namespace()).fieldOf("key").forGetter(o -> o.key),
+            KeybindType.CODEC.fieldOf("type").forGetter(o -> o.keybindType),
+            Codec.BOOL.fieldOf("require_order").forGetter(o -> o.requireOrder),
+            Codec.BOOL.fieldOf("mouse").forGetter(o -> o.mouse),
+            Codec.INT.listOf().fieldOf("keys").forGetter(o -> IntStream.of(o.keys).boxed().toList())
+        ).apply(instance, (key, keybindType, requireOrder, mouse, keys) -> new Keybind(key, keybindType, requireOrder, mouse, keys.stream().mapToInt(i -> i).toArray())));
     }
 
     public boolean isActive()
@@ -110,7 +115,7 @@ public class Keybind implements Keyable, Serializable<Keybind>
     @Override
     public Codec<Keybind> codec()
     {
-        return CODEC;
+        return codec;
     }
 
     @Override

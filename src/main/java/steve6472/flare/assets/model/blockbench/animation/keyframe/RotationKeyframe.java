@@ -1,6 +1,6 @@
 package steve6472.flare.assets.model.blockbench.animation.keyframe;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import org.joml.Matrix4f;
 import steve6472.core.util.MathUtil;
 import steve6472.flare.FlareConstants;
@@ -17,17 +17,11 @@ import java.util.List;
  */
 public final class RotationKeyframe extends AnimationKeyframeChannel<Vec3DataPoint>
 {
-    public static final Codec<RotationKeyframe> CODEC = createKeyframe(Vec3DataPoint.CODEC, RotationKeyframe::new);
+    public static final MapCodec<RotationKeyframe> CODEC = createKeyframe(Vec3DataPoint.CODEC, RotationKeyframe::new);
 
     public RotationKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)
     {
-        super(interpolation, time, dataPoints);
-    }
-
-    @Override
-    public KeyframeType<?> getType()
-    {
-        return KeyframeType.ROTATION;
+        super(KeyframeType.ROTATION, interpolation, time, dataPoints);
     }
 
     @Override
@@ -43,5 +37,11 @@ public final class RotationKeyframe extends AnimationKeyframeChannel<Vec3DataPoi
         transform.rotateZ((float) z * (invert ? -1f : 1f));
         transform.rotateY((float) -y * (invert ? -1f : 1f));
         transform.rotateX((float) -x * (invert ? -1f : 1f));
+    }
+
+    @Override
+    public MapCodec<? extends KeyFrame> codec()
+    {
+        return CODEC;
     }
 }

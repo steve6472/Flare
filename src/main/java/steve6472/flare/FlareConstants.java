@@ -1,9 +1,13 @@
 package steve6472.flare;
 
+import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.vulkan.VkExtent2D;
 import steve6472.core.SteveCore;
+import steve6472.core.network.BufferCodec;
+import steve6472.core.network.BufferCodecs;
 import steve6472.core.registry.Key;
 import steve6472.flare.pipeline.Pipeline;
 
@@ -94,4 +98,8 @@ public class FlareConstants
     {
         return Key.withNamespace(NAMESPACE, id);
     }
+
+    public static final Codec<Key> FLARE_KEY_CODEC = Key.makeCodec(NAMESPACE);
+
+    public static final BufferCodec<ByteBuf, Key> FLARE_BUFFER_KEY_CODEC = BufferCodecs.makeKey(NAMESPACE);
 }

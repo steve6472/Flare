@@ -1,6 +1,6 @@
 package steve6472.flare.assets.model.blockbench.animation.keyframe;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import org.joml.Matrix4f;
 import steve6472.core.util.MathUtil;
 import steve6472.flare.FlareConstants;
@@ -17,17 +17,11 @@ import java.util.List;
  */
 public final class PositionKeyframe extends AnimationKeyframeChannel<Vec3DataPoint>
 {
-    public static final Codec<PositionKeyframe> CODEC = createKeyframe(Vec3DataPoint.CODEC, PositionKeyframe::new);
+    public static final MapCodec<PositionKeyframe> CODEC = createKeyframe(Vec3DataPoint.CODEC, PositionKeyframe::new);
 
     public PositionKeyframe(Interpolation interpolation, double time, List<Vec3DataPoint> dataPoints)
     {
-        super(interpolation, time, dataPoints);
-    }
-
-    @Override
-    public KeyframeType<?> getType()
-    {
-        return KeyframeType.POSITION;
+        super(KeyframeType.POSITION, interpolation, time, dataPoints);
     }
 
     @Override
@@ -41,5 +35,11 @@ public final class PositionKeyframe extends AnimationKeyframeChannel<Vec3DataPoi
         double z = MathUtil.lerp(first.xyz().z(), second.xyz().z(), ticks) * FlareConstants.BB_MODEL_SCALE;
 
         transform.translateLocal((float) -x * (invert ? -1f : 1f), (float) y * (invert ? -1f : 1f), (float) z * (invert ? -1f : 1f));
+    }
+
+    @Override
+    public MapCodec<? extends KeyFrame> codec()
+    {
+        return CODEC;
     }
 }

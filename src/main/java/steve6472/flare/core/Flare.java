@@ -10,6 +10,8 @@ import org.lwjgl.vulkan.*;
 import steve6472.core.SteveCore;
 import steve6472.core.log.Log;
 import steve6472.core.module.ModuleManager;
+import steve6472.core.registry.Holder;
+import steve6472.core.registry.RegistryCore;
 import steve6472.core.setting.SettingsLoader;
 import steve6472.core.util.JarExport;
 import steve6472.flare.*;
@@ -17,8 +19,7 @@ import steve6472.flare.assets.atlas.Atlas;
 import steve6472.flare.assets.atlas.SpriteAtlas;
 import steve6472.flare.input.UserInput;
 import steve6472.flare.pipeline.shader.ShaderCache;
-import steve6472.flare.registry.RegistryCreators;
-import steve6472.flare.registry.FlareRegistries;
+import steve6472.flare.registry.*;
 import steve6472.flare.settings.ValidationLevel;
 import steve6472.flare.settings.VisualSettings;
 import steve6472.flare.tracy.FlareProfiler;
@@ -81,7 +82,6 @@ public class Flare
             throw new RuntimeException("Flare already started!");
 
         Flare Flare = new Flare();
-        SteveCore.DEFAULT_KEY_NAMESPACE = app.defaultNamespace();
         SteveCore.CORE_MODULE = FlareConstants.NAMESPACE;
         INSTANCE = Flare;
         Flare.app = app;
@@ -103,17 +103,46 @@ public class Flare
         Profiler profiler = FlareProfiler.startup();
         profiler.start();
 
+        profiler.popPush("setup");
+        Setup setupEvents = new Setup();
+        setupEvents.createGroups().addListener(_ -> FlareRegistryGroups.bootstrap());
+        setupEvents.createRegistries().addListener(_ -> BuiltInFlareRegistries.bootstrap());
+        setupEvents.loadSettings().addListener(_ -> {
+            SettingsLoader.loadFromJsonFile(FlareRegistries.VISUAL_SETTINGS, FlareConstants.VISUAL_SETTINGS_FILE);
+            SettingsLoader.loadFromJsonFile(FlareRegistries.FONT_DEBUG_SETTINGS, FlareConstants.FONT_DEBUG_SETTINGS_FILE);
+        });
+        setupEvents.bootstrapRegistries().addListener(_ -> {
+            RegistryCore.STATIC.bootstrap();
+            RegistryCore.DYNAMIC.bootstrap();
+            UnknownCharacter.init();
+        });
+
+        app.setup(setupEvents);
+
         profiler.push("createWindow");
-        window = new Window(app.windowTitle());
+        window = new Window(setupEvents.getWindowTitle());
         app.userInput = new UserInput(window);
-        profiler.popPush("preInit");
-        app.preInit();
         profiler.popPush("setupCamera");
         app.camera = app.setupCamera();
         profiler.popPush("initContent");
-        initContent(); // initRegistries & loadSettings
+        // initRegistries & loadSettings
+        /* Init content */
+        setupEvents.createGroups().trigger();
+        setupEvents.createRegistries().trigger();
+        RegistryCore.freezeRoot();
+        // Load settings
+        RegistryCore.SETTINGS.bootstrap();
+        setupEvents.loadSettings().trigger();
+
+        moduleManager = new ModuleManager();
+        moduleManager.loadModules();
+
+        setupEvents.bootstrapRegistries().trigger();
+        verifyFlareDefaults();
+        /* Init content */
+
         profiler.popPush("initVulkan");
-        initVulkan(); // createRenderSystems
+        initVulkan(setupEvents); // createRenderSystems
         profiler.popPush("postInit");
         app.postInit();
         profiler.pop();
@@ -169,21 +198,6 @@ public class Flare
         }
     }
 
-    private void initContent()
-    {
-        RegistryCreators.init(FlareRegistries.VISUAL_SETTINGS);
-        app.initRegistries();
-
-        moduleManager = new ModuleManager();
-        moduleManager.loadModules();
-
-        RegistryCreators.createContents();
-        SettingsLoader.loadFromJsonFile(FlareRegistries.VISUAL_SETTINGS, FlareConstants.VISUAL_SETTINGS_FILE);
-        SettingsLoader.loadFromJsonFile(FlareRegistries.FONT_DEBUG_SETTINGS, FlareConstants.FONT_DEBUG_SETTINGS_FILE);
-        app.loadSettings();
-        verifyFlareDefaults();
-    }
-
     private void verifyFlareDefaults()
     {
         var exception = new IllegalStateException(
@@ -192,9 +206,9 @@ public class Flare
         );
 
         // Font
-        FontEntry fontEntry = FlareRegistries.FONT.get(UnknownCharacter.FONT_KEY);
-        FontStyleEntry fontStyle = FlareRegistries.FONT_STYLE.get(UnknownCharacter.STYLE_KEY);
-        if (fontEntry == null || fontStyle == null)
+        Optional<Holder.Reference<FontEntry>> fontEntry = BuiltInFlareRegistries.FONT.get(UnknownCharacter.FONT_KEY);
+        Optional<Holder.Reference<FontStyleEntry>> fontStyle = BuiltInFlareRegistries.FONT_STYLE.get(UnknownCharacter.STYLE_KEY);
+        if (fontEntry.isEmpty() || fontStyle.isEmpty())
         {
             LOGGER.severe("Font for unknown character not found!");
             LOGGER.severe("Entry: " + fontEntry);
@@ -203,24 +217,24 @@ public class Flare
         }
 
         // Atlas
-        if (FlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI) == null)
+        if (BuiltInFlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).isEmpty())
         {
             LOGGER.severe("Flare Atlas 'ui' does not exist!");
             throw exception;
         }
 
-        if (FlareRegistries.ATLAS.get(FlareConstants.ATLAS_BLOCKBENCH) == null)
+        if (BuiltInFlareRegistries.ATLAS.get(FlareConstants.ATLAS_BLOCKBENCH).isEmpty())
         {
             LOGGER.severe("Flare Atlas 'model' does not exist!");
             throw exception;
         }
     }
 
-    private void initVulkan()
+    private void initVulkan(Setup setup)
     {
         Profiler profiler = FlareProfiler.frame();
         profiler.push("createInstance");
-        createInstance();
+        createInstance(setup);
         profiler.popPush("setupDebugMessenger");
         debugMessenger = VulkanValidation.setupDebugMessenger(instance);
         profiler.popPush("createSurface");
@@ -234,7 +248,10 @@ public class Flare
         profiler.popPush("createCommandPool");
         commands.createCommandPool(device, surface);
         profiler.popPush("createVkContents");
-        RegistryCreators.createVkContents(device, commands, graphicsQueue);
+
+        FlareRegistryGroups.VULKAN_RESOURCE.bootstrap(new VkSetup(device, commands, graphicsQueue));
+        //RegistryCreators.createVkContents(device, commands, graphicsQueue);
+
         renderer = new MasterRenderer(window, device, graphicsQueue, presentQueue, commands, surface);
         profiler.popPush("createRenderSystems");
         app.createRenderSystems(renderer);
@@ -355,12 +372,12 @@ public class Flare
         ShaderCache.cleanup(device);
         app.cleanup();
 
-        FlareRegistries.STATIC_MODEL.keys().forEach(key -> FlareRegistries.STATIC_MODEL.get(key).destroy());
-        FlareRegistries.ANIMATED_MODEL.keys().forEach(key -> FlareRegistries.ANIMATED_MODEL.get(key).destroy());
-        FlareRegistries.SAMPLER.keys().forEach(key -> FlareRegistries.SAMPLER.get(key).cleanup(device));
-        FlareRegistries.ATLAS.keys().forEach(key ->
-        {
-            Atlas atlas = FlareRegistries.ATLAS.get(key);
+        BuiltInFlareRegistries.STATIC_MODEL.listElements().forEach(ref -> ref.value().destroy());
+        BuiltInFlareRegistries.ANIMATED_MODEL.listElements().forEach(ref -> ref.value().destroy());
+        BuiltInFlareRegistries.SAMPLER.listElements().forEach(ref -> ref.value().cleanup(device));
+
+        BuiltInFlareRegistries.ATLAS.listElements().forEach(ref -> {
+            Atlas atlas = ref.value();
             if (atlas instanceof SpriteAtlas spriteAtlas && spriteAtlas.frameBuffer != null)
                 spriteAtlas.frameBuffer.cleanup();
         });
@@ -377,7 +394,7 @@ public class Flare
         glfwTerminate();
     }
 
-    private void createInstance()
+    private void createInstance(Setup setup)
     {
         if (VisualSettings.VALIDATION_LEVEL.get() != ValidationLevel.NONE && !VulkanValidation.checkValidationLayerSupport())
         {
@@ -389,9 +406,9 @@ public class Flare
             VkApplicationInfo appInfo = VkApplicationInfo.calloc(stack);
 
             appInfo.sType(VK_STRUCTURE_TYPE_APPLICATION_INFO);
-            appInfo.pApplicationName(stack.UTF8Safe(app.windowTitle()));
+            appInfo.pApplicationName(stack.UTF8(setup.getWindowTitle()));
             appInfo.applicationVersion(VK_MAKE_VERSION(1, 0, 0));
-            appInfo.pEngineName(stack.UTF8Safe("No Engine"));
+            appInfo.pEngineName(stack.UTF8("No Engine"));
             appInfo.engineVersion(VK_MAKE_VERSION(1, 0, 0));
             appInfo.apiVersion(VK_API_VERSION_1_2);
 

@@ -14,7 +14,6 @@ import steve6472.flare.assets.model.blockbench.animation.ik.Ik;
 import steve6472.flare.assets.model.blockbench.animation.keyframe.*;
 import steve6472.flare.assets.model.blockbench.outliner.OutlinerElement;
 import steve6472.flare.assets.model.blockbench.outliner.OutlinerUUID;
-import steve6472.flare.assets.model.primitive.PrimitiveSkinModel;
 import steve6472.orlang.OrlangEnvironment;
 
 import static steve6472.flare.render.debug.DebugRender.*;
@@ -142,7 +141,7 @@ public class AnimationTicker
 
     // TODO: some way to programmatically set the end effector for specific IK
 
-    public void animateBone(String boneName, KeyframeType<?> type, double currentAnimationTime, Matrix4f transform, boolean invert, OrlangEnvironment env)
+    public void animateBone(String boneName, KeyframeType type, double currentAnimationTime, Matrix4f transform, boolean invert, OrlangEnvironment env)
     {
         KeyframeChannel<?> lastKeyframe = timeline.getLastKeyframe(type, currentAnimationTime, boneName);
 
@@ -165,7 +164,7 @@ public class AnimationTicker
         }
     }
 
-    public double animateEffects(KeyframeType<?> type, double currentAnimationTime, double testTime)
+    public double animateEffects(KeyframeType type, double currentAnimationTime, double testTime)
     {
         KeyframeChannel<?> lastKeyframe = timeline.getLastKeyframe(type, currentAnimationTime, EFFECTS_NAME);
 

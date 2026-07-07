@@ -3,7 +3,9 @@ package steve6472.flare.ui.font.style;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Vector2f;
+import steve6472.core.registry.Holder;
 import steve6472.core.registry.Key;
+import steve6472.core.registry.RegistryCodec;
 import steve6472.core.util.ExtraCodecs;
 import steve6472.flare.FlareConstants;
 import steve6472.flare.registry.FlareRegistries;
@@ -18,10 +20,10 @@ import steve6472.flare.ui.font.layout.AtlasData;
  * Date: 11/10/2024
  * Project: Flare <br>
  */
-public record FontStyle(FontEntry fontEntry, ColorSoftThick base, ColorSoftThick outline, ColorSoftThick shadow, Flags flags, Vector2f shadowOffset)
+public record FontStyle(Holder<FontEntry> fontEntry, ColorSoftThick base, ColorSoftThick outline, ColorSoftThick shadow, Flags flags, Vector2f shadowOffset)
 {
     public static final Codec<FontStyle> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-        ExtraCodecs.keyedFromRegistry(FlareRegistries.FONT).fieldOf("font").forGetter(FontStyle::fontEntry),
+        RegistryCodec.create(FlareRegistries.FONT).fieldOf("font").forGetter(FontStyle::fontEntry),
         ColorSoftThick.CODEC.optionalFieldOf("base", ColorSoftThick.EMPTY).forGetter(FontStyle::base),
         ColorSoftThick.CODEC.optionalFieldOf("outline", ColorSoftThick.EMPTY).forGetter(FontStyle::outline),
         ColorSoftThick.CODEC.optionalFieldOf("shadow", ColorSoftThick.EMPTY).forGetter(FontStyle::shadow),
@@ -31,7 +33,7 @@ public record FontStyle(FontEntry fontEntry, ColorSoftThick base, ColorSoftThick
 
     public Font font()
     {
-        return fontEntry.font();
+        return fontEntry.value().font();
     }
 
     public static final Key DEFAULT = FlareConstants.key("arial");

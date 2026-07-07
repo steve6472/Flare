@@ -1,6 +1,7 @@
 package steve6472.flare.assets.model.blockbench.element;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -8,7 +9,6 @@ import steve6472.core.util.ExtraCodecs;
 import steve6472.core.util.ImagePacker;
 import steve6472.flare.FlareConstants;
 import steve6472.flare.assets.model.blockbench.Element;
-import steve6472.flare.assets.model.blockbench.ElementType;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
 
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.UUID;
  */
 public record NullObjectElement(UUID uuid, String name, Vector3f position, String ikTarget, String ikSource, boolean lockIkTargetRotation) implements Element
 {
-    public static final Codec<NullObjectElement> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final MapCodec<NullObjectElement> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
         ExtraCodecs.UUID.fieldOf("uuid").forGetter(o -> o.uuid),
         Codec.STRING.fieldOf("name").forGetter(o -> o.name),
         ExtraCodecs.VEC_3F.fieldOf("position").forGetter(o -> o.position),
@@ -37,12 +37,6 @@ public record NullObjectElement(UUID uuid, String name, Vector3f position, Strin
             ikSource1,
             lockIkTargetRotation1))
     );
-
-    @Override
-    public ElementType<?> getType()
-    {
-        return ElementType.NULL_OBJECT;
-    }
 
     @Override
     public void fixUvs(LoadedModel model, ImagePacker packer) { }
@@ -63,5 +57,11 @@ public record NullObjectElement(UUID uuid, String name, Vector3f position, Strin
     public List<Vector2f> toUVs()
     {
         return List.of();
+    }
+
+    @Override
+    public MapCodec<? extends Element> codec()
+    {
+        return CODEC;
     }
 }

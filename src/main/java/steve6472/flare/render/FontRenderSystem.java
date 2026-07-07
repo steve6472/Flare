@@ -5,9 +5,9 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import org.joml.*;
 import org.joml.Math;
 import org.lwjgl.system.MemoryStack;
-import steve6472.core.registry.Key;
 import steve6472.flare.Camera;
 import steve6472.flare.assets.TextureSampler;
+import steve6472.flare.registry.BuiltInFlareRegistries;
 import steve6472.flare.struct.def.SBO;
 import steve6472.flare.ui.font.*;
 import steve6472.flare.MasterRenderer;
@@ -17,7 +17,6 @@ import steve6472.flare.descriptors.DescriptorPool;
 import steve6472.flare.descriptors.DescriptorSetLayout;
 import steve6472.flare.descriptors.DescriptorWriter;
 import steve6472.flare.pipeline.builder.PipelineConstructor;
-import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.UBO;
 import steve6472.flare.ui.font.layout.GlyphInfo;
@@ -28,7 +27,6 @@ import steve6472.flare.util.MatrixAnim;
 import java.nio.LongBuffer;
 import java.text.BreakIterator;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static org.lwjgl.vulkan.VK10.*;
@@ -50,14 +48,13 @@ public class FontRenderSystem extends RenderSystem
     {
         super(masterRenderer, pipeline);
 
-        int fontCount = FlareRegistries.FONT.keys().size();
+        int fontCount = (int) BuiltInFlareRegistries.FONT.listElements().count();
         TextureSampler[] fontSamplers = new TextureSampler[fontCount];
 
-        for (Key key : FlareRegistries.FONT.keys())
-        {
-            FontEntry fontEntry = FlareRegistries.FONT.get(key);
-            fontSamplers[fontEntry.index()] = FlareRegistries.SAMPLER.get(key);
-        }
+        BuiltInFlareRegistries.FONT.listElements().forEach(ref -> {
+            FontEntry fontEntry = ref.value();
+            fontSamplers[fontEntry.index()] = BuiltInFlareRegistries.SAMPLER.get(ref.key().resource()).orElseThrow().value();
+        });
 
         globalSetLayout = DescriptorSetLayout
             .builder(device)
@@ -185,12 +182,12 @@ public class FontRenderSystem extends RenderSystem
 
     private Struct updateFontStylesSBO()
     {
-        Collection<Key> keys = FlareRegistries.FONT_STYLE.keys();
-        Struct[] styles = new Struct[keys.size()];
-        keys.forEach(key ->
-        {
-            FontStyleEntry fontStyleEntry = FlareRegistries.FONT_STYLE.get(key);
-            styles[fontStyleEntry.index()] = fontStyleEntry.style().toStruct(fontStyleEntry.style().fontEntry());
+        int count = (int) BuiltInFlareRegistries.FONT_STYLE.listElements().count();
+
+        Struct[] styles = new Struct[count];
+        BuiltInFlareRegistries.FONT_STYLE.listElements().forEach(ref -> {
+            FontStyleEntry value = ref.value();
+            styles[value.index()] = value.style().toStruct(value.style().fontEntry().value());
         });
 
         return SBO.MSDF_FONT_STYLES.create((Object) styles);
@@ -215,7 +212,7 @@ public class FontRenderSystem extends RenderSystem
     private void createTextLine(TextLineObject textObject, Camera camera, List<Struct> structs)
     {
         TextLine line = textObject.line();
-        FontStyleEntry style = line.style();
+        FontStyleEntry style = line.style().value();
         Font font = style.style().font();
         float size = line.size();
 

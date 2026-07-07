@@ -1,7 +1,7 @@
 package steve6472.test;
 
 import org.lwjgl.glfw.GLFW;
-import steve6472.core.registry.Key;
+import steve6472.core.registry.Registry;
 import steve6472.flare.FlareConstants;
 import steve6472.flare.input.Keybind;
 import steve6472.flare.input.KeybindType;
@@ -35,7 +35,11 @@ public class TestKeybinds
 
     private static Keybind register(Keybind keybind)
     {
-        TestRegistries.KEYBIND.register(keybind);
-        return keybind;
+        return Registry.register(TestBuiltInRegistries.KEYBIND, keybind.key(), keybind);
+    }
+
+    static void bootstrap(Registry<Keybind> ignored)
+    {
+        // This could fire an event if it is meant to be expandable
     }
 }

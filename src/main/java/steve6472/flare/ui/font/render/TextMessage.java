@@ -41,18 +41,18 @@ public record TextMessage(List<TextLine> lines, float textSize, float maxWidth, 
             if (indexWithinLine + 1 < textLine.charEntries().length)
             {
                 char nextC = textLine.charEntries()[indexWithinLine + 1];
-                FontStyleEntry style = textLine.style();
+                FontStyleEntry style = textLine.style().value();
                 nextChar = new MessageChar(style.style().font().glyphInfo(nextC), style, glyphSize);
             } else if (lines.size() < lineIndex + 1 && lines.get(lineIndex + 1).charEntries().length > 0)
             {
                 TextLine nextLine = lines.get(lineIndex + 1);
                 char nextC = nextLine.charEntries()[0];
-                FontStyleEntry style = nextLine.style();
+                FontStyleEntry style = nextLine.style().value();
                 float nextGlyphSize = nextLine.size() == TextLine.MESSAGE_SIZE ? textSize : nextLine.size();
                 nextChar = new MessageChar(style.style().font().glyphInfo(nextC), style, nextGlyphSize);
             }
 
-            FontStyleEntry style = textLine.style();
+            FontStyleEntry style = textLine.style().value();
             info.iterate(new MessageChar(style.style().font().glyphInfo(c), style, glyphSize), nextChar);
 
             indexWithinLine++;
@@ -77,7 +77,7 @@ public record TextMessage(List<TextLine> lines, float textSize, float maxWidth, 
             if (index < line.charEntries().length + totalLen)
             {
                 char c = line.charEntries()[index - totalLen];
-                return Pair.of(c, line.style());
+                return Pair.of(c, line.style().value());
             } else
             {
                 totalLen += line.charEntries().length;
@@ -116,7 +116,7 @@ public record TextMessage(List<TextLine> lines, float textSize, float maxWidth, 
             float glyphSize = textLine.size() == TextLine.MESSAGE_SIZE ? textSize : textLine.size();
 
             char c = textLine.charEntries()[indexWithinLine];
-            totalWidth += textLine.style().style().font().glyphInfo(c).advance() * glyphSize;
+            totalWidth += textLine.style().value().style().font().glyphInfo(c).advance() * glyphSize;
 
             indexWithinLine++;
             if (indexWithinLine >= textLine.charEntries().length)

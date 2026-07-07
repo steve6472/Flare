@@ -1,5 +1,6 @@
 package steve6472.test;
 
+import com.mojang.serialization.Codec;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
@@ -13,9 +14,10 @@ import steve6472.flare.FlareConstants;
 import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.core.FrameInfo;
 import steve6472.flare.core.FlareApp;
+import steve6472.flare.core.Setup;
 import steve6472.flare.input.KeybindUpdater;
 import steve6472.flare.pipeline.Pipelines;
-import steve6472.flare.registry.FlareRegistries;
+import steve6472.flare.registry.BuiltInFlareRegistries;
 import steve6472.flare.render.*;
 
 import java.io.File;
@@ -32,32 +34,29 @@ import static steve6472.flare.render.debug.DebugRender.RED;
 class TestApp extends FlareApp
 {
     private static final Logger LOGGER = Log.getLogger(TestApp.class);
+    public static final String NAMESPACE = "base_test";
     private static final File TEST_SETTINGS = new File("settings/test_settings.json");
     public static TestApp instance;
     public static boolean DUMP_SAMPLERS = false;
+    public static final Codec<Key> TEST_KEY = Key.makeCodec(NAMESPACE);
 
-    @Override
-    protected void preInit()
+    protected void setup(Setup setup)
     {
         instance = this;
+
+        setup.setWindowTitle("Test Flare App");
+
+        setup.createRegistries().addListener(_ -> TestBuiltInRegistries.bootstrap());
+
+        setup.loadSettings().addListener(_ -> {
+            SettingsLoader.loadFromJsonFile(TestRegistries.SETTING, TEST_SETTINGS);
+        });
     }
 
     @Override
     protected Camera setupCamera()
     {
         return new Camera();
-    }
-
-    @Override
-    protected void initRegistries()
-    {
-        initRegistry(TestRegistries.RARITY);
-    }
-
-    @Override
-    public void loadSettings()
-    {
-        SettingsLoader.loadFromJsonFile(TestRegistries.SETTING, TEST_SETTINGS);
     }
 
     @Override
@@ -90,7 +89,7 @@ class TestApp extends FlareApp
     @Override
     public void postInit()
     {
-        KeybindUpdater.updateKeybinds(TestRegistries.KEYBIND, input());
+        KeybindUpdater.updateKeybinds(TestBuiltInRegistries.KEYBIND, input());
 
         if (DUMP_SAMPLERS)
             dumpSamplers();
@@ -102,13 +101,14 @@ class TestApp extends FlareApp
         File file = getFile("/sampler");
 
         LOGGER.info("Generating new samplers");
-        for (Key key : FlareRegistries.SAMPLER.keys())
+        BuiltInFlareRegistries.SAMPLER.listElements().forEach(ref ->
         {
+            Key key = ref.key().resource();
             LOGGER.info("Dumping " + key);
             File dumpFile = new File(file, key.namespace() + "-" + key.id().replaceAll("/", "__") + ".png");
-            TextureSampler textureSampler = FlareRegistries.SAMPLER.get(key);
+            TextureSampler textureSampler = ref.value();
             textureSampler.texture.saveTextureAsPNG(device(), masterRenderer().getCommands(), masterRenderer().getGraphicsQueue(), dumpFile);
-        }
+        });
         LOGGER.info("Finished dumping samplers");
     }
 
@@ -270,20 +270,8 @@ class TestApp extends FlareApp
     {
     }
 
-    @Override
-    public String windowTitle()
-    {
-        return "Test Flare App";
-    }
-
-    @Override
-    public String defaultNamespace()
-    {
-        return "base_test";
-    }
-
     public static Key key(String key)
     {
-        return Key.withNamespace(instance.defaultNamespace(), key);
+        return Key.withNamespace(NAMESPACE, key);
     }
 }

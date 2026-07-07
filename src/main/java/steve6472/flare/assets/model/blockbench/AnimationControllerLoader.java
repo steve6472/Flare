@@ -1,9 +1,9 @@
 package steve6472.flare.assets.model.blockbench;
 
+import steve6472.core.registry.Registry;
 import steve6472.flare.FlareParts;
 import steve6472.flare.assets.model.blockbench.animation.controller.AnimationController;
 import steve6472.flare.core.Flare;
-import steve6472.flare.registry.FlareRegistries;
 
 /**
  * Created by steve6472
@@ -12,11 +12,11 @@ import steve6472.flare.registry.FlareRegistries;
  */
 public class AnimationControllerLoader
 {
-    public static void load()
+    public static void load(Registry<AnimationController> registry)
     {
         Flare.getModuleManager().loadModuleJsonCodecs(FlareParts.ANIMATION_CONTROLLER, AnimationController.CODEC, (_, _, key, result) -> {
             result.key = key;
-            FlareRegistries.ANIMATION_CONTROLLER.register(result);
+            Registry.register(registry, key, result);
         });
     }
 }

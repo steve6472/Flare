@@ -1,6 +1,6 @@
 package steve6472.flare.ui.textures.type;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 /**
  * Created by steve6472
@@ -10,15 +10,15 @@ import com.mojang.serialization.Codec;
 public final class Tile implements SpriteUI
 {
     private static final Tile INSTANCE = new Tile();
-    public static final Codec<Tile> CODEC = Codec.unit(INSTANCE);
+    public static final MapCodec<Tile> CODEC = MapCodec.unit(INSTANCE);
 
     private Tile()
     {
     }
 
     @Override
-    public SpriteUIType<?> getType()
+    public MapCodec<? extends SpriteUI> codec()
     {
-        return SpriteUIType.TILE;
+        return CODEC;
     }
 }

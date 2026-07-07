@@ -6,7 +6,7 @@ import steve6472.flare.assets.model.Model;
 import steve6472.flare.assets.model.blockbench.ErrorModel;
 import steve6472.flare.core.FrameInfo;
 import steve6472.flare.pipeline.builder.PipelineConstructor;
-import steve6472.flare.registry.FlareRegistries;
+import steve6472.flare.registry.BuiltInFlareRegistries;
 import steve6472.flare.render.common.CommonBuilder;
 import steve6472.flare.render.common.CommonRenderSystem;
 import steve6472.flare.render.common.FlightFrame;
@@ -29,7 +29,7 @@ public class StaticModelRenderSystem extends CommonRenderSystem
     public StaticModelRenderSystem(MasterRenderer masterRenderer, StaticModelRenderImpl renderImpl, PipelineConstructor pipeline)
     {
         super(masterRenderer, pipeline, CommonBuilder.create()
-            .entryImage(FlareRegistries.ATLAS.get(FlareConstants.ATLAS_BLOCKBENCH).getSampler())
+            .entryImage(BuiltInFlareRegistries.ATLAS.get(FlareConstants.ATLAS_BLOCKBENCH).orElseThrow().value().getSampler())
             .entrySBO(SBO.BLOCKBENCH_STATIC_TRANSFORMATIONS.sizeof(), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, VK_SHADER_STAGE_VERTEX_BIT));
 
         this.renderImpl = renderImpl;

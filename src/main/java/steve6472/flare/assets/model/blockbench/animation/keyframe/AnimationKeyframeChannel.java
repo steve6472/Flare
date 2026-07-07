@@ -14,9 +14,9 @@ import java.util.List;
  */
 public abstract class AnimationKeyframeChannel<T extends DataPoint> extends KeyframeChannel<T>
 {
-    public AnimationKeyframeChannel(Interpolation interpolation, double time, List<T> dataPoints)
+    public AnimationKeyframeChannel(KeyframeType type, Interpolation interpolation, double time, List<T> dataPoints)
     {
-        super(interpolation, time, dataPoints);
+        super(type, interpolation, time, dataPoints);
     }
 
     public abstract void processKeyframe(T first, T second, double ticks, Matrix4f transform, boolean invert, OrlangEnvironment env);

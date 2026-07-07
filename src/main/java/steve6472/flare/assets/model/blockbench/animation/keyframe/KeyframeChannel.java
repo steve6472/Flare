@@ -1,6 +1,7 @@
 package steve6472.flare.assets.model.blockbench.animation.keyframe;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import steve6472.flare.assets.model.blockbench.animation.Interpolation;
 import steve6472.flare.assets.model.blockbench.animation.datapoint.*;
@@ -15,12 +16,14 @@ import java.util.Objects;
  */
 public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
 {
+    private final KeyframeType type;
     private final Interpolation interpolation;
     private final double time;
     private final List<T> dataPoints;
 
-    public KeyframeChannel(Interpolation interpolation, double time, List<T> dataPoints)
+    public KeyframeChannel(KeyframeType type, Interpolation interpolation, double time, List<T> dataPoints)
     {
+        this.type = type;
         this.interpolation = interpolation;
         this.time = time;
         this.dataPoints = dataPoints;
@@ -32,13 +35,19 @@ public abstract class KeyframeChannel<T extends DataPoint> implements KeyFrame
         R apply(Interpolation interpolation, double time, List<T> dataPoints);
     }
 
-    protected static <T extends DataPoint, R extends KeyframeChannel<T>> Codec<R> createKeyframe(Codec<T> datapointCodec, Constructor<T, R> constructor)
+    protected static <T extends DataPoint, R extends KeyframeChannel<T>> MapCodec<R> createKeyframe(Codec<T> datapointCodec, Constructor<T, R> constructor)
     {
-        return RecordCodecBuilder.create(instance -> instance.group(
+        return RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Interpolation.CODEC.fieldOf("interpolation").forGetter(KeyframeChannel::interpolation),
                 Codec.DOUBLE.fieldOf("time").forGetter(KeyframeChannel::time),
                 datapointCodec.listOf().fieldOf("data_points").forGetter(KeyframeChannel::dataPoints))
             .apply(instance, constructor::apply));
+    }
+
+    @Override
+    public KeyframeType type()
+    {
+        return type;
     }
 
     public Interpolation interpolation()
