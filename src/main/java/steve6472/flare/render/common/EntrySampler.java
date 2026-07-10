@@ -2,6 +2,7 @@ package steve6472.flare.render.common;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
+import steve6472.core.registry.Holder;
 import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.descriptors.DescriptorWriter;
 
@@ -13,7 +14,7 @@ import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
  * Date: 9/7/2025
  * Project: Flare <br>
  */
-public record EntrySampler(TextureSampler textureSampler) implements CommonEntry
+public record EntrySampler(Holder<TextureSampler> textureSampler) implements CommonEntry
 {
     @Override
     public void write(DescriptorWriter writer, int index, MemoryStack stack, Object userObject)
@@ -24,7 +25,7 @@ public record EntrySampler(TextureSampler textureSampler) implements CommonEntry
     @Override
     public Object createObject(VkDevice device)
     {
-        return textureSampler;
+        return textureSampler.value();
     }
 
     @Override

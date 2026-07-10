@@ -99,15 +99,12 @@ public class SpriteAtlas extends Atlas
             sampler.texture = texture;
             sampler.textureImageView = frameBuffer.imageView;
             sampler.textureSampler = sampler.createSampler(setup.device(), VK_FILTER_NEAREST, VK_SAMPLER_MIPMAP_MODE_NEAREST, false);
-            this.sampler = sampler;
             return sampler;
         } else
         {
             Texture texture = new Texture();
             texture.createTextureImageFromBufferedImage(setup.device(), image, setup.commands().commandPool, setup.graphicsQueue());
-            TextureSampler sampler = new TextureSampler(texture, setup.device(), key(), VK_FILTER_NEAREST, VK_SAMPLER_MIPMAP_MODE_NEAREST, false);
-            this.sampler = sampler;
-            return sampler;
+            return new TextureSampler(texture, setup.device(), key(), VK_FILTER_NEAREST, VK_SAMPLER_MIPMAP_MODE_NEAREST, false);
         }
     }
 

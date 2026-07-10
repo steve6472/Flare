@@ -11,6 +11,8 @@ import steve6472.flare.registry.BuiltInFlareRegistries;
 import steve6472.flare.assets.model.Model;
 import steve6472.flare.assets.model.primitive.PrimitiveModel;
 import steve6472.flare.registry.VkSetup;
+import steve6472.flare.tracy.FlareProfiler;
+import steve6472.flare.tracy.Profiler;
 
 import java.util.*;
 import java.util.function.Function;
@@ -49,18 +51,26 @@ public class BlockbenchLoader
 
     public static void createStaticModels(Registry<Model> registry, VkSetup setup)
     {
-        ErrorModel.VK_STATIC_INSTANCE.createVertexBuffer(setup.device(), setup.commands(), setup.graphicsQueue(), ErrorModel.INSTANCE.toPrimitiveModel());
+        Profiler frame = FlareProfiler.frame();
+        frame.push("createStaticModels");
+        if (ErrorModel.VK_STATIC_INSTANCE.vertexBuffer == null)
+            ErrorModel.VK_STATIC_INSTANCE.createVertexBuffer(setup.device(), setup.commands(), setup.graphicsQueue(), ErrorModel.INSTANCE.toPrimitiveModel());
         Registry.register(registry, ErrorModel.KEY, ErrorModel.VK_STATIC_INSTANCE);
 
         createModels(setup, BuiltInFlareRegistries.STATIC_LOADED_MODEL, registry, LoadedModel::toPrimitiveModel);
+        frame.pop();
     }
 
     public static void createAnimatedModels(Registry<Model> registry, VkSetup setup)
     {
-        ErrorModel.VK_ANIMATED_INSTANCE.createVertexBuffer(setup.device(), setup.commands(), setup.graphicsQueue(), ErrorModel.INSTANCE.toPrimitiveSkinModel());
+        Profiler frame = FlareProfiler.frame();
+        frame.push("createAnimatedModels");
+        if (ErrorModel.VK_ANIMATED_INSTANCE.vertexBuffer == null)
+            ErrorModel.VK_ANIMATED_INSTANCE.createVertexBuffer(setup.device(), setup.commands(), setup.graphicsQueue(), ErrorModel.INSTANCE.toPrimitiveSkinModel());
         Registry.register(registry, ErrorModel.KEY, ErrorModel.VK_ANIMATED_INSTANCE);
 
         createModels(setup, BuiltInFlareRegistries.ANIMATED_LOADED_MODEL, registry, LoadedModel::toPrimitiveSkinModel);
+        frame.pop();
     }
 
     private static void createModels(VkSetup setup, Registry<LoadedModel> from, Registry<Model> to, Function<LoadedModel, PrimitiveModel> converter)

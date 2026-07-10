@@ -5,10 +5,13 @@ import org.lwjgl.stb.STBImage;
 import org.lwjgl.stb.STBImageWrite;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
+import steve6472.core.log.Log;
 import steve6472.flare.Commands;
 import steve6472.flare.core.Flare;
 import steve6472.flare.VkBuffer;
 import steve6472.flare.VulkanUtil;
+import steve6472.flare.tracy.FlareProfiler;
+import steve6472.flare.tracy.Profiler;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -19,6 +22,7 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.channels.Channels;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 import static org.lwjgl.stb.STBImage.*;
 import static org.lwjgl.vulkan.VK10.*;
@@ -30,12 +34,18 @@ import static org.lwjgl.vulkan.VK10.*;
  */
 public class Texture
 {
+    private static final Logger LOGGER = Log.getLogger(Texture.class);
     // Stuff used for vk init
     public int imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
     public long textureImage;
     public long textureImageMemory;
     public int width, height;
+
+    // Experimental, turn on in case allocateMemory takes forever ig
+    public static final int SINGLE_STAGING_BUFFER_SIZE = 8192 * 8192;
+    public static boolean SINGLE_STAGING_BUFFER = true;
+    public static VkBuffer STAGING;
 
     // TODO: channels does not work properly
     private void createTextureImage(VkDevice device, long commandPool, VkQueue graphicsQueue, ByteBuffer pixelData, Consumer<ByteBuffer> free, int width, int height, int channels)
@@ -49,26 +59,43 @@ public class Texture
             if (imageSize == 0)
                 throw new RuntimeException("Image size is 0!");
 
-            VkBuffer stagingBuffer = new VkBuffer(
-                device,
-                (int) imageSize,
-                1,
-                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-            stagingBuffer.map();
-            stagingBuffer.writeToBuffer((byteBuff, offset, data) ->
+            if (SINGLE_STAGING_BUFFER)
             {
-                for (int i = 0; i < data.capacity(); i++)
+                if (STAGING == null || STAGING.getInstanceSize() < imageSize)
                 {
-                    byteBuff.put(i, data.get(i));
+                    if (STAGING != null)
+                        STAGING.cleanup();
+
+                    int size = (int) Math.max(SINGLE_STAGING_BUFFER_SIZE, imageSize);
+                    LOGGER.info("New size for single staging buffer: " + size);
+
+                    STAGING = new VkBuffer(
+                        device,
+                        size,
+                        1,
+                        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+                    );
+                    STAGING.map();
                 }
-            }, pixelData);
+            } else
+            {
+                STAGING = new VkBuffer(
+                    device,
+                    (int) imageSize,
+                    1,
+                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+                STAGING.map();
+            }
+
+            STAGING.writeToBuffer((byteBuff, _, data) -> byteBuff.put(data), pixelData);
 
             free.accept(pixelData);
 
             LongBuffer pTextureImage = stack.mallocLong(1);
             LongBuffer pTextureImageMemory = stack.mallocLong(1);
+
             VulkanUtil.createImage(device,
                 width, height,
                 VK_FORMAT_R8G8B8A8_UNORM,
@@ -83,11 +110,15 @@ public class Texture
 
             VulkanUtil.transitionImageLayout(device, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandPool, graphicsQueue);
 
-            copyBufferToImage(stack, device, stagingBuffer.getBuffer(), textureImage, width, height, commandPool, graphicsQueue);
+            copyBufferToImage(stack, device, STAGING.getBuffer(), textureImage, width, height, commandPool, graphicsQueue);
 
             VulkanUtil.transitionImageLayout(device, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandPool, graphicsQueue);
 
-            stagingBuffer.cleanup();
+            if (!SINGLE_STAGING_BUFFER)
+            {
+                STAGING.cleanup();
+                STAGING = null;
+            }
         }
     }
 
@@ -110,25 +141,33 @@ public class Texture
 
     public void createTextureImageFromFile(VkDevice device, String path, long commandPool, VkQueue graphicsQueue)
     {
+        Profiler profiler = FlareProfiler.frame();
         try (MemoryStack stack = MemoryStack.stackPush())
         {
             IntBuffer pWidth = stack.mallocInt(1);
             IntBuffer pHeight = stack.mallocInt(1);
             IntBuffer pChannels = stack.mallocInt(1);
 
+            profiler.push("IO load");
             ByteBuffer pixels = stbi_load(path, pWidth, pHeight, pChannels, STBI_rgb_alpha);
 
             if (pixels == null)
-                throw new RuntimeException("Failed to load texture image " + path);
+                throw new RuntimeException("Failed to load texture image " + path + " " + stbi_failure_reason());
 
-            createTextureImage(device, commandPool, graphicsQueue, pixels, STBImage::stbi_image_free, pWidth.get(0), pHeight.get(0), pChannels.get(0));
+            profiler.popPush("createTextureImage");
+            createTextureImage(device, commandPool, graphicsQueue, pixels, (_) -> {}, pWidth.get(0), pHeight.get(0), pChannels.get(0));
         }
+        profiler.pop();
     }
 
     public void createTextureImageFromBufferedImage(VkDevice device, BufferedImage image, long commandPool, VkQueue graphicsQueue)
     {
+        Profiler profiler = FlareProfiler.frame();
+        profiler.push("getPixels");
         ByteBuffer pixels = convertImageToByteBuffer(image);
+        profiler.popPush("createTextureImage");
         createTextureImage(device, commandPool, graphicsQueue, pixels, _ -> {}, image.getWidth(), image.getHeight(), 4);
+        profiler.pop();
     }
 
     public void saveTextureAsPNG(VkDevice device, Commands commandPool, VkQueue graphicsQueue, File outputPath)
@@ -185,15 +224,10 @@ public class Texture
         for (int pixel : pixels)
         {
             // Extract the ARGB components and convert to RGBA (Vulkan prefers this order)
-            byte a = (byte) ((pixel >> 24) & 0xFF);  // Alpha
-            byte r = (byte) ((pixel >> 16) & 0xFF);  // Red
-            byte g = (byte) ((pixel >> 8) & 0xFF);   // Green
-            byte b = (byte) (pixel & 0xFF);          // Blue
-
-            buffer.put(r);  // Red
-            buffer.put(g);  // Green
-            buffer.put(b);  // Blue
-            buffer.put(a);  // Alpha
+            int a = (pixel >> 24) & 0xff;
+            pixel = pixel << 8;
+            pixel |= a;
+            buffer.putInt(pixel);
         }
 
         buffer.flip();  // Prepare the buffer for reading

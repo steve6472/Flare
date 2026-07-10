@@ -19,39 +19,39 @@ public class FlareProfiler
 
     public static Profiler get()
     {
-        return get("main");
+        return get("main", TracyColors.RANDOM);
     }
 
     public static Profiler frame()
     {
-        return get("Frame");
+        return get("Frame", TracyColors.FRAME);
     }
 
     public static Profiler startup()
     {
-        return get("Flare Startup");
+        return get("Flare Startup", TracyColors.STARTUP);
     }
 
     public static Profiler cleanup()
     {
-        return get("Flare Clenaup");
+        return get("Flare Clenaup", TracyColors.CLEANUP);
     }
 
     public static Profiler world()
     {
-        return get("World");
+        return get("World", TracyColors.RANDOM);
     }
 
     public static Profiler network()
     {
-        return get("Network");
+        return get("Network", TracyColors.NETWORK);
     }
 
-    public static Profiler get(String name)
+    public static Profiler get(String name, int color)
     {
         return PROFILERS.computeIfAbsent(name, n -> {
             if (ENABLE_TRACY)
-                return new TracyProfiler(n);
+                return new TracyProfiler(n, color);
             else
                 return new EmptyProfiler();
         });

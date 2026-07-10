@@ -15,6 +15,7 @@ import steve6472.core.registry.RegistryCore;
 import steve6472.core.setting.SettingsLoader;
 import steve6472.core.util.JarExport;
 import steve6472.flare.*;
+import steve6472.flare.assets.Texture;
 import steve6472.flare.assets.atlas.Atlas;
 import steve6472.flare.assets.atlas.SpriteAtlas;
 import steve6472.flare.input.UserInput;
@@ -24,6 +25,7 @@ import steve6472.flare.settings.ValidationLevel;
 import steve6472.flare.settings.VisualSettings;
 import steve6472.flare.tracy.FlareProfiler;
 import steve6472.flare.tracy.Profiler;
+import steve6472.flare.tracy.TracyColors;
 import steve6472.flare.ui.font.FontEntry;
 import steve6472.flare.ui.font.UnknownCharacter;
 import steve6472.flare.ui.font.style.FontStyleEntry;
@@ -103,7 +105,7 @@ public class Flare
         Profiler profiler = FlareProfiler.startup();
         profiler.start();
 
-        profiler.popPush("setup");
+        profiler.popPush("setup", TracyColors.SETUP);
         Setup setupEvents = new Setup();
         setupEvents.createGroups().addListener(_ -> FlareRegistryGroups.bootstrap());
         setupEvents.createRegistries().addListener(_ -> BuiltInFlareRegistries.bootstrap());
@@ -118,6 +120,7 @@ public class Flare
         });
 
         app.setup(setupEvents);
+        app.reloadFunc = this::reload;
 
         profiler.push("createWindow");
         window = new Window(setupEvents.getWindowTitle());
@@ -270,6 +273,12 @@ public class Flare
         float lastFps = 0;
         while (!window.shouldWindowClose())
         {
+            if (reloadRequested)
+            {
+                vkDeviceWaitIdle(device);
+                doReload();
+            }
+
             profiler.start();
             profiler.push("glfwPollEvents");
             glfwPollEvents();
@@ -357,6 +366,42 @@ public class Flare
         vkDeviceWaitIdle(device);
     }
 
+    private boolean reloadRequested = false;
+
+    public void reload()
+    {
+        reloadRequested = true;
+    }
+
+    private void doReload()
+    {
+        Profiler profiler = FlareProfiler.frame();
+        profiler.push("reload", TracyColors.RELOAD);
+
+        profiler.push("cleanup");
+        BuiltInFlareRegistries.STATIC_MODEL.listElements().forEach(ref -> ref.value().destroy());
+        BuiltInFlareRegistries.ANIMATED_MODEL.listElements().forEach(ref -> ref.value().destroy());
+        BuiltInFlareRegistries.SAMPLER.listElements().forEach(ref -> ref.value().cleanup(device));
+
+        BuiltInFlareRegistries.ATLAS.listElements().forEach(ref -> {
+            Atlas atlas = ref.value();
+            if (atlas instanceof SpriteAtlas spriteAtlas && spriteAtlas.frameBuffer != null)
+                spriteAtlas.frameBuffer.cleanup();
+        });
+
+        profiler.popPush("bootstrap dynamic");
+        RegistryCore.DYNAMIC.bootstrap();
+        profiler.popPush("bootstrap vulkan");
+        FlareRegistryGroups.VULKAN_RESOURCE.bootstrap(new VkSetup(device, renderer.getCommands(), graphicsQueue));
+
+        profiler.popPush("reload renderers");
+        renderer.reload();
+        profiler.pop();
+
+        reloadRequested = false;
+        profiler.pop();
+    }
+
     private void cleanup()
     {
         FlareConstants.NULL_EXTENT.free();
@@ -381,6 +426,9 @@ public class Flare
             if (atlas instanceof SpriteAtlas spriteAtlas && spriteAtlas.frameBuffer != null)
                 spriteAtlas.frameBuffer.cleanup();
         });
+
+        if (Texture.STAGING != null)
+            Texture.STAGING.cleanup();
 
         vkDestroyDevice(device, null);
 

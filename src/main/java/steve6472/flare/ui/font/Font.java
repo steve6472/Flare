@@ -22,6 +22,8 @@ import steve6472.flare.SamplerLoader;
 import steve6472.flare.assets.Texture;
 import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.settings.VisualSettings;
+import steve6472.flare.tracy.FlareProfiler;
+import steve6472.flare.tracy.Profiler;
 import steve6472.flare.ui.font.layout.*;
 
 import javax.imageio.ImageIO;
@@ -115,7 +117,7 @@ public class Font
             throw new RuntimeException(e);
         }
 
-        SamplerLoader.addSamplerLoader(setup -> getSamplerLoader(setup.device(), setup.commands(), setup.graphicsQueue(), fontTexture, key));
+        SamplerLoader.addSamplerLoader(key, setup -> getSamplerLoader(setup.device(), setup.commands(), setup.graphicsQueue(), fontTexture, key));
     }
 
     private void generateCharset(File fontCharset)
@@ -214,17 +216,8 @@ public class Font
 
     private TextureSampler getSamplerLoader(VkDevice device, Commands commands, VkQueue graphicsQueue, File fontFile, Key key)
     {
-        BufferedImage fontTexture;
-        try
-        {
-            fontTexture = ImageIO.read(fontFile);
-        } catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
         Texture texture = new Texture();
-        texture.createTextureImageFromBufferedImage(device, fontTexture, commands.commandPool, graphicsQueue);
+        texture.createTextureImageFromFile(device, fontFile.getAbsolutePath(), commands.commandPool, graphicsQueue);
         return new TextureSampler(texture, device, key, filtering.vkCode, filtering.vkCodeMipmap, true);
     }
 

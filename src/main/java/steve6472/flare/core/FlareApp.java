@@ -2,11 +2,17 @@ package steve6472.flare.core;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDevice;
+import steve6472.core.registry.RegistryCore;
 import steve6472.flare.Camera;
 import steve6472.flare.MasterRenderer;
+import steve6472.flare.assets.atlas.Atlas;
+import steve6472.flare.assets.atlas.SpriteAtlas;
 import steve6472.flare.input.UserInput;
 import steve6472.flare.Window;
 import steve6472.flare.pipeline.builder.PipelineConstructor;
+import steve6472.flare.registry.BuiltInFlareRegistries;
+import steve6472.flare.registry.FlareRegistryGroups;
+import steve6472.flare.registry.VkSetup;
 import steve6472.flare.render.RenderSystem;
 import steve6472.flare.ui.font.render.TextRender;
 
@@ -22,6 +28,7 @@ public abstract class FlareApp
     MasterRenderer masterRenderer;
     UserInput userInput;
     Camera camera;
+    Runnable reloadFunc;
 
     /*
      * Abstract methods
@@ -49,6 +56,11 @@ public abstract class FlareApp
         T renderSystem = renderSystemConstructor.apply(masterRenderer, pipeline);
         masterRenderer.addRenderSystem(renderSystem);
         return renderSystem;
+    }
+
+    protected void reload()
+    {
+        reloadFunc.run();
     }
 
     protected final void addRenderSystem(RenderSystem renderSystem)

@@ -17,18 +17,20 @@ public class TracyProfiler implements Profiler
     private static final StackWalker STACK_WALKER = StackWalker.getInstance(Set.of(StackWalker.Option.RETAIN_CLASS_REFERENCE), 5);
 
     private final String name;
+    private final int color;
     Stack<Tracy.ZoneContext> zones = new ObjectArrayList<>(8);
 
-    public TracyProfiler(String name)
+    public TracyProfiler(String name, int color)
     {
         this.name = name;
+        this.color = color;
     }
 
     @Override
     public void start()
     {
         // noop I guess ?
-        push(name);
+        push(name, color);
     }
 
     @Override

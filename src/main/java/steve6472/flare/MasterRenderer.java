@@ -249,6 +249,23 @@ public class MasterRenderer
         }
     }
 
+    public void reload()
+    {
+        atlasAnimations.forEach(renderSystem -> renderSystem._getPipeline().cleanup(device));
+        atlasAnimations.forEach(AnimateTextureSystem::cleanup);
+        atlasAnimations.clear();
+        addAnimatedAtlases();
+        atlasAnimations.forEach(renderSystem -> renderSystem._getPipeline().rebuild(device, renderSystem.atlas.frameBuffer.extent, renderSystem.atlas.frameBuffer.renderPass, renderSystem.setLayouts()));
+
+        for (RenderSystem renderSystem : renderSystems)
+        {
+            if (renderSystem instanceof Reloadable crs)
+            {
+                crs.reload();
+            }
+        }
+    }
+
     public void endRenderPass(VkCommandBuffer commandBuffer)
     {
         if (!isFrameStarted)

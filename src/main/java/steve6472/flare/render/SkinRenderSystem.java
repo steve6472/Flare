@@ -3,9 +3,10 @@ package steve6472.flare.render;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import steve6472.core.log.Log;
+import steve6472.core.registry.Holder;
 import steve6472.core.registry.Key;
 import steve6472.flare.*;
-import steve6472.flare.assets.model.VkModel;
+import steve6472.flare.assets.model.Model;
 import steve6472.flare.assets.model.blockbench.animation.controller.AnimationController;
 import steve6472.flare.assets.model.blockbench.animation.controller.AnimationQuery;
 import steve6472.flare.core.FrameInfo;
@@ -32,10 +33,10 @@ import static org.lwjgl.vulkan.VK10.*;
  * Date: 8/31/2024
  * Project: Flare <br>
  */
-public class SkinRenderSystem extends CommonRenderSystem
+public class SkinRenderSystem extends CommonRenderSystem implements Reloadable
 {
     private static final Logger LOGGER = Log.getLogger(SkinRenderSystem.class);
-    VkModel model3d;
+    Holder<Model> model3d;
 
     AnimationController animationController;
     OrlangEnvironment environment;
@@ -56,9 +57,9 @@ public class SkinRenderSystem extends CommonRenderSystem
         environment.queryFunctionSet = new AnimQuery();
 
         animationController = BuiltInFlareRegistries.ANIMATION_CONTROLLER.get(Key.withNamespace("test", "long_chain")).orElseThrow().value().createForModel(loadedModel);
-        environment.setValue(new AST.Node.Identifier(VarContext.VARIABLE, "flag"), OrlangValue.bool(false));
+        environment.setValue(FLAG_ID, OrlangValue.bool(false));
 
-        model3d = BuiltInFlareRegistries.ANIMATED_MODEL.get(MODEL_KEY).orElseThrow().value();
+        model3d = BuiltInFlareRegistries.ANIMATED_MODEL.get(MODEL_KEY).orElseThrow();
     }
 
     @Override
@@ -92,8 +93,8 @@ public class SkinRenderSystem extends CommonRenderSystem
         Struct struct = Push.SKIN.create(array.length, 0);
         Push.SKIN.push(struct, frameInfo.commandBuffer(), pipeline().pipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0);
 
-        model3d.bind(frameInfo.commandBuffer());
-        model3d.draw(frameInfo.commandBuffer());
+        model3d.value().bind(frameInfo.commandBuffer());
+        model3d.value().draw(frameInfo.commandBuffer());
     }
 
     @Override

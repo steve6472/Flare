@@ -2,6 +2,8 @@ package steve6472.flare.render;
 
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
+import steve6472.core.log.Log;
+import steve6472.core.registry.Holder;
 import steve6472.flare.Camera;
 import steve6472.flare.FlareConstants;
 import steve6472.flare.MasterRenderer;
@@ -25,6 +27,7 @@ import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 import static org.lwjgl.vulkan.VK10.*;
 
@@ -39,7 +42,7 @@ public class AnimateTextureSystem extends CommonRenderSystem
     public final SpriteAtlas atlas;
     public final AnimationTicker ticker;
 
-    private static TextureSampler atlasSampler(Atlas atlas)
+    private static Holder<TextureSampler> atlasSampler(Atlas atlas)
     {
         if (!(atlas instanceof SpriteAtlas spriteAtlas))
             throw new RuntimeException("Passed atlas '%s' is not a Sprite Atlas".formatted(atlas.key()));

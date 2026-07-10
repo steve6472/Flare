@@ -8,12 +8,11 @@ import steve6472.flare.FlareConstants;
 import steve6472.flare.MasterRenderer;
 import steve6472.flare.VkBuffer;
 import steve6472.flare.core.FrameInfo;
-import steve6472.flare.descriptors.DescriptorPool;
-import steve6472.flare.descriptors.DescriptorSetLayout;
-import steve6472.flare.descriptors.DescriptorWriter;
 import steve6472.flare.pipeline.Pipelines;
 import steve6472.flare.registry.BuiltInFlareRegistries;
-import steve6472.flare.registry.FlareRegistries;
+import steve6472.flare.render.common.CommonBuilder;
+import steve6472.flare.render.common.CommonRenderSystem;
+import steve6472.flare.render.common.FlightFrame;
 import steve6472.flare.render.impl.UIRenderImpl;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.SBO;
@@ -23,78 +22,32 @@ import java.nio.LongBuffer;
 import java.util.*;
 
 import static org.lwjgl.vulkan.VK10.*;
-import static steve6472.flare.SwapChain.MAX_FRAMES_IN_FLIGHT;
 
 /**
  * Created by steve6472
  * Date: 11/27/2024
  * Project: Flare <br>
  */
-public final class UIRenderSystem extends RenderSystem
+public final class UIRenderSystem extends CommonRenderSystem
 {
-    private final DescriptorPool globalPool;
-    private final DescriptorSetLayout globalSetLayout;
-    private final List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
-    private final VkBuffer buffer;
+    private static final int SPRITE_ENTRIES_INDEX = 1;
 
     private final UIRenderImpl renderImpl;
     private final float far;
+    private final VkBuffer buffer;
 
     public UIRenderSystem(MasterRenderer masterRenderer, @NonNull UIRenderImpl renderImpl, float far)
     {
-        super(masterRenderer, Pipelines.UI_TEXTURE);
+        super(masterRenderer,
+            Pipelines.UI_TEXTURE,
+            CommonBuilder.create()
+                .entryImage(BuiltInFlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).orElseThrow().value().getSampler())
+                .entrySBO(SBO.SPRITE_ENTRIES.sizeof(), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, VK_SHADER_STAGE_FRAGMENT_BIT)
+                .postCreation(ff -> ff.getBuffer(SPRITE_ENTRIES_INDEX).writeToBuffer(SBO.SPRITE_ENTRIES::memcpy, updateUITextures())));
+
         Objects.requireNonNull(renderImpl);
         this.renderImpl = renderImpl;
         this.far = far;
-
-        globalSetLayout = DescriptorSetLayout
-            .builder(device)
-            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT)
-            .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-            .addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
-            .build();
-        globalPool = DescriptorPool.builder(device)
-            .setMaxSets(MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT)
-            .build();
-
-        for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            FlightFrame frame = new FlightFrame();
-            frames.add(frame);
-
-            VkBuffer global = new VkBuffer(
-                device,
-                UBO.GLOBAL_CAMERA_UBO.sizeof(),
-                1,
-                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-            global.map();
-            frame.uboBuffer = global;
-
-            VkBuffer textureSettings = new VkBuffer(
-                device,
-                SBO.SPRITE_ENTRIES.sizeof(),
-                1,
-                VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-            textureSettings.map();
-            frame.sboTextureSettings = textureSettings;
-
-            frame.sboTextureSettings.writeToBuffer(SBO.SPRITE_ENTRIES::memcpy, updateUITextures());
-
-            try (MemoryStack stack = MemoryStack.stackPush())
-            {
-                DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
-                frame.descriptorSet = descriptorWriter
-                    .writeBuffer(0, stack, frame.uboBuffer, UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT)
-                    .writeImage(1, stack, BuiltInFlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).orElseThrow().value().getSampler())
-                    .writeBuffer(2, stack, frame.sboTextureSettings)
-                    .build();
-            }
-        }
 
         buffer = new VkBuffer(
             masterRenderer.getDevice(),
@@ -107,13 +60,14 @@ public final class UIRenderSystem extends RenderSystem
     }
 
     @Override
-    public long[] setLayouts()
+    protected void onReload(FlightFrame frame)
     {
-        return new long[] {globalSetLayout.descriptorSetLayout};
+        super.onReload(frame);
+        frame.getBuffer(SPRITE_ENTRIES_INDEX).writeToBuffer(SBO.SPRITE_ENTRIES::memcpy, updateUITextures());
     }
 
     @Override
-    public void render(FrameInfo frameInfo, MemoryStack stack)
+    public void render(FlightFrame flightFrame, FrameInfo frameInfo, MemoryStack stack)
     {
         List<Struct> verticies = new ArrayList<>();
         renderImpl.setStructList(verticies);
@@ -121,31 +75,6 @@ public final class UIRenderSystem extends RenderSystem
 
         if (verticies.isEmpty())
             return;
-
-        FlightFrame flightFrame = frames.get(frameInfo.frameIndex());
-
-        Camera camera = new Camera();
-        int windowWidth = getMasterRenderer().getWindow().getWidth();
-        int windowHeight = getMasterRenderer().getWindow().getHeight();
-
-        camera.setOrthographicProjection(0, windowWidth, 0, windowHeight, 0f, far);
-        camera.setViewYXZ(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
-
-        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(camera.getProjectionMatrix(), camera.getViewMatrix());
-        int singleInstanceSize = UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT;
-
-        flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_CAMERA_UBO::memcpy, List.of(globalUBO), singleInstanceSize, singleInstanceSize * frameInfo.camera().cameraIndex);
-        flightFrame.uboBuffer.flush(singleInstanceSize, (long) singleInstanceSize * frameInfo.camera().cameraIndex);
-
-        pipeline().bind(frameInfo.commandBuffer());
-
-        vkCmdBindDescriptorSets(
-            frameInfo.commandBuffer(),
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            pipeline().pipelineLayout(),
-            0,
-            stack.longs(flightFrame.descriptorSet),
-            stack.ints(singleInstanceSize * frameInfo.camera().cameraIndex));
 
         buffer.writeToBuffer(vertex()::memcpy, verticies);
 
@@ -155,7 +84,30 @@ public final class UIRenderSystem extends RenderSystem
         vkCmdDraw(frameInfo.commandBuffer(), verticies.size(), 1, 0, 0);
     }
 
-    private Struct updateUITextures()
+    @Override
+    protected void setupCameraUbo(FlightFrame flightFrame, Camera camera)
+    {
+        Camera orthoCamera = new Camera();
+        int windowWidth = getMasterRenderer().getWindow().getWidth();
+        int windowHeight = getMasterRenderer().getWindow().getHeight();
+
+        orthoCamera.setOrthographicProjection(0, windowWidth, 0, windowHeight, 0f, far);
+        orthoCamera.setViewYXZ(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
+
+        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(orthoCamera.getProjectionMatrix(), orthoCamera.getViewMatrix());
+        int singleInstanceSize = UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT;
+
+        flightFrame.cameraUbo.writeToBuffer(UBO.GLOBAL_CAMERA_UBO::memcpy, List.of(globalUBO), singleInstanceSize, singleInstanceSize * camera.cameraIndex);
+        flightFrame.cameraUbo.flush(singleInstanceSize, (long) singleInstanceSize * camera.cameraIndex);
+    }
+
+    @Override
+    protected void updateData(FlightFrame flightFrame, FrameInfo frameInfo)
+    {
+
+    }
+
+    private static Struct updateUITextures()
     {
         Struct[] textureSettings = BuiltInFlareRegistries.ATLAS.get(FlareConstants.ATLAS_UI).orElseThrow().value().createTextureSettings();
         return SBO.SPRITE_ENTRIES.create((Object) textureSettings);
@@ -164,23 +116,9 @@ public final class UIRenderSystem extends RenderSystem
     @Override
     public void cleanup()
     {
-        globalSetLayout.cleanup();
-        globalPool.cleanup();
+        super.cleanup();
 
         if (buffer != null)
             buffer.cleanup();
-
-        for (FlightFrame flightFrame : frames)
-        {
-            flightFrame.uboBuffer.cleanup();
-            flightFrame.sboTextureSettings.cleanup();
-        }
-    }
-
-    final static class FlightFrame
-    {
-        VkBuffer uboBuffer;
-        VkBuffer sboTextureSettings;
-        long descriptorSet;
     }
 }

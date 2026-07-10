@@ -130,7 +130,7 @@ public class DescriptorWriter
         }
     }
 
-    private void override(long descriptorSet, MemoryStack stack)
+    public void override(long descriptorSet, MemoryStack stack)
     {
         VkWriteDescriptorSet.Buffer writeBuffer = createWriteBuffers(stack);
 

@@ -10,6 +10,7 @@ import steve6472.flare.descriptors.DescriptorPool;
 import steve6472.flare.descriptors.DescriptorSetLayout;
 import steve6472.flare.descriptors.DescriptorWriter;
 import steve6472.flare.pipeline.builder.PipelineConstructor;
+import steve6472.flare.render.Reloadable;
 import steve6472.flare.render.RenderSystem;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.UBO;
@@ -25,22 +26,60 @@ import static steve6472.flare.SwapChain.MAX_FRAMES_IN_FLIGHT;
  * Date: 9/6/2025
  * Project: Flare <br>
  */
-public abstract class CommonRenderSystem extends RenderSystem
+public abstract class CommonRenderSystem extends RenderSystem implements Reloadable
 {
     private final DescriptorPool globalPool;
     private final DescriptorSetLayout globalSetLayout;
     private final List<FlightFrame> frames = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
+    // Used for updating the texture sampler
+    private final CommonBuilder builder;
 
     public CommonRenderSystem(MasterRenderer masterRenderer, PipelineConstructor pipeline, CommonBuilder commonBuilder)
     {
         super(masterRenderer, pipeline);
+        this.builder = commonBuilder;
 
         globalPool = createGlobalPool(commonBuilder);
         globalSetLayout = createGlobalSetLayout(commonBuilder);
 
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
-            frames.add(createFlightFrame(commonBuilder));
+            FlightFrame flightFrame = createFlightFrame(commonBuilder);
+            frames.add(flightFrame);
+
+            if (commonBuilder.postCreation != null)
+                commonBuilder.postCreation.accept(flightFrame);
+        }
+    }
+
+    @Override
+    public void reload()
+    {
+        for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            FlightFrame frame = frames.get(i);
+            onReload(frame);
+        }
+    }
+
+    protected void onReload(FlightFrame frame)
+    {
+        cleanupFlightFrameUserObjects(frame);
+
+        try (MemoryStack stack = MemoryStack.stackPush())
+        {
+            DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
+            descriptorWriter.writeBuffer(0, stack, frame.cameraUbo, UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT);
+
+            int j = 1;
+            for (CommonEntry entry : builder.entries)
+            {
+                frame.userObjects[j - 1] = entry.createObject(device);
+                entry.write(descriptorWriter, j, stack, frame.userObjects[j - 1]);
+                j++;
+            }
+
+            descriptorWriter.override(frame.descriptorSet, stack);
         }
     }
 
@@ -165,19 +204,24 @@ public abstract class CommonRenderSystem extends RenderSystem
         for (FlightFrame flightFrame : frames)
         {
             flightFrame.cameraUbo.cleanup();
-            for (Object userObject : flightFrame.userObjects)
+            cleanupFlightFrameUserObjects(flightFrame);
+        }
+    }
+
+    private void cleanupFlightFrameUserObjects(FlightFrame flightFrame)
+    {
+        for (Object userObject : flightFrame.userObjects)
+        {
+            if (userObject instanceof VkBuffer buffer)
             {
-                if (userObject instanceof VkBuffer buffer)
-                {
-                    buffer.cleanup();
-                } else //noinspection StatementWithEmptyBody
-                    if (userObject instanceof TextureSampler)
+                buffer.cleanup();
+            } else //noinspection StatementWithEmptyBody
+                if (userObject instanceof TextureSampler)
                 {
                 } else
                 {
                     throw new RuntimeException("Uncleanable type " + userObject.getClass().getSimpleName());
                 }
-            }
         }
     }
 }

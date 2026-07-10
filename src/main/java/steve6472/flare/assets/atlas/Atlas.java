@@ -3,6 +3,7 @@ package steve6472.flare.assets.atlas;
 import org.jetbrains.annotations.ApiStatus;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
+import steve6472.core.registry.Holder;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.Keyable;
 import steve6472.flare.Commands;
@@ -27,7 +28,7 @@ public abstract class Atlas implements Keyable
     protected final Map<Key, SpriteEntry> sprites = new HashMap<>();
     protected SpriteEntry errorTexture;
     /// Set from SpriteLoader
-    TextureSampler sampler = null;
+    public Holder<TextureSampler> sampler = null;
 
     /// Used only to transfer data
     @ApiStatus.Internal
@@ -49,7 +50,7 @@ public abstract class Atlas implements Keyable
         return sprites.getOrDefault(key, errorTexture);
     }
 
-    public TextureSampler getSampler()
+    public Holder<TextureSampler> getSampler()
     {
         return sampler;
     }
