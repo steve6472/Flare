@@ -8,7 +8,6 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 import steve6472.core.log.Log;
 import steve6472.core.registry.Key;
-import steve6472.core.registry.RegistryCore;
 import steve6472.core.setting.SettingsLoader;
 import steve6472.flare.Camera;
 import steve6472.flare.FlareConstants;
@@ -19,8 +18,6 @@ import steve6472.flare.core.Setup;
 import steve6472.flare.input.KeybindUpdater;
 import steve6472.flare.pipeline.Pipelines;
 import steve6472.flare.registry.BuiltInFlareRegistries;
-import steve6472.flare.registry.FlareRegistryGroups;
-import steve6472.flare.registry.VkSetup;
 import steve6472.flare.render.*;
 
 import java.io.File;

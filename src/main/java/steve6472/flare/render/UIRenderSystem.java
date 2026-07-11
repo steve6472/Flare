@@ -104,7 +104,6 @@ public final class UIRenderSystem extends CommonRenderSystem
     @Override
     protected void updateData(FlightFrame flightFrame, FrameInfo frameInfo)
     {
-
     }
 
     private static Struct updateUITextures()

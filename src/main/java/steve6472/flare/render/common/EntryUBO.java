@@ -40,4 +40,10 @@ public record EntryUBO(int instanceSize, int memoryPropertyFlags, int stage, int
     {
         return stage;
     }
+
+    @Override
+    public int count()
+    {
+        return 1;
+    }
 }

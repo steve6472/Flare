@@ -38,4 +38,10 @@ public record EntryVertexBuffer(int instanceSize, int instanceCount, int memoryP
     {
         return 0;
     }
+
+    @Override
+    public int count()
+    {
+        return 1;
+    }
 }

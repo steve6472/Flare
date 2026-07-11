@@ -17,6 +17,8 @@ import steve6472.flare.struct.def.UBO;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static org.lwjgl.vulkan.VK10.*;
 import static steve6472.flare.SwapChain.MAX_FRAMES_IN_FLIGHT;
@@ -111,7 +113,7 @@ public abstract class CommonRenderSystem extends RenderSystem implements Reloada
         {
             int type = entry.type();
             if (type == 0) continue;
-            builder.addBinding(i, type, entry.stage());
+            builder.addBinding(i, type, entry.stage(), entry.count());
             i++;
         }
 
@@ -215,13 +217,13 @@ public abstract class CommonRenderSystem extends RenderSystem implements Reloada
             if (userObject instanceof VkBuffer buffer)
             {
                 buffer.cleanup();
-            } else //noinspection StatementWithEmptyBody
-                if (userObject instanceof TextureSampler)
-                {
-                } else
+            } else
+            {
+                if (!(userObject instanceof TextureSampler) && !(userObject instanceof TextureSampler[]))
                 {
                     throw new RuntimeException("Uncleanable type " + userObject.getClass().getSimpleName());
                 }
+            }
         }
     }
 }

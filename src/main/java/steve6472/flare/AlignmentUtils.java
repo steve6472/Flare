@@ -52,10 +52,10 @@ public final class AlignmentUtils {
         SIZEOF_CACHE.put(Long.class, Long.BYTES);
         SIZEOF_CACHE.put(Double.class, Double.BYTES);
 
-        SIZEOF_CACHE.put(Vector2f.class, 2 * Float.BYTES);
-        SIZEOF_CACHE.put(Vector3f.class, 3 * Float.BYTES);
-        SIZEOF_CACHE.put(Vector4f.class, 4 * Float.BYTES);
+        SIZEOF_CACHE.put(Vector2f.class, Vector2f.BYTES);
+        SIZEOF_CACHE.put(Vector3f.class, Vector3f.BYTES);
+        SIZEOF_CACHE.put(Vector4f.class, Vector4f.BYTES);
 
-        SIZEOF_CACHE.put(Matrix4f.class, SIZEOF_CACHE.get(Vector4f.class) * 4);
+        SIZEOF_CACHE.put(Matrix4f.class, Matrix4f.BYTES);
     }
 }

@@ -13,6 +13,7 @@ public interface CommonEntry
 {
     int type();
     int stage();
+    int count();
 
     void write(DescriptorWriter writer, int index, MemoryStack stack, Object userObject);
 

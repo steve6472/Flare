@@ -14,18 +14,24 @@ import static org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT;
  * Date: 9/7/2025
  * Project: Flare <br>
  */
-public record EntrySampler(Holder<TextureSampler> textureSampler) implements CommonEntry
+public record EntrySamplers(Holder<TextureSampler>[] textureSamplers) implements CommonEntry
 {
     @Override
     public void write(DescriptorWriter writer, int index, MemoryStack stack, Object userObject)
     {
-        writer.writeImage(index, stack, ((TextureSampler) userObject));
+        writer.writeImages(index, stack, (TextureSampler[]) userObject);
     }
 
     @Override
     public Object createObject(VkDevice device)
     {
-        return textureSampler.value();
+        TextureSampler[] arr = new TextureSampler[textureSamplers.length];
+        for (int i = 0; i < textureSamplers.length; i++)
+        {
+            Holder<TextureSampler> textureSamplerHolder = textureSamplers[i];
+            arr[i] = textureSamplerHolder.value();
+        }
+        return arr;
     }
 
     @Override
@@ -43,6 +49,6 @@ public record EntrySampler(Holder<TextureSampler> textureSampler) implements Com
     @Override
     public int count()
     {
-        return 1;
+        return textureSamplers.length;
     }
 }

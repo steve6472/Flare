@@ -54,6 +54,13 @@ public class TestFontRender extends UIFontRenderImpl
 //                ), 24f, 128 * 5f, 128f * 2f, anchor, align, 0, false, VerticalAnchorMode.MAX_HEIGHT),
 //            new Matrix4f().translate(20, 20, 0));
 
+        renderText(new Text(
+            List.of(
+                new TextPart(editableText, arial)
+            ), 24, 128 * 5f, 128 * 2f, anchor, align, 0, false, VerticalAnchorMode.MAX_HEIGHT),
+            new Matrix4f().translate(20, 140, 0)
+        );
+
 //        renderText(
 //            new Text(
 //                List.of(

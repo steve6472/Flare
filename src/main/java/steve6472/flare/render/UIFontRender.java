@@ -7,16 +7,17 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
+import steve6472.core.registry.Holder;
 import steve6472.flare.Camera;
 import steve6472.flare.MasterRenderer;
 import steve6472.flare.VkBuffer;
 import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.core.FrameInfo;
-import steve6472.flare.descriptors.DescriptorPool;
-import steve6472.flare.descriptors.DescriptorSetLayout;
-import steve6472.flare.descriptors.DescriptorWriter;
 import steve6472.flare.pipeline.Pipelines;
 import steve6472.flare.registry.BuiltInFlareRegistries;
+import steve6472.flare.render.common.CommonBuilder;
+import steve6472.flare.render.common.CommonRenderSystem;
+import steve6472.flare.render.common.FlightFrame;
 import steve6472.flare.render.impl.UIFontRenderImpl;
 import steve6472.flare.struct.Struct;
 import steve6472.flare.struct.def.SBO;
@@ -36,82 +37,39 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.lwjgl.vulkan.VK10.*;
-import static steve6472.flare.SwapChain.MAX_FRAMES_IN_FLIGHT;
 
 /**
  * Created by steve6472
  * Date: 12/11/2024
  * Project: MoonDust <br>
  */
-public class UIFontRender extends RenderSystem
+public class UIFontRender extends CommonRenderSystem
 {
-    private final DescriptorPool globalPool;
-    private final DescriptorSetLayout globalSetLayout;
-    List<FlightFrame> frame = new ArrayList<>(MAX_FRAMES_IN_FLIGHT);
+    private static final int FONT_STYLES_INDEX = 1;
+
     private final VkBuffer buffer;
     private final UIFontRenderImpl renderImpl;
 
     public UIFontRender(MasterRenderer masterRenderer, UIFontRenderImpl renderImpl)
     {
-        super(masterRenderer, Pipelines.FONT_SDF);
         Objects.requireNonNull(renderImpl);
-        this.renderImpl = renderImpl;
 
         int fontCount = (int) BuiltInFlareRegistries.FONT.listElements().count();
-        TextureSampler[] fontSamplers = new TextureSampler[fontCount];
+        @SuppressWarnings("unchecked")
+        Holder<TextureSampler>[] fontSamplers = new Holder[fontCount];
 
         BuiltInFlareRegistries.FONT.listElements().forEach(ref -> {
             FontEntry fontEntry = ref.value();
-            fontSamplers[fontEntry.index()] = BuiltInFlareRegistries.SAMPLER.get(ref.key().resource()).orElseThrow().value();
+            fontSamplers[fontEntry.index()] = BuiltInFlareRegistries.SAMPLER.get(ref.key().resource()).orElseThrow();
         });
 
-        globalSetLayout = DescriptorSetLayout
-            .builder(device)
-            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT)
-            .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, fontCount)
-            .addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
-            .build();
-        globalPool = DescriptorPool.builder(device)
-            .setMaxSets(MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, MAX_FRAMES_IN_FLIGHT)
-            .build();
-
-        for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            frame.add(new FlightFrame());
-
-            VkBuffer global = new VkBuffer(
-                device,
-                UBO.GLOBAL_CAMERA_UBO.sizeof(),
-                1,
-                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-            global.map();
-            frame.get(i).uboBuffer = global;
-
-            VkBuffer fontStyles = new VkBuffer(
-                device,
-                SBO.MSDF_FONT_STYLES.sizeof(),
-                1,
-                VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-            fontStyles.map();
-            frame.get(i).sboFontStyles = fontStyles;
-
-            frame.get(i).sboFontStyles.writeToBuffer(SBO.MSDF_FONT_STYLES::memcpy, updateFontStylesSBO());
-
-            try (MemoryStack stack = MemoryStack.stackPush())
-            {
-                DescriptorWriter descriptorWriter = new DescriptorWriter(globalSetLayout, globalPool);
-                frame.get(i).descriptorSet = descriptorWriter
-                    .writeBuffer(0, stack, frame.get(i).uboBuffer, UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT)
-                    .writeImages(1, stack, fontSamplers)
-                    .writeBuffer(2, stack, frame.get(i).sboFontStyles)
-                    .build();
-            }
-        }
+        super(masterRenderer,
+            Pipelines.FONT_SDF,
+            CommonBuilder.create()
+                .entryImages(fontSamplers)
+                .entrySBO(SBO.MSDF_FONT_STYLES.sizeof(), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, VK_SHADER_STAGE_FRAGMENT_BIT)
+                .postCreation(ff -> ff.getBuffer(FONT_STYLES_INDEX).writeToBuffer(SBO.MSDF_FONT_STYLES::memcpy, updateFontStylesSBO())));
+        this.renderImpl = renderImpl;
 
         buffer = new VkBuffer(
             masterRenderer.getDevice(),
@@ -124,15 +82,16 @@ public class UIFontRender extends RenderSystem
     }
 
     @Override
-    public long[] setLayouts()
+    protected void onReload(FlightFrame frame)
     {
-        return new long[] {globalSetLayout.descriptorSetLayout};
+        super.onReload(frame);
+        frame.getBuffer(FONT_STYLES_INDEX).writeToBuffer(SBO.MSDF_FONT_STYLES::memcpy, updateFontStylesSBO());
     }
 
     public int lastVertexCount = 0;
 
     @Override
-    public void render(FrameInfo frameInfo, MemoryStack stack)
+    public void render(FlightFrame flightFrame, FrameInfo frameInfo, MemoryStack stack)
     {
         List<Struct> verticies = null;
 
@@ -148,29 +107,6 @@ public class UIFontRender extends RenderSystem
             lastVertexCount = verticies.size();
         }
 
-        FlightFrame flightFrame = frame.get(frameInfo.frameIndex());
-
-        Camera camera = new Camera();
-        int windowWidth = this.getMasterRenderer().getWindow().getWidth();
-        int windowHeight = this.getMasterRenderer().getWindow().getHeight();
-        camera.setOrthographicProjection(0.0F, (float)windowWidth, 0.0F, (float)windowHeight, 0.0F, renderImpl.getFar());
-        camera.setViewYXZ(new Vector3f(0.0F, 0.0F, 0.0F), new Vector3f(0.0F, 0.0F, 0.0F));
-        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(camera.getProjectionMatrix(), camera.getViewMatrix());
-        int singleInstanceSize = UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT;
-
-        flightFrame.uboBuffer.writeToBuffer(UBO.GLOBAL_CAMERA_UBO::memcpy, List.of(globalUBO), singleInstanceSize, singleInstanceSize * frameInfo.camera().cameraIndex);
-        flightFrame.uboBuffer.flush(singleInstanceSize, (long) singleInstanceSize * frameInfo.camera().cameraIndex);
-
-        pipeline().bind(frameInfo.commandBuffer());
-
-        vkCmdBindDescriptorSets(
-            frameInfo.commandBuffer(),
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            pipeline().pipelineLayout(),
-            0,
-            stack.longs(flightFrame.descriptorSet),
-            stack.ints(singleInstanceSize * frameInfo.camera().cameraIndex));
-
         if (verticies != null)
             buffer.writeToBuffer(vertex()::memcpy, verticies);
 
@@ -180,7 +116,29 @@ public class UIFontRender extends RenderSystem
         vkCmdDraw(frameInfo.commandBuffer(), lastVertexCount, 1, 0, 0);
     }
 
-    private Struct updateFontStylesSBO()
+    @Override
+    protected void updateData(FlightFrame flightFrame, FrameInfo frameInfo)
+    {
+    }
+
+    @Override
+    protected void setupCameraUbo(FlightFrame flightFrame, Camera camera)
+    {
+        Camera orthoCamera = new Camera();
+        int windowWidth = getMasterRenderer().getWindow().getWidth();
+        int windowHeight = getMasterRenderer().getWindow().getHeight();
+
+        orthoCamera.setOrthographicProjection(0, windowWidth, 0, windowHeight, 0f, renderImpl.getFar());
+        orthoCamera.setViewYXZ(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
+
+        Struct globalUBO = UBO.GLOBAL_CAMERA_UBO.create(orthoCamera.getProjectionMatrix(), orthoCamera.getViewMatrix());
+        int singleInstanceSize = UBO.GLOBAL_CAMERA_UBO.sizeof() / UBO.GLOBAL_CAMERA_MAX_COUNT;
+
+        flightFrame.cameraUbo.writeToBuffer(UBO.GLOBAL_CAMERA_UBO::memcpy, List.of(globalUBO), singleInstanceSize, singleInstanceSize * camera.cameraIndex);
+        flightFrame.cameraUbo.flush(singleInstanceSize, (long) singleInstanceSize * camera.cameraIndex);
+    }
+
+    private static Struct updateFontStylesSBO()
     {
         int count = (int) BuiltInFlareRegistries.FONT_STYLE.listElements().count();
 
@@ -358,28 +316,9 @@ public class UIFontRender extends RenderSystem
     @Override
     public void cleanup()
     {
-        globalSetLayout.cleanup();
-        globalPool.cleanup();
+        super.cleanup();
 
         if (buffer != null)
             buffer.cleanup();
-
-        for (FlightFrame flightFrame : frame)
-        {
-            flightFrame.uboBuffer.cleanup();
-            flightFrame.sboFontStyles.cleanup();
-            if (flightFrame.vertexBuffer != null)
-            {
-                flightFrame.vertexBuffer.cleanup();
-            }
-        }
-    }
-
-    final static class FlightFrame
-    {
-        VkBuffer uboBuffer;
-        VkBuffer sboFontStyles;
-        VkBuffer vertexBuffer;
-        long descriptorSet;
     }
 }

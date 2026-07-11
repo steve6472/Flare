@@ -43,6 +43,7 @@ public class Texture
     public int width, height;
 
     // Experimental, turn on in case allocateMemory takes forever ig
+    // https://stackoverflow.com/questions/76412671/can-i-reuse-staging-buffer-for-multiple-vertex-buffer-in-vulkan
     public static final int SINGLE_STAGING_BUFFER_SIZE = 8192 * 8192;
     public static boolean SINGLE_STAGING_BUFFER = true;
     public static VkBuffer STAGING;

@@ -28,6 +28,12 @@ public class CommonBuilder
         return this;
     }
 
+    public CommonBuilder entryImages(Holder<TextureSampler>... sampler)
+    {
+        entries.add(new EntrySamplers(sampler));
+        return this;
+    }
+
     public CommonBuilder entrySBO(int instanceSize, int memoryPropertyFlags, int stage)
     {
         entries.add(new EntrySBO(instanceSize, memoryPropertyFlags, stage));

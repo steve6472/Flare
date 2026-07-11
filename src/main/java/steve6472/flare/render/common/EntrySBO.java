@@ -40,4 +40,10 @@ public record EntrySBO(int instanceSize, int memoryPropertyFlags, int stage) imp
     {
         return stage;
     }
+
+    @Override
+    public int count()
+    {
+        return 1;
+    }
 }
