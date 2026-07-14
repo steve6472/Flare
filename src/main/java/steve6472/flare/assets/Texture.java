@@ -15,7 +15,6 @@ import steve6472.flare.tracy.Profiler;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,7 +45,7 @@ public class Texture
 
     // Experimental, turn on in case allocateMemory takes forever ig
     // https://stackoverflow.com/questions/76412671/can-i-reuse-staging-buffer-for-multiple-vertex-buffer-in-vulkan
-    public static final int SINGLE_STAGING_BUFFER_SIZE = 8192 * 8192;
+    public static final int SINGLE_STAGING_BUFFER_SIZE = 4096 * 4096;
     public static boolean SINGLE_STAGING_BUFFER = true;
     public static VkBuffer STAGING;
 

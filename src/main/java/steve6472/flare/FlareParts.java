@@ -6,7 +6,6 @@ import steve6472.flare.assets.atlas.Atlas;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
 import steve6472.flare.assets.model.blockbench.animation.controller.AnimationController;
 import steve6472.flare.registry.FlareRegistries;
-import steve6472.flare.registry.FlareRegistryGroups;
 import steve6472.flare.ui.font.FontEntry;
 import steve6472.flare.ui.font.style.FontStyleEntry;
 

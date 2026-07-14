@@ -7,7 +7,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import steve6472.core.log.Log;
-import steve6472.core.registry.Holder;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.Registry;
 import steve6472.core.util.GsonUtil;
@@ -26,7 +25,6 @@ import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.logging.Logger;
 

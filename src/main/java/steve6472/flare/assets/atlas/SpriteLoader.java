@@ -19,10 +19,8 @@ import steve6472.flare.ui.textures.SpriteData;
 import steve6472.flare.ui.textures.SpriteEntry;
 import steve6472.flare.ui.textures.animation.SpriteAnimation;
 import steve6472.flare.util.Obj;
-import steve6472.flare.util.PackerUtil;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +38,7 @@ public class SpriteLoader
     public static boolean SAVE_DEBUG_ATLASES = false;
 
     private static final String[] EXTENSIONS = {".json5", ".json"};
-    private static final int STARTING_IMAGE_SIZE = 64;
+    public static final int STARTING_IMAGE_SIZE = 64;
 
     public record LoadResult(Map<Key, Pair<SpriteEntry, BufferedImage>> entries, AnimationAtlas animationAtlas) {}
 
@@ -164,38 +162,10 @@ public class SpriteLoader
 
     public static Pair<ImagePacker, TextureSampler> createTexture(Atlas atlas, VkSetup setup)
     {
-        Map<Key, BufferedImage> images = atlas.tempImages;
-        atlas.tempImages = null;
-
-        Map<String, BufferedImage> toPack = new HashMap<>();
-        images.forEach((key, image) -> toPack.put(key.toString(), image));
-        ImagePacker packer = PackerUtil.pack(STARTING_IMAGE_SIZE, toPack, false);
-        images.clear();
-
-        BufferedImage image = packer.getImage();
+        BufferedImage image = atlas.imagePacker.getImage();
         saveDebugAtlas(atlas, image);
         TextureSampler vkResource = atlas.createVkResource(image, setup);
-        fixUvs(atlas, packer);
-        return Pair.of(packer, vkResource);
-    }
-
-    private static void fixUvs(Atlas atlas, ImagePacker packer)
-    {
-        float texel = 1f / packer.getImage().getWidth();
-
-        Map<Key, SpriteEntry> sprites = atlas.getSprites();
-        for (Key key : sprites.keySet())
-        {
-            SpriteEntry uiTextureEntry = sprites.get(key);
-            Rectangle rectangle = packer.getRects().get(key.toString());
-            Objects.requireNonNull(rectangle, "Texture data not found in ImagePacker, for " + key);
-            uiTextureEntry.uv().set(
-                (rectangle.x) * texel,
-                (rectangle.y) * texel,
-                (rectangle.x + rectangle.width) * texel,
-                (rectangle.y + rectangle.height) * texel
-            );
-        }
+        return Pair.of(atlas.imagePacker, vkResource);
     }
 
     private static void saveDebugAtlas(Atlas atlas, BufferedImage image)

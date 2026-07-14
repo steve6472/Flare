@@ -10,6 +10,7 @@ import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.registry.VkSetup;
 import steve6472.flare.ui.textures.SpriteEntry;
+import steve6472.flare.util.PackerUtil;
 
 import java.awt.image.BufferedImage;
 import java.util.*;
@@ -26,17 +27,22 @@ public class AnimationAtlas extends Atlas
 {
     public AnimationAtlas(Map<Key, Pair<SpriteEntry, BufferedImage>> animatedAtlasData)
     {
-        tempImages = new HashMap<>();
+        Map<Key, BufferedImage> images = new HashMap<>(animatedAtlasData.size());
         animatedAtlasData.forEach((key, pair) -> {
             sprites.put(key, pair.getFirst());
-            tempImages.put(key, pair.getSecond());
+            images.put(key, pair.getSecond());
         });
+
+        Map<String, BufferedImage> toPack = new HashMap<>();
+        images.forEach((key, image) -> toPack.put(key.toString(), image));
+        this.imagePacker = PackerUtil.pack(SpriteLoader.STARTING_IMAGE_SIZE, toPack, false);
+        images.clear();
+        fixUvs(imagePacker);
     }
 
     @Override
     void create()
     {
-
     }
 
     @Override

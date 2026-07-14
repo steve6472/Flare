@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
 import steve6472.core.registry.Key;
+import steve6472.core.util.ImagePacker;
 import steve6472.flare.*;
 import steve6472.flare.assets.Texture;
 import steve6472.flare.assets.TextureSampler;
@@ -14,6 +15,7 @@ import steve6472.flare.core.Flare;
 import steve6472.flare.framebuffer.AnimatedAtlasFrameBuffer;
 import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.registry.VkSetup;
+import steve6472.flare.util.PackerUtil;
 
 import java.awt.image.BufferedImage;
 import java.util.*;
@@ -63,20 +65,26 @@ public class SpriteAtlas extends Atlas
         });
 
         SpriteLoader.LoadResult loadResult = SpriteLoader.loadFromAtlas(toLoad);
-        tempImages = new HashMap<>();
+        Map<Key, BufferedImage> images = new HashMap<>(loadResult.entries().size());
         loadResult.entries().forEach((key, pair) -> {
             sprites.put(key, pair.getFirst());
-            tempImages.put(key, pair.getSecond());
+            images.put(key, pair.getSecond());
         });
         errorTexture = sprites.get(FlareConstants.ERROR_TEXTURE);
         if (errorTexture == null)
             throw new NullPointerException("Error Texture not in atlas!");
+
+        Map<String, BufferedImage> toPack = new HashMap<>();
+        images.forEach((key, image) -> toPack.put(key.toString(), image));
+        this.imagePacker = PackerUtil.pack(SpriteLoader.STARTING_IMAGE_SIZE, toPack, false);
+        images.clear();
 
         if (loadResult.animationAtlas() != null)
         {
             animationAtlas = loadResult.animationAtlas();
             animationAtlas.key = Key.withNamespace(key.namespace(), "animation/" + key.id());
         }
+        fixUvs(imagePacker);
     }
 
     @Override
