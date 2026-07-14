@@ -14,6 +14,8 @@ import steve6472.flare.tracy.FlareProfiler;
 import steve6472.flare.tracy.Profiler;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -208,27 +210,29 @@ public class Texture
         }
     }
 
+    /// Accepts image in format TYPE_4BYTE_ABGR
     public static ByteBuffer convertImageToByteBuffer(BufferedImage image)
     {
         // Ensure the image is in a known format like ARGB or RGB
         int width = image.getWidth();
         int height = image.getHeight();
-        int[] pixels = new int[width * height];
-
-        // Get the ARGB pixel data from the image (using TYPE_INT_ARGB)
-        image.getRGB(0, 0, width, height, pixels, 0, width);
 
         // Create a ByteBuffer to hold the pixel data
         ByteBuffer buffer = ByteBuffer.allocateDirect(width * height * 4); // 4 bytes per pixel (ARGB)
 
+        // This is optimized as much as I can, I think it's 10x faster than old convertion
+        DataBuffer dataBuffer = image.getRaster().getDataBuffer();
+
         // Copy the pixel data into the ByteBuffer as RGBA
-        for (int pixel : pixels)
+        for (int i = 0, j = 0; i < width * height; i++, j += 4)
         {
-            // Extract the ARGB components and convert to RGBA (Vulkan prefers this order)
-            int a = (pixel >> 24) & 0xff;
-            pixel = pixel << 8;
-            pixel |= a;
-            buffer.putInt(pixel);
+            // Extract the components to RGBA (Vulkan prefers this order)
+            // The variable names are most likely not correct
+            int a = dataBuffer.getElem(0, j);
+            int g = dataBuffer.getElem(0, j + 1);
+            int b = dataBuffer.getElem(0, j + 2);
+            int r = dataBuffer.getElem(0, j + 3);
+            buffer.putInt(a | (g << 8) | (b << 16) | (r << 24));
         }
 
         buffer.flip();  // Prepare the buffer for reading
@@ -257,7 +261,7 @@ public class Texture
             image = stbi_load_from_memory(imageBuffer, width, height, channels, STBI_rgb_alpha);
             if (image == null)
             {
-                throw new RuntimeException("Failed to load image: " + STBImage.stbi_failure_reason());
+                throw new RuntimeException("Failed to load image: " + stbi_failure_reason());
             }
         } catch (IOException e)
         {
