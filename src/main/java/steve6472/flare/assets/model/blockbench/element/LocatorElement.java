@@ -6,8 +6,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import steve6472.core.util.ExtraCodecs;
-import steve6472.core.util.ImagePacker;
 import steve6472.flare.FlareConstants;
+import steve6472.flare.assets.atlas.Atlas;
 import steve6472.flare.assets.model.blockbench.Element;
 import steve6472.flare.assets.model.blockbench.LoadedModel;
 
@@ -36,7 +36,7 @@ public record LocatorElement(UUID uuid, String name, Vector3f position, Vector3f
     );
 
     @Override
-    public void fixUvs(LoadedModel model, ImagePacker packer) { }
+    public void fixUvs(LoadedModel model, Atlas atlas) { }
 
     @Override
     public List<Vector3f> toVertices()

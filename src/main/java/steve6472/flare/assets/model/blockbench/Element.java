@@ -7,6 +7,7 @@ import org.joml.Vector3f;
 import steve6472.core.registry.Registry;
 import steve6472.core.registry.Typed;
 import steve6472.core.util.ImagePacker;
+import steve6472.flare.assets.atlas.Atlas;
 import steve6472.flare.assets.model.blockbench.element.CubeElement;
 import steve6472.flare.assets.model.blockbench.element.LocatorElement;
 import steve6472.flare.assets.model.blockbench.element.MeshElement;
@@ -37,7 +38,7 @@ public interface Element extends Typed<Element>
     UUID uuid();
     String name();
 
-    void fixUvs(LoadedModel model, ImagePacker packer);
+    void fixUvs(LoadedModel model, Atlas atlas);
 
     List<Vector3f> toVertices();
     List<Vector3f> toNormals();

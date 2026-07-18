@@ -6,6 +6,7 @@ import steve6472.core.registry.Key;
 import steve6472.core.registry.Registry;
 import steve6472.core.util.ImagePacker;
 import steve6472.flare.FlareParts;
+import steve6472.flare.assets.atlas.Atlas;
 import steve6472.flare.core.Flare;
 import steve6472.flare.registry.BuiltInFlareRegistries;
 import steve6472.flare.assets.model.Model;
@@ -24,19 +25,19 @@ import java.util.function.Function;
  */
 public class BlockbenchLoader
 {
-    public static void fixModelUvs(ImagePacker imagePacker)
+    public static void fixModelUvs(Atlas atlas)
     {
         BuiltInFlareRegistries.ANIMATED_LOADED_MODEL.listElements().forEach(ref -> {
             LoadedModel model = ref.value();
-            model.elements().forEach(el -> el.fixUvs(model, imagePacker));
+            model.elements().forEach(el -> el.fixUvs(model, atlas));
         });
 
         BuiltInFlareRegistries.STATIC_LOADED_MODEL.listElements().forEach(ref -> {
             LoadedModel model = ref.value();
-            model.elements().forEach(el -> el.fixUvs(model, imagePacker));
+            model.elements().forEach(el -> el.fixUvs(model, atlas));
         });
 
-        ErrorModel.INSTANCE.elements().forEach(el -> el.fixUvs(ErrorModel.INSTANCE, imagePacker));
+        ErrorModel.INSTANCE.elements().forEach(el -> el.fixUvs(ErrorModel.INSTANCE, atlas));
     }
 
     public static void loadStaticModels(Registry<LoadedModel> registry)

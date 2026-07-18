@@ -1,5 +1,7 @@
 package steve6472.flare.core;
 
+import com.pploder.events.Event;
+import com.pploder.events.SimpleEvent;
 import io.github.benjaminamos.tracy.Tracy;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
@@ -18,6 +20,7 @@ import steve6472.flare.*;
 import steve6472.flare.assets.Texture;
 import steve6472.flare.assets.atlas.Atlas;
 import steve6472.flare.assets.atlas.SpriteAtlas;
+import steve6472.flare.assets.model.blockbench.BlockbenchLoader;
 import steve6472.flare.input.UserInput;
 import steve6472.flare.pipeline.shader.ShaderCache;
 import steve6472.flare.registry.*;
@@ -74,6 +77,8 @@ public class Flare
     private VkQueue presentQueue;
     private ModuleManager moduleManager;
 
+    public static final Event<VkDevice> RELOAD_CLEANUP_EVENT = new SimpleEvent<>();
+
     // ======= METHODS ======= //
 
     private Flare() { }
@@ -120,8 +125,7 @@ public class Flare
             prof.popPush("dynamic");
             RegistryCore.DYNAMIC.bootstrap();
             prof.popPush("fixModels");
-            // TODO: this
-            //        BlockbenchLoader.fixModelUvs(BuiltInFlareRegistries.ATLAS.get(FlareConstants.ATLAS_BLOCKBENCH));
+            BuiltInFlareRegistries.ATLAS.get(FlareConstants.ATLAS_BLOCKBENCH).ifPresent(atlas -> BlockbenchLoader.fixModelUvs(atlas.value()));
             UnknownCharacter.init();
             prof.pop();
         });
@@ -398,15 +402,19 @@ public class Flare
                 spriteAtlas.frameBuffer.cleanup();
         });
 
+        RELOAD_CLEANUP_EVENT.trigger(device);
+
         profiler.popPush("bootstrap dynamic");
         RegistryCore.DYNAMIC.bootstrap();
 
         profiler.popPush("fixModels");
-        // TODO: this
-//        BlockbenchLoader.fixModelUvs(BuiltInFlareRegistries.ATLAS.get(FlareConstants.ATLAS_BLOCKBENCH));
+        BuiltInFlareRegistries.ATLAS.get(FlareConstants.ATLAS_BLOCKBENCH).ifPresent(atlas -> BlockbenchLoader.fixModelUvs(atlas.value()));
 
         profiler.popPush("bootstrap vulkan");
         FlareRegistryGroups.VULKAN_RESOURCE.bootstrap(new VkSetup(device, renderer.getCommands(), graphicsQueue));
+
+        // Verify Flare defaults after content reloads
+        verifyFlareDefaults();
 
         profiler.popPush("reload renderers");
         renderer.reload();

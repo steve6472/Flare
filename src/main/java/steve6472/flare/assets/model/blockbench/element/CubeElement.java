@@ -8,13 +8,13 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import steve6472.core.log.Log;
+import steve6472.core.registry.Key;
 import steve6472.core.util.ExtraCodecs;
-import steve6472.core.util.ImagePacker;
-import steve6472.core.util.Preconditions;
 import steve6472.flare.FlareConstants;
+import steve6472.flare.assets.atlas.Atlas;
 import steve6472.flare.assets.model.blockbench.*;
+import steve6472.flare.ui.textures.SpriteEntry;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Logger;
@@ -26,8 +26,6 @@ import java.util.logging.Logger;
  */
 public record CubeElement(UUID uuid, String name, Vector3f from, Vector3f to, Vector3f rotation, Vector3f origin, float inflate, Map<FaceType, CubeFace> faces) implements Element
 {
-    private static final Logger LOGGER = Log.getLogger(CubeElement.class);
-
     public static final MapCodec<CubeElement> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
         ExtraCodecs.UUID.fieldOf("uuid").forGetter(o -> o.uuid),
         Codec.STRING.fieldOf("name").forGetter(o -> o.name),
@@ -58,30 +56,24 @@ public record CubeElement(UUID uuid, String name, Vector3f from, Vector3f to, Ve
         })
     );
 
-    @Override
-    public void fixUvs(LoadedModel model, ImagePacker packer)
+    private float mapUV(float in, float inMax, float outMin, float outMax)
     {
-        float texel = 1f / packer.getImage().getWidth();
+        return in * (outMax - outMin) / inMax + outMin;
+    }
 
+    @Override
+    public void fixUvs(LoadedModel model, Atlas atlas)
+    {
         faces.forEach((_, face) -> {
             TextureData textureData = model.textures().get(face.texture());
-            float resX = 1f / textureData.uvWidth();
-            float resY = 1f / textureData.uvHeight();
-
             String textureId = textureData.name();
-            Rectangle rectangle = packer.getRects().get(textureId);
-            if (rectangle == null)
-            {
-                Log.warningOnce(LOGGER, "Texture " + textureId + " not found!");
-                rectangle = packer.getRects().get(FlareConstants.ERROR_TEXTURE.toString());
-            }
-            Preconditions.checkNotNull(rectangle, "Texture data not found in ImagePacker, for " + textureId);
-            Vector4f uv = face.uv();
-            uv.set(
-                (rectangle.x + rectangle.width * uv.x * resX) * texel,
-                (rectangle.y + rectangle.height * uv.y * resY) * texel,
-                (rectangle.x + rectangle.width * uv.z * resX) * texel,
-                (rectangle.y + rectangle.height * uv.w * resY) * texel
+            Key key = Key.parse(FlareConstants.NAMESPACE, textureId);
+            SpriteEntry sprite = atlas.getSprite(key);
+            face.uv().set(
+                mapUV(face.uv().x, textureData.uvWidth(), sprite.uv().x, sprite.uv().z),
+                mapUV(face.uv().y, textureData.uvHeight(), sprite.uv().y, sprite.uv().w),
+                mapUV(face.uv().z, textureData.uvWidth(), sprite.uv().x, sprite.uv().z),
+                mapUV(face.uv().w, textureData.uvHeight(), sprite.uv().y, sprite.uv().w)
             );
         });
     }

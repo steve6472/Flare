@@ -8,7 +8,6 @@ import steve6472.flare.FlareConstants;
 import steve6472.flare.FlareParts;
 import steve6472.flare.SamplerLoader;
 import steve6472.flare.assets.TextureSampler;
-import steve6472.flare.assets.model.blockbench.BlockbenchLoader;
 import steve6472.flare.core.Flare;
 import steve6472.flare.registry.VkSetup;
 import steve6472.flare.tracy.FlareProfiler;
@@ -90,14 +89,6 @@ public class AtlasLoader
 
     public static TextureSampler createTexture(Atlas atlas, ImagePacker imagePacker, VkSetup setup)
     {
-        if (atlas.key().equals(FlareConstants.ATLAS_BLOCKBENCH))
-        {
-            LOGGER.severe("------------------------------");
-            LOGGER.severe("Move model fixing right after DYNAMIC registries are loaded");
-            LOGGER.severe("------------------------------");
-            BlockbenchLoader.fixModelUvs(imagePacker);
-        }
-
         BufferedImage image = imagePacker.getImage();
         saveDebugAtlas(atlas, image);
         return atlas.createVkResource(image, setup);
