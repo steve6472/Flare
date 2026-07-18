@@ -70,13 +70,7 @@ public class AnimatedAtlasFrameBuffer
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
             stagingBuffer.map();
-            stagingBuffer.writeToBuffer((byteBuff, _, data) ->
-            {
-                for (int i = 0; i < data.capacity(); i++)
-                {
-                    byteBuff.put(i, data.get(i));
-                }
-            }, Texture.convertImageToByteBuffer(bufferedImage));
+            stagingBuffer.writeToBuffer((byteBuff, _, data) -> byteBuff.put(data), Texture.convertImageToByteBuffer(bufferedImage));
 
             VulkanUtil.transitionImageLayout(device, image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commands.commandPool, graphicsQueue);
             Texture.copyBufferToImage(stack, device, stagingBuffer.getBuffer(), image, width, height, commands.commandPool, graphicsQueue);

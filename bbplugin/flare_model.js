@@ -6,6 +6,8 @@ let addTextureEvent;
 const blockSize = 16;
 const FACE_NAMES = ['north', 'east', 'south', 'west', 'up', 'down'];
 
+// TODO: automatically set UV Size for texture to its size
+
 BBPlugin.register('flare_model', {
     title: 'Flare Model',
     author: 'steve6472',
@@ -45,7 +47,8 @@ function setupFormat() {
         box_uv: false,
         optional_box_uv: true,
         single_texture: false,
-        per_group_texture:false,
+        per_group_texture: false,
+        per_texture_uv_size: true,
         texture_wrap_default: 'limited',
         model_identifier: false,
         parent_model_id: false,

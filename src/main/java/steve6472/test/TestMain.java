@@ -1,6 +1,6 @@
 package steve6472.test;
 
-import steve6472.flare.assets.atlas.SpriteLoader;
+import steve6472.flare.assets.atlas.AtlasLoader;
 import steve6472.flare.core.Flare;
 
 import java.io.IOException;
@@ -12,9 +12,9 @@ import java.io.IOException;
  */
 class TestMain
 {
-    public static void main(String[] args) throws IOException
+    static void main(String[] args)
     {
-        SpriteLoader.SAVE_DEBUG_ATLASES = true;
+//        AtlasLoader.SAVE_DEBUG_ATLASES = true;
         TestApp.DUMP_SAMPLERS = false;
 
         System.setProperty("joml.format", "false");

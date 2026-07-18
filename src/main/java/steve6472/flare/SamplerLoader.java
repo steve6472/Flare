@@ -1,21 +1,18 @@
 package steve6472.flare;
 
 import com.google.gson.JsonElement;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import steve6472.core.log.Log;
+import steve6472.core.registry.Holder;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.Registry;
 import steve6472.core.util.GsonUtil;
 import steve6472.core.util.ImagePacker;
 import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.assets.atlas.Atlas;
-import steve6472.flare.assets.model.blockbench.BlockbenchLoader;
-import steve6472.flare.registry.BuiltInFlareRegistries;
-import steve6472.flare.assets.atlas.SpriteLoader;
 import steve6472.flare.registry.VkSetup;
 import steve6472.flare.settings.VisualSettings;
 import steve6472.flare.tracy.FlareProfiler;
@@ -25,6 +22,7 @@ import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
@@ -36,24 +34,31 @@ import java.util.logging.Logger;
  */
 public final class SamplerLoader
 {
+    private static final Logger LOGGER = Log.getLogger(SamplerLoader.class);
     private SamplerLoader() {}
 
-    private static final List<Pair<Key, Function<VkSetup, TextureSampler>>> SAMPLER_LOADERS = new ArrayList<>();
+    public record Loader(Key key, Function<VkSetup, TextureSampler> loader, Consumer<Holder<TextureSampler>> callback) {};
+
+    private static final List<Loader> SAMPLER_LOADERS = new ArrayList<>();
 
     public static void loadSamplers(Registry<TextureSampler> registry, VkSetup setup)
     {
         Profiler profiler = FlareProfiler.frame();
         profiler.push("iterateAtlases");
-        File debugAtlasFolder = Debug.getFile("/atlas_data");
 
+        /*
         BuiltInFlareRegistries.ATLAS.listElements().forEach(ref -> {
             profiler.push(ref.key().resource().toString());
             Atlas atlas = ref.value();
             profiler.push("createTexture");
             Pair<ImagePacker, TextureSampler> pair = SpriteLoader.createTexture(atlas, setup);
+
             profiler.popPush("fixModels");
             if (atlas.key().equals(FlareConstants.ATLAS_BLOCKBENCH))
             {
+                LOGGER.severe("------------------------------");
+                LOGGER.severe("Move model fixing right after DYNAMIC registries are loaded");
+                LOGGER.severe("------------------------------");
                 BlockbenchLoader.fixModelUvs(pair.getFirst());
             }
 
@@ -65,14 +70,15 @@ public final class SamplerLoader
             atlas.sampler = Registry.registerForHolder(registry, pair.getSecond().key(), pair.getSecond());
             profiler.pop();
             profiler.pop();
-        });
+        });*/
 
         profiler.popPush("loadSamplers");
         SAMPLER_LOADERS.forEach(loader ->
         {
-            profiler.push(loader.getFirst().toString());
-            TextureSampler sampler = loader.getSecond().apply(setup);
-            Registry.register(registry, sampler.key(), sampler);
+            profiler.push(loader.key().toString());
+            TextureSampler sampler = loader.loader().apply(setup);
+            var holder = Registry.registerForHolder(registry, sampler.key(), sampler);
+            loader.callback.accept(holder);
             profiler.pop();
         });
         SAMPLER_LOADERS.clear();
@@ -81,10 +87,15 @@ public final class SamplerLoader
 
     public static void addSamplerLoader(Key key, Function<VkSetup, TextureSampler> loader)
     {
-        SAMPLER_LOADERS.add(Pair.of(key, loader));
+        SAMPLER_LOADERS.add(new Loader(key, loader, _ -> {}));
     }
 
-    private static final class Debug
+    public static void addSamplerLoader(Key key, Function<VkSetup, TextureSampler> loader, Consumer<Holder<TextureSampler>> callback)
+    {
+        SAMPLER_LOADERS.add(new Loader(key, loader, callback));
+    }
+
+    public static final class Debug
     {
         private static final Logger LOGGER = Log.getLogger("Sampler Loader Debug");
 
@@ -95,7 +106,7 @@ public final class SamplerLoader
             Codec.INT.fieldOf("height").forGetter(r -> r.height)
         ).apply(instance, Rectangle::new));
 
-        private static void generateFromAtlasAndImagePacker(File file, Atlas atlas, ImagePacker packer)
+        public static void generateFromAtlasAndImagePacker(File file, Atlas atlas, ImagePacker packer)
         {
             LOGGER.info("Dumping atlas data " + atlas.key());
             File dumpFile = new File(file, atlas.key().namespace() + "-" + atlas.key().id().replaceAll("/", "__") + ".json5");
@@ -113,7 +124,7 @@ public final class SamplerLoader
             }
         }
 
-        private static File getFile(String suffix)
+        public static File getFile(String suffix)
         {
             if (!VisualSettings.GENERATE_STARTUP_ATLAS_DATA.get())
             {

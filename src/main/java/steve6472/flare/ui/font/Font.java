@@ -22,20 +22,13 @@ import steve6472.flare.SamplerLoader;
 import steve6472.flare.assets.Texture;
 import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.settings.VisualSettings;
-import steve6472.flare.tracy.FlareProfiler;
-import steve6472.flare.tracy.Profiler;
 import steve6472.flare.ui.font.layout.*;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
-
-import static org.lwjgl.vulkan.VK10.VK_FILTER_LINEAR;
-import static org.lwjgl.vulkan.VK10.VK_SAMPLER_MIPMAP_MODE_LINEAR;
 
 /**
  * Created by steve6472
@@ -118,6 +111,13 @@ public class Font
         }
 
         SamplerLoader.addSamplerLoader(key, setup -> getSamplerLoader(setup.device(), setup.commands(), setup.graphicsQueue(), fontTexture, key));
+    }
+
+    private TextureSampler getSamplerLoader(VkDevice device, Commands commands, VkQueue graphicsQueue, File fontFile, Key key)
+    {
+        Texture texture = new Texture();
+        texture.createTextureImageFromFile(device, fontFile.getAbsolutePath(), commands.commandPool, graphicsQueue);
+        return new TextureSampler(texture, device, key, filtering.vkCode, filtering.vkCodeMipmap, true);
     }
 
     private void generateCharset(File fontCharset)
@@ -212,13 +212,6 @@ public class Font
         {
             this.kerning.computeIfAbsent(kerning.unicode1(), _ -> new Long2FloatLinkedOpenHashMap()).put(kerning.unicode2(), kerning.advance());
         }
-    }
-
-    private TextureSampler getSamplerLoader(VkDevice device, Commands commands, VkQueue graphicsQueue, File fontFile, Key key)
-    {
-        Texture texture = new Texture();
-        texture.createTextureImageFromFile(device, fontFile.getAbsolutePath(), commands.commandPool, graphicsQueue);
-        return new TextureSampler(texture, device, key, filtering.vkCode, filtering.vkCodeMipmap, true);
     }
 
     /*

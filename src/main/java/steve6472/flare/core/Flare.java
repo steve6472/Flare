@@ -114,9 +114,16 @@ public class Flare
             SettingsLoader.loadFromJsonFile(FlareRegistries.FONT_DEBUG_SETTINGS, FlareConstants.FONT_DEBUG_SETTINGS_FILE);
         });
         setupEvents.bootstrapRegistries().addListener(_ -> {
+            Profiler prof = FlareProfiler.startup();
+            prof.push("static");
             RegistryCore.STATIC.bootstrap();
+            prof.popPush("dynamic");
             RegistryCore.DYNAMIC.bootstrap();
+            prof.popPush("fixModels");
+            // TODO: this
+            //        BlockbenchLoader.fixModelUvs(BuiltInFlareRegistries.ATLAS.get(FlareConstants.ATLAS_BLOCKBENCH));
             UnknownCharacter.init();
+            prof.pop();
         });
 
         app.setup(setupEvents);
@@ -140,7 +147,9 @@ public class Flare
         moduleManager = new ModuleManager();
         moduleManager.loadModules();
 
+        profiler.push("bootstrapRegistries");
         setupEvents.bootstrapRegistries().trigger();
+        profiler.pop();
         verifyFlareDefaults();
         /* Init content */
 
@@ -391,6 +400,11 @@ public class Flare
 
         profiler.popPush("bootstrap dynamic");
         RegistryCore.DYNAMIC.bootstrap();
+
+        profiler.popPush("fixModels");
+        // TODO: this
+//        BlockbenchLoader.fixModelUvs(BuiltInFlareRegistries.ATLAS.get(FlareConstants.ATLAS_BLOCKBENCH));
+
         profiler.popPush("bootstrap vulkan");
         FlareRegistryGroups.VULKAN_RESOURCE.bootstrap(new VkSetup(device, renderer.getCommands(), graphicsQueue));
 

@@ -6,6 +6,8 @@ import steve6472.core.module.Module;
 import steve6472.core.registry.Registry;
 import steve6472.flare.FlareParts;
 import steve6472.flare.core.Flare;
+import steve6472.flare.tracy.FlareProfiler;
+import steve6472.flare.tracy.Profiler;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -19,6 +21,8 @@ public class FontLoader
 {
     public static void bootstrap(Registry<FontEntry> registry)
     {
+        Profiler profiler = FlareProfiler.frame();
+        profiler.push("font");
         Map<Key, Pair<FontEntry, Module>> fonts = new LinkedHashMap<>();
 
         Flare.getModuleManager().loadModuleJsonCodecs(FlareParts.FONT, Font.CODEC, (module, _, key, object) -> {
@@ -34,5 +38,6 @@ public class FontLoader
             font.font().init(pair.getSecond(), font.key());
             Registry.register(registry, font.key(), font);
         }
+        profiler.pop();
     }
 }

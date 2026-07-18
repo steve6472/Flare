@@ -4,6 +4,8 @@ import steve6472.core.registry.Key;
 import steve6472.core.registry.Registry;
 import steve6472.flare.FlareParts;
 import steve6472.flare.core.Flare;
+import steve6472.flare.tracy.FlareProfiler;
+import steve6472.flare.tracy.Profiler;
 import steve6472.flare.ui.font.UnknownCharacter;
 
 import java.util.LinkedHashMap;
@@ -18,6 +20,8 @@ public class StyleLoader
 {
     public static void bootstrap(Registry<FontStyleEntry> registry)
     {
+        Profiler profiler = FlareProfiler.frame();
+        profiler.push("fontStyle");
         Map<Key, FontStyleEntry> styles = new LinkedHashMap<>();
 
         Flare.getModuleManager().loadModuleJsonCodecs(FlareParts.STYLE, FontStyle.CODEC, (_, _, key, object) -> {
@@ -27,5 +31,6 @@ public class StyleLoader
         });
 
         styles.forEach((key, style) -> Registry.register(registry, key, style));
+        profiler.pop();
     }
 }

@@ -2,7 +2,6 @@ package steve6472.flare.render;
 
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
-import steve6472.core.log.Log;
 import steve6472.core.registry.Holder;
 import steve6472.flare.Camera;
 import steve6472.flare.FlareConstants;
@@ -27,7 +26,6 @@ import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Logger;
 
 import static org.lwjgl.vulkan.VK10.*;
 

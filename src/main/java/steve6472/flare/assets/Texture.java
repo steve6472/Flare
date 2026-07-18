@@ -164,12 +164,8 @@ public class Texture
 
     public void createTextureImageFromBufferedImage(VkDevice device, BufferedImage image, long commandPool, VkQueue graphicsQueue)
     {
-        Profiler profiler = FlareProfiler.frame();
-        profiler.push("getPixels");
         ByteBuffer pixels = convertImageToByteBuffer(image);
-        profiler.popPush("createTextureImage");
         createTextureImage(device, commandPool, graphicsQueue, pixels, _ -> {}, image.getWidth(), image.getHeight(), 4);
-        profiler.pop();
     }
 
     public void saveTextureAsPNG(VkDevice device, Commands commandPool, VkQueue graphicsQueue, File outputPath)

@@ -1,15 +1,15 @@
 package steve6472.flare.assets.atlas;
 
 import com.mojang.datafixers.util.Pair;
-import org.lwjgl.vulkan.VkDevice;
-import org.lwjgl.vulkan.VkQueue;
 import steve6472.core.registry.Key;
-import steve6472.flare.Commands;
+import steve6472.core.util.ImagePacker;
+import steve6472.flare.SamplerLoader;
 import steve6472.flare.assets.Texture;
 import steve6472.flare.assets.TextureSampler;
-import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.registry.VkSetup;
+import steve6472.flare.settings.VisualSettings;
 import steve6472.flare.ui.textures.SpriteEntry;
+import steve6472.flare.util.Obj;
 import steve6472.flare.util.PackerUtil;
 
 import java.awt.image.BufferedImage;
@@ -25,23 +25,31 @@ import static org.lwjgl.vulkan.VK10.VK_SAMPLER_MIPMAP_MODE_NEAREST;
  */
 public class AnimationAtlas extends Atlas
 {
-    public AnimationAtlas(Map<Key, Pair<SpriteEntry, BufferedImage>> animatedAtlasData)
+    public AnimationAtlas(Key key, Map<Key, Pair<SpriteEntry, BufferedImage>> animatedAtlasData, Obj<ImagePacker> packerGet)
     {
+        setKey(key);
+
         Map<Key, BufferedImage> images = new HashMap<>(animatedAtlasData.size());
-        animatedAtlasData.forEach((key, pair) -> {
-            sprites.put(key, pair.getFirst());
-            images.put(key, pair.getSecond());
+        animatedAtlasData.forEach((entryKey, pair) -> {
+            registerSprite(entryKey, pair.getFirst());
+            images.put(entryKey, pair.getSecond());
         });
 
         Map<String, BufferedImage> toPack = new HashMap<>();
-        images.forEach((key, image) -> toPack.put(key.toString(), image));
-        this.imagePacker = PackerUtil.pack(SpriteLoader.STARTING_IMAGE_SIZE, toPack, false);
+        images.forEach((entryKey, image) -> toPack.put(entryKey.toString(), image));
+        ImagePacker imagePacker = PackerUtil.pack(SpriteLoader.STARTING_IMAGE_SIZE, toPack, false);
         images.clear();
+
+        if (VisualSettings.GENERATE_STARTUP_ATLAS_DATA.get())
+        {
+            SamplerLoader.Debug.generateFromAtlasAndImagePacker(SamplerLoader.Debug.getFile("/atlas_data"), this, imagePacker);
+        }
         fixUvs(imagePacker);
+        packerGet.set(imagePacker);
     }
 
     @Override
-    void create()
+    void create(Map<Atlas, ImagePacker> packerMap)
     {
     }
 

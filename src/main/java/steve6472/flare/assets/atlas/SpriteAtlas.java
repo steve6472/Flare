@@ -2,8 +2,6 @@ package steve6472.flare.assets.atlas;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import org.lwjgl.vulkan.VkDevice;
-import org.lwjgl.vulkan.VkQueue;
 import steve6472.core.registry.Key;
 import steve6472.core.util.ImagePacker;
 import steve6472.flare.*;
@@ -13,8 +11,10 @@ import steve6472.flare.assets.atlas.source.Source;
 import steve6472.flare.assets.atlas.source.SourceResult;
 import steve6472.flare.core.Flare;
 import steve6472.flare.framebuffer.AnimatedAtlasFrameBuffer;
-import steve6472.flare.registry.FlareRegistries;
 import steve6472.flare.registry.VkSetup;
+import steve6472.flare.settings.VisualSettings;
+import steve6472.flare.ui.textures.SpriteEntry;
+import steve6472.flare.util.Obj;
 import steve6472.flare.util.PackerUtil;
 
 import java.awt.image.BufferedImage;
@@ -43,7 +43,7 @@ public class SpriteAtlas extends Atlas
     }
 
     @Override
-    void create()
+    void create(Map<Atlas, ImagePacker> packerMap)
     {
         // Set to prevent duplicates
         Set<SourceResult> toLoad = new LinkedHashSet<>();
@@ -67,23 +67,34 @@ public class SpriteAtlas extends Atlas
         SpriteLoader.LoadResult loadResult = SpriteLoader.loadFromAtlas(toLoad);
         Map<Key, BufferedImage> images = new HashMap<>(loadResult.entries().size());
         loadResult.entries().forEach((key, pair) -> {
-            sprites.put(key, pair.getFirst());
+            registerSprite(key, pair.getFirst());
             images.put(key, pair.getSecond());
         });
-        errorTexture = sprites.get(FlareConstants.ERROR_TEXTURE);
+
+        // Set error texture
+        SpriteEntry errorTexture = getSprite(FlareConstants.ERROR_TEXTURE);
         if (errorTexture == null)
             throw new NullPointerException("Error Texture not in atlas!");
+        setErrorTexture(errorTexture);
 
         Map<String, BufferedImage> toPack = new HashMap<>();
         images.forEach((key, image) -> toPack.put(key.toString(), image));
-        this.imagePacker = PackerUtil.pack(SpriteLoader.STARTING_IMAGE_SIZE, toPack, false);
+        ImagePacker imagePacker = PackerUtil.pack(SpriteLoader.STARTING_IMAGE_SIZE, toPack, false);
+        packerMap.put(this, imagePacker);
         images.clear();
 
-        if (loadResult.animationAtlas() != null)
+        if (VisualSettings.GENERATE_STARTUP_ATLAS_DATA.get())
         {
-            animationAtlas = loadResult.animationAtlas();
-            animationAtlas.key = Key.withNamespace(key.namespace(), "animation/" + key.id());
+            SamplerLoader.Debug.generateFromAtlasAndImagePacker(SamplerLoader.Debug.getFile("/atlas_data"), this, imagePacker);
         }
+
+        if (!loadResult.animatedAtlasData().isEmpty())
+        {
+            Obj<ImagePacker> packerGet = Obj.empty();
+            animationAtlas = new AnimationAtlas(Key.withNamespace(key().namespace(), "animation/" + key().id()), loadResult.animatedAtlasData(), packerGet);
+            packerMap.put(animationAtlas, packerGet.get());
+        }
+
         fixUvs(imagePacker);
     }
 

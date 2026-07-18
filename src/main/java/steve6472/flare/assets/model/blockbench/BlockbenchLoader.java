@@ -41,12 +41,18 @@ public class BlockbenchLoader
 
     public static void loadStaticModels(Registry<LoadedModel> registry)
     {
+        Profiler profiler = FlareProfiler.frame();
+        profiler.push("staticModels");
         loadModels(FlareParts.MODEL_STATIC, registry);
+        profiler.pop();
     }
 
     public static void loadAnimatedModels(Registry<LoadedModel> registry)
     {
+        Profiler profiler = FlareProfiler.frame();
+        profiler.push("animatedModels");
         loadModels(FlareParts.MODEL_ANIMATED, registry);
+        profiler.pop();
     }
 
     public static void createStaticModels(Registry<Model> registry, VkSetup setup)

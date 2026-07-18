@@ -1,3 +1,4 @@
 {
-    path: "%SystemRoot%/Fonts/arial.ttf"
+    path: "%SystemRoot%/Fonts/arial.ttf",
+    charset: "[0x20, 0x058f] [0x2000, 0xa7f7]"
 }

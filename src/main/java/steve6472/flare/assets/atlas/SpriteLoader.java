@@ -9,12 +9,9 @@ import org.joml.Vector4f;
 import steve6472.core.log.Log;
 import steve6472.core.registry.Key;
 import steve6472.core.util.GsonUtil;
-import steve6472.core.util.ImagePacker;
 import steve6472.flare.FlareConstants;
-import steve6472.flare.assets.TextureSampler;
 import steve6472.flare.assets.atlas.source.SourceResult;
 import steve6472.flare.assets.model.blockbench.ErrorModel;
-import steve6472.flare.registry.VkSetup;
 import steve6472.flare.ui.textures.SpriteData;
 import steve6472.flare.ui.textures.SpriteEntry;
 import steve6472.flare.ui.textures.animation.SpriteAnimation;
@@ -35,12 +32,11 @@ import java.util.logging.Logger;
 public class SpriteLoader
 {
     private static final Logger LOGGER = Log.getLogger(SpriteLoader.class);
-    public static boolean SAVE_DEBUG_ATLASES = false;
 
     private static final String[] EXTENSIONS = {".json5", ".json"};
     public static final int STARTING_IMAGE_SIZE = 64;
 
-    public record LoadResult(Map<Key, Pair<SpriteEntry, BufferedImage>> entries, AnimationAtlas animationAtlas) {}
+    public record LoadResult(Map<Key, Pair<SpriteEntry, BufferedImage>> entries, Map<Key, Pair<SpriteEntry, BufferedImage>> animatedAtlasData) {}
 
     public static LoadResult loadFromAtlas(Set<SourceResult> input)
     {
@@ -53,17 +49,14 @@ public class SpriteLoader
         atlasData.put(FlareConstants.ERROR_TEXTURE,
             Pair.of(new SpriteEntry(FlareConstants.ERROR_TEXTURE, SpriteData.DEFAULT, new Vector4f(), new Vector2i(2, 2), atlasData.size()), ErrorModel.IMAGE));
 
-        AnimationAtlas animationAtlas = null;
         if (!animatedAtlasData.isEmpty())
         {
             // Insert error image
             animatedAtlasData.put(FlareConstants.ERROR_TEXTURE,
                 Pair.of(new SpriteEntry(FlareConstants.ERROR_TEXTURE, SpriteData.DEFAULT, new Vector4f(), new Vector2i(2, 2), animatedAtlasData.size()), ErrorModel.IMAGE));
-
-            animationAtlas = new AnimationAtlas(animatedAtlasData);
         }
 
-        return new LoadResult(atlasData, animationAtlas);
+        return new LoadResult(atlasData, animatedAtlasData);
     }
 
     private static void processInput(SourceResult input, Map<Key, Pair<SpriteEntry, BufferedImage>> atlasData, Map<Key, Pair<SpriteEntry, BufferedImage>> animatedAtlasData)
@@ -158,40 +151,5 @@ public class SpriteLoader
         }
 
         return SpriteData.DEFAULT;
-    }
-
-    public static Pair<ImagePacker, TextureSampler> createTexture(Atlas atlas, VkSetup setup)
-    {
-        BufferedImage image = atlas.imagePacker.getImage();
-        saveDebugAtlas(atlas, image);
-        TextureSampler vkResource = atlas.createVkResource(image, setup);
-        return Pair.of(atlas.imagePacker, vkResource);
-    }
-
-    private static void saveDebugAtlas(Atlas atlas, BufferedImage image)
-    {
-        if (!SAVE_DEBUG_ATLASES)
-            return;
-
-        try
-        {
-            File namespaceDir = new File(FlareConstants.FLARE_DEBUG_ATLAS, atlas.key().namespace());
-            String folderPath = atlas.key().id();
-            if (folderPath.contains("/"))
-                folderPath = atlas.key().id().substring(0, folderPath.lastIndexOf('/'));
-            else
-                folderPath = "";
-            File pathDir = new File(namespaceDir, folderPath);
-            if (!pathDir.exists() && !pathDir.mkdirs())
-                LOGGER.warning("Failed to create path " + pathDir.getAbsolutePath());
-            String filePath = atlas.key().id();
-            if (filePath.contains("/"))
-                filePath = filePath.substring(atlas.key().id().lastIndexOf('/'));
-            File output = new File(pathDir, filePath + ".png");
-            ImageIO.write(image, "PNG", output);
-        } catch (IOException e)
-        {
-            LOGGER.warning("Failed to save debug " + atlas.key() + ", exception: " + e.getMessage());
-        }
     }
 }
