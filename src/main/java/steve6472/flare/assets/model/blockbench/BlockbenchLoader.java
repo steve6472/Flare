@@ -1,10 +1,9 @@
 package steve6472.flare.assets.model.blockbench;
 
-import com.mojang.datafixers.util.Pair;
+import steve6472.core.log.Log;
 import steve6472.core.module.ModulePart;
 import steve6472.core.registry.Key;
 import steve6472.core.registry.Registry;
-import steve6472.core.util.ImagePacker;
 import steve6472.flare.FlareParts;
 import steve6472.flare.assets.atlas.Atlas;
 import steve6472.flare.core.Flare;
@@ -17,6 +16,7 @@ import steve6472.flare.tracy.Profiler;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.logging.Logger;
 
 /**
  * Created by steve6472
@@ -25,6 +25,8 @@ import java.util.function.Function;
  */
 public class BlockbenchLoader
 {
+    private static final Logger LOGGER = Log.getLogger(BlockbenchLoader.class);
+
     public static void fixModelUvs(Atlas atlas)
     {
         BuiltInFlareRegistries.ANIMATED_LOADED_MODEL.listElements().forEach(ref -> {
@@ -92,19 +94,11 @@ public class BlockbenchLoader
 
     private static void loadModels(ModulePart<LoadedModel> part, Registry<LoadedModel> registry)
     {
-        Map<Key, Pair<LoadedModel, String>> models = new LinkedHashMap<>();
-
         Flare.getModuleManager().loadModuleJsonCodecs(part, LoadedModel.CODEC, (_, file, key, loadedModel) -> {
             key = Key.withNamespace(key.namespace(), part.path().substring("model/".length()) + "/" + key.id());
             loadedModel = overrideKey(loadedModel, key);
-            models.put(key, Pair.of(loadedModel, file.getAbsolutePath()));
-        });
-
-        for (Pair<LoadedModel, String> value : models.values())
-        {
-            LoadedModel model = value.getFirst();
-            Registry.register(registry, model.key(), model);
-        }
+            Registry.register(registry, key, loadedModel);
+        }, (ex, key) -> Log.exception(LOGGER, ex, "Failed to load Model '" + key + "'"));
     }
 
     private static LoadedModel overrideKey(LoadedModel model, Key newKey)

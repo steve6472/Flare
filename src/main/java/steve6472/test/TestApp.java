@@ -34,7 +34,7 @@ import static steve6472.flare.render.debug.DebugRender.RED;
 class TestApp extends FlareApp
 {
     private static final Logger LOGGER = Log.getLogger(TestApp.class);
-    public static final String NAMESPACE = "base_test";
+    public static final String NAMESPACE = "test";
     private static final File TEST_SETTINGS = new File("settings/test_settings.json");
     public static TestApp instance;
     public static boolean DUMP_SAMPLERS = false;
@@ -62,10 +62,10 @@ class TestApp extends FlareApp
     @Override
     protected void createRenderSystems()
     {
-//        addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new EntityTestRender(), Pipelines.BLOCKBENCH_STATIC));
+        addRenderSystem(new StaticModelRenderSystem(masterRenderer(), new StaticRenderSystem(), Pipelines.BLOCKBENCH_STATIC));
         addRenderSystem(new SkinRenderSystem(masterRenderer(), Pipelines.SKIN));
         addRenderSystem(new UIRenderSystem(masterRenderer(), new TestUIRender(), 256f));
-        addRenderSystem(new UIFontRender(masterRenderer(), new TestFontRender()));
+//        addRenderSystem(new UIFontRender(masterRenderer(), new TestFontRender()));
         addRenderSystem(new UILineRender(masterRenderer(), new DebugUILines()));
 
         window().callbacks().addCharCallback(key("char_input"), (_, codepoint) ->
@@ -170,15 +170,15 @@ class TestApp extends FlareApp
 
         float cameraSpeed = 0.06f;
 
-        if (TestKeybinds.SPRINT.isActive())
+        if (canControlCamera && TestKeybinds.SPRINT.isActive())
             cameraSpeed *= 2f;
 
-        if (TestKeybinds.SLOW.isActive())
+        if (canControlCamera && TestKeybinds.SLOW.isActive())
             cameraSpeed /= 4f;
 
-        if (TestKeybinds.CAMERA_FAR.isActive())
+        if (canControlCamera && TestKeybinds.CAMERA_FAR.isActive())
             cameraDistance += cameraSpeed;
-        if (TestKeybinds.CAMERA_CLOSE.isActive())
+        if (canControlCamera && TestKeybinds.CAMERA_CLOSE.isActive())
             cameraDistance -= cameraSpeed;
         cameraDistance = Math.clamp(cameraDistance, 0, 16);
 
@@ -189,33 +189,33 @@ class TestApp extends FlareApp
 
         float speed = 0.05f;
 
-        if (TestKeybinds.SPRINT.isActive())
+        if (canControlCamera && TestKeybinds.SPRINT.isActive())
             speed *= 5f;
 
-        if (TestKeybinds.SLOW.isActive())
+        if (canControlCamera && TestKeybinds.SLOW.isActive())
             speed /= 5f;
 
         Camera camera = frameInfo.camera();
 
-        if (TestKeybinds.FORWARD.isActive())
+        if (canControlCamera && TestKeybinds.FORWARD.isActive())
         {
             X += (float) (Math.sin(camera.yaw()) * -speed);
             Z += (float) (Math.cos(camera.yaw()) * -speed);
         }
 
-        if (TestKeybinds.BACK.isActive())
+        if (canControlCamera && TestKeybinds.BACK.isActive())
         {
             X += (float) (Math.sin(camera.yaw()) * speed);
             Z += (float) (Math.cos(camera.yaw()) * speed);
         }
 
-        if (TestKeybinds.LEFT.isActive())
+        if (canControlCamera && TestKeybinds.LEFT.isActive())
         {
             X += (float) (Math.sin(camera.yaw() + Math.PI / 2.0) * -speed);
             Z += (float) (Math.cos(camera.yaw() + Math.PI / 2.0) * -speed);
         }
 
-        if (TestKeybinds.RIGHT.isActive())
+        if (canControlCamera && TestKeybinds.RIGHT.isActive())
         {
             X += (float) (Math.sin(camera.yaw() + Math.PI / 2.0) * speed);
             Z += (float) (Math.cos(camera.yaw() + Math.PI / 2.0) * speed);

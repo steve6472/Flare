@@ -23,7 +23,7 @@ import static org.lwjgl.vulkan.VK10.*;
  */
 public class StaticModelRenderSystem extends CommonRenderSystem
 {
-    private final SBOTransfromArray<Model> transfromArray = new SBOTransfromArray<>(ErrorModel.VK_STATIC_INSTANCE);
+    private SBOTransfromArray<Model> transfromArray = new SBOTransfromArray<>(ErrorModel.VK_STATIC_INSTANCE);
     private final StaticModelRenderImpl renderImpl;
 
     public StaticModelRenderSystem(MasterRenderer masterRenderer, StaticModelRenderImpl renderImpl, PipelineConstructor pipeline)
@@ -34,6 +34,15 @@ public class StaticModelRenderSystem extends CommonRenderSystem
 
         this.renderImpl = renderImpl;
         this.renderImpl.init(transfromArray);
+    }
+
+    @Override
+    public void reload()
+    {
+        transfromArray = new SBOTransfromArray<>(ErrorModel.VK_STATIC_INSTANCE);
+        renderImpl.init(transfromArray);
+
+        super.reload();
     }
 
     @Override

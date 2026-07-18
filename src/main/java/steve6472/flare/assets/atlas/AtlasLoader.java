@@ -40,7 +40,7 @@ public class AtlasLoader
         Flare.getModuleManager().loadParts(FlareParts.ATLAS, SpriteAtlas.CODEC, (atlas, key) -> {
             atlas.setKey(key);
             atlases.computeIfAbsent(key, _ -> new ArrayList<>()).add(atlas);
-        });
+        }, (ex, key) -> Log.exception(LOGGER, ex, "Failed to load Atlas '" + key + "'"));
 
         // Merge atlases with the same key
         List<Atlas> mergedAtlases = new ArrayList<>(atlases.size());
